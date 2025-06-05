@@ -50,7 +50,7 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 			%>
 
 			<c:choose>
-				<c:when test="<%= (curArticle != null) && !journalArticleItemSelectorViewDisplayContext.isRefererArticle(curArticle) %>">
+				<c:when test="<%= curArticle != null %>">
 
 					<%
 					row.setCssClass("articles " + row.getCssClass());
@@ -245,6 +245,8 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 				<c:when test="<%= curFolder != null %>">
 
 					<%
+					row.setPrimaryKey(String.valueOf(curFolder.getPrimaryKey()));
+
 					PortletURL rowURL = PortletURLBuilder.create(
 						journalArticleItemSelectorViewDisplayContext.getPortletURL()
 					).setParameter(

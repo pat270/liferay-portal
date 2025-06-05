@@ -1,0 +1,69 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import '../../../css/content_editor/ContentEditorManagementBar.scss';
+
+import ClayButton from '@clayui/button';
+import ClayIcon from '@clayui/icon';
+import ClayLink from '@clayui/link';
+import {ManagementToolbar} from 'frontend-js-components-web';
+import React, {useEffect, useState} from 'react';
+
+export default function ContentEditorManagementBar({
+	backURL,
+	headerTitle,
+}: {
+	backURL: string;
+	headerTitle: string;
+}) {
+	const [formId, setFormId] = useState<string | undefined>();
+
+	useEffect(() => {
+		const form = document.querySelector('.lfr-layout-structure-item-form');
+
+		if (form) {
+			setFormId(form.id);
+		}
+	}, []);
+
+	return (
+		<ManagementToolbar.Container className="border content-editor__management-bar position-fixed">
+			<ManagementToolbar.ItemList className="c-gap-3" expand>
+				<ManagementToolbar.Item>
+					<ClayLink
+						aria-label={Liferay.Language.get('back')}
+						borderless
+						displayType="secondary"
+						href={backURL}
+						monospaced
+						outline
+						small
+					>
+						<ClayIcon symbol="angle-left" />
+					</ClayLink>
+				</ManagementToolbar.Item>
+
+				<ManagementToolbar.Item className="nav-item-expand">
+					<h2 className="font-weight-semi-bold m-0 text-5">
+						{headerTitle}
+					</h2>
+				</ManagementToolbar.Item>
+
+				<ManagementToolbar.Item>
+					<ClayButton
+						displayType="primary"
+						form={formId}
+						name="redirect"
+						size="sm"
+						type="submit"
+						value={backURL}
+					>
+						{Liferay.Language.get('publish')}
+					</ClayButton>
+				</ManagementToolbar.Item>
+			</ManagementToolbar.ItemList>
+		</ManagementToolbar.Container>
+	);
+}

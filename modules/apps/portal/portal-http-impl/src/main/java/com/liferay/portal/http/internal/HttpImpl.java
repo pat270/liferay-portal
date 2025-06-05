@@ -33,6 +33,8 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 
+import jakarta.servlet.http.Cookie;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -51,8 +53,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.servlet.http.Cookie;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -370,11 +370,7 @@ public class HttpImpl implements Http {
 	protected boolean hasRequestHeader(
 		RequestBuilder requestBuilder, String name) {
 
-		if (ArrayUtil.isEmpty(requestBuilder.getHeaders(name))) {
-			return false;
-		}
-
-		return true;
+		return ArrayUtil.isNotEmpty(requestBuilder.getHeaders(name));
 	}
 
 	@Modified

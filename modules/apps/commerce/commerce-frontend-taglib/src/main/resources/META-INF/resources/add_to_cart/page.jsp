@@ -110,6 +110,8 @@ if (alignment.equals("full-width")) {
 		).put(
 			"disabled", disabled
 		).put(
+			"guestOrderEnabled", guestOrderEnabled
+		).put(
 			"productId", productId
 		).put(
 			"settings",
@@ -148,10 +150,6 @@ if (alignment.equals("full-width")) {
 			).put(
 				"size", size
 			).build()
-		).put(
-			"showOrderTypeModal", showOrderTypeModal
-		).put(
-			"showOrderTypeModalURL", showOrderTypeModalURL
 		).build()
 	%>'
 	module="{addToCart} from commerce-frontend-taglib"

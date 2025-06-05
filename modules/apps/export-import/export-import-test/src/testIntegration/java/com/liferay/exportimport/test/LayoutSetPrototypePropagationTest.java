@@ -86,11 +86,13 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.impl.ThemeSettingImpl;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
+
+import jakarta.portlet.PortletPreferences;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -98,8 +100,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.portlet.PortletPreferences;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -896,7 +896,7 @@ public class LayoutSetPrototypePropagationTest
 				userGroup.getGroupId(), true));
 	}
 
-	@FeatureFlags(enable = false, value = "LPD-38869")
+	@FeatureFlag(enable = false, value = "LPD-38869")
 	@Test
 	public void testThemeSettingsAfterLayoutPropagation() throws Exception {
 		LayoutSet prototypePrivateLayoutSet =
@@ -933,7 +933,7 @@ public class LayoutSetPrototypePropagationTest
 			propagatedLayoutSet.getThemeId());
 	}
 
-	@FeatureFlags("LPD-38869")
+	@FeatureFlag("LPD-38869")
 	@Test
 	public void testThemeSettingsAfterLayoutPropagationWithPrivateLinkEnabled()
 		throws Exception {
@@ -1003,7 +1003,7 @@ public class LayoutSetPrototypePropagationTest
 		}
 	}
 
-	@FeatureFlags("LPD-38869")
+	@FeatureFlag("LPD-38869")
 	@Test
 	public void testThemeSettingsAfterLayoutPropagationWithPublicLinkEnabled()
 		throws Exception {
@@ -1546,15 +1546,15 @@ public class LayoutSetPrototypePropagationTest
 		BundleContext bundleContext = bundle.getBundleContext();
 
 		bundleContext.registerService(
-			javax.portlet.Portlet.class, new MVCPortlet(),
+			jakarta.portlet.Portlet.class, new MVCPortlet(),
 			HashMapDictionaryBuilder.<String, Object>put(
 				"com.liferay.portlet.instanceable", "true"
 			).put(
 				"com.liferay.portlet.preferences-owned-by-group", "true"
 			).put(
-				"javax.portlet.init-param.view-template", "/view.jsp"
+				"jakarta.portlet.init-param.view-template", "/view.jsp"
 			).put(
-				"javax.portlet.name", portletName
+				"jakarta.portlet.name", portletName
 			).build());
 	}
 

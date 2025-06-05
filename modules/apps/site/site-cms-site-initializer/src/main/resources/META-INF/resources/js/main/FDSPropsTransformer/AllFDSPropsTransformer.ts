@@ -6,6 +6,7 @@
 import {IInternalRenderer} from '@liferay/frontend-data-set-web';
 
 import createAssetAction from './actions/createAssetAction';
+import multipleFilesUploadAction from './actions/multipleFilesUploadAction';
 import AuthorRenderer from './cell_renderers/AuthorRenderer';
 import NameRenderer from './cell_renderers/NameRenderer';
 import SpaceRenderer from './cell_renderers/SpaceRenderer';
@@ -14,13 +15,16 @@ import addOnClickToCreationMenuItems from './utils/addOnClickToCreationMenuItems
 
 const ACTIONS = {
 	createAsset: createAssetAction,
+	uploadMultipleFiles: multipleFilesUploadAction,
 };
 
 export default function AllFDSPropsTransformer({
 	creationMenu,
+	itemsActions = [],
 	...otherProps
 }: {
 	creationMenu: any;
+	itemsActions?: any[];
 	otherProps: any;
 }) {
 	return {
@@ -56,5 +60,16 @@ export default function AllFDSPropsTransformer({
 				} as IInternalRenderer,
 			],
 		},
+		itemsActions: itemsActions.map((action) => {
+			if (action?.data?.id === 'download') {
+				return {
+					...action,
+					isVisible: (item: any) =>
+						Boolean(item?.embedded?.file?.link?.href),
+				};
+			}
+
+			return action;
+		}),
 	};
 }

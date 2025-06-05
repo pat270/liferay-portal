@@ -87,7 +87,7 @@ definition {
 
 		AssertConsoleTextNotPresent(value1 = "Please configure tunneling.servlet.shared.secret");
 
-		AssertConsoleTextNotPresent(value1 = "javax.portlet.PortletException: java.lang.NullPointerException");
+		AssertConsoleTextNotPresent(value1 = "jakarta.portlet.PortletException: java.lang.NullPointerException");
 	}
 
 	@summary = "Default summary"
@@ -794,6 +794,30 @@ definition {
 		Button.clickSave();
 
 		Alert.viewSuccessMessage();
+	}
+
+	@summary = "Default summary"
+	macro enableDeleteApplicationDataBeforeImport(navigate = null) {
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Feature Flags",
+			configurationName = "Deprecation",
+			configurationScope = "Virtual Instance Scope");
+
+		if (IsElementPresent(locator1 = "FeatureFlag#TOGGLE_ROW", title_row = "Enable Delete Application Data", toggle_state = "Disabled")) {
+			Check.checkToggleSwitch(
+				locator1 = "FeatureFlag#TOGGLE_ROW",
+				title_row = "Enable Delete Application Data",
+				toggle_state = "Disabled");
+		}
+
+		if (${navigate} != "false") {
+			Navigator.openURL();
+		}
 	}
 
 	@summary = "Default summary"
@@ -1853,7 +1877,9 @@ definition {
 
 		SelectFrameTop();
 
-		AssertTextEquals.assertPartialText(
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		WaitForElementPresent(
 			locator1 = "Message#ERROR",
 			value1 = ${validateErrorMessage});
 	}

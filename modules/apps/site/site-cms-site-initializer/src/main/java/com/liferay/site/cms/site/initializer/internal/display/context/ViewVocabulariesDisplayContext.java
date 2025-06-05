@@ -12,10 +12,13 @@ import com.liferay.frontend.data.set.filter.FDSFilter;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
-import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -24,14 +27,13 @@ import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.site.cms.site.initializer.internal.frontend.data.set.filter.VocabularyAssetTypesSelectionFDSFilter;
+import com.liferay.taglib.security.PermissionsURLTag;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.portlet.ActionRequest;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Noor Najjar
@@ -100,6 +102,20 @@ public class ViewVocabulariesDisplayContext {
 		).build();
 	}
 
+	public Map<String, Object> getEmptyState() {
+		return HashMapBuilder.<String, Object>put(
+			"description",
+			LanguageUtil.get(
+				_httpServletRequest,
+				"vocabularies-are-needed-to-create-categories")
+		).put(
+			"image", "/states/cms_empty_state_categorization.svg"
+		).put(
+			"title",
+			LanguageUtil.get(_httpServletRequest, "no-vocabularies-yet")
+		).build();
+	}
+
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems()
 		throws PortalException {
 
@@ -115,26 +131,7 @@ public class ViewVocabulariesDisplayContext {
 				LanguageUtil.get(_httpServletRequest, "edit"), "get", "update",
 				null),
 			new FDSActionDropdownItem(
-				PortletURLBuilder.create(
-					PortalUtil.getControlPanelPortletURL(
-						_httpServletRequest,
-						"com_liferay_portlet_configuration_web_portlet_" +
-							"PortletConfigurationPortlet",
-						ActionRequest.RENDER_PHASE)
-				).setMVCPath(
-					"/edit_permissions.jsp"
-				).setRedirect(
-					_themeDisplay.getURLCurrent()
-				).setParameter(
-					"modelResource", AssetVocabulary.class.getName()
-				).setParameter(
-					"modelResourceDescription", "{name}"
-				).setParameter(
-					"resourcePrimKey", "{id}"
-				).setWindowState(
-					LiferayWindowState.POP_UP
-				).buildString(),
-				"password-policies", "permissions",
+				_getEditPermissionsURL(), "password-policies", "permissions",
 				LanguageUtil.get(_httpServletRequest, "permissions"), "get",
 				null, "modal-permissions"),
 			new FDSActionDropdownItem(
@@ -149,7 +146,7 @@ public class ViewVocabulariesDisplayContext {
 				LanguageUtil.get(_httpServletRequest, "view-categories"), "get",
 				null, null),
 			new FDSActionDropdownItem(
-				null, "times-circle", "delete",
+				null, "trash", "delete",
 				LanguageUtil.get(_httpServletRequest, "delete"), null, "delete",
 				null));
 	}
@@ -179,6 +176,28 @@ public class ViewVocabulariesDisplayContext {
 				_themeDisplay)
 		).build();
 	}
+
+	private String _getEditPermissionsURL() {
+		String url = StringPool.BLANK;
+
+		try {
+			url = PermissionsURLTag.doTag(
+				_themeDisplay.getURLCurrent(), AssetVocabulary.class.getName(),
+				"{name}", GroupConstants.DEFAULT_LIVE_GROUP_ID, "{id}",
+				LiferayWindowState.POP_UP.toString(), null,
+				_httpServletRequest);
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return url;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ViewVocabulariesDisplayContext.class);
 
 	private final HttpServletRequest _httpServletRequest;
 	private final ThemeDisplay _themeDisplay;

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -33,6 +34,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Pedro Victor Silvestre
  */
+@FeatureFlag("LPD-36464")
 @RunWith(Arquillian.class)
 public class FunctionCaptchaImplTest {
 
@@ -43,6 +45,8 @@ public class FunctionCaptchaImplTest {
 
 	@Test
 	public void test() throws Exception {
+		String externalReferenceCode = "LXC:" + RandomTestUtil.randomString();
+
 		CustomElementCET customElementCET =
 			(CustomElementCET)_cetManager.addCET(
 				ConfigurableUtil.createConfigurable(
@@ -56,15 +60,24 @@ public class FunctionCaptchaImplTest {
 					).put(
 						"typeSettings", new String[] {"htmlElementName=test"}
 					).build()),
-				TestPropsValues.getCompanyId(), "LXC:test");
+				TestPropsValues.getCompanyId(), externalReferenceCode);
 
 		String pid = ConfigurationTestUtil.createFactoryConfiguration(
 			"com.liferay.captcha.internal.configuration." +
 				"FunctionCaptchaImplConfiguration",
 			HashMapDictionaryBuilder.<String, Object>put(
-				"captchaName", "ClientExtensionCaptcha"
+				"captchaName", RandomTestUtil.randomString()
 			).put(
-				"customElementExternalReferenceCode", "LXC:test"
+				"captchaResponseParameterName", RandomTestUtil.randomString()
+			).put(
+				"companyId", TestPropsValues.getCompanyId()
+			).put(
+				"customElementExternalReferenceCode", externalReferenceCode
+			).put(
+				"oAuth2ApplicationExternalReferenceCode",
+				RandomTestUtil.randomString()
+			).put(
+				"resourcePath", RandomTestUtil.randomString()
 			).build());
 
 		String servicePid = StringUtil.extractLast(pid, StringPool.TILDE);

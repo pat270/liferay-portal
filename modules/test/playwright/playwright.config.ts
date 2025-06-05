@@ -10,6 +10,7 @@ import 'dotenv/config';
 import {config as accessibilityMenuWeb} from './tests/accessibility-menu-web/main/config';
 import {config as accountAdminWebConfig} from './tests/account-admin-web/main/config';
 import {config as addressWebConfig} from './tests/address-web/main/config';
+import {config as analyticsClientJs} from './tests/analytics-client-js/main/config';
 import {config as analyticsReportsJsComponentsWeb} from './tests/analytics-reports-js-components-web/main/config';
 import {config as analyticsSettingsWebConfig} from './tests/analytics-settings-web/main/config';
 import {config as analyticsWebConfig} from './tests/analytics-web/main/config';
@@ -20,12 +21,14 @@ import {config as assetTagsAdminWebConfig} from './tests/asset-tags-admin-web/ma
 import {config as batchPlannerConfig} from './tests/batch-planner/main/config';
 import {config as blogsWebConfig} from './tests/blogs-web/main/config';
 import {config as calendarWebConfig} from './tests/calendar-web/main/config';
+import {config as captchaWebClientExtensionConfig} from './tests/captcha-web/client-extension/config';
 import {config as captchaWebConfig} from './tests/captcha-web/main/config';
 import {config as changeTrackingWebConfig} from './tests/change-tracking-web/main/config';
 import {config as clientExtensionWebClusterConfig} from './tests/client-extension-web/cluster/config';
 import {config as clientExtensionWebConfig} from './tests/client-extension-web/main/config';
 import {config as commerceAccountWebConfig} from './tests/commerce/commerce-account-web/main/config';
 import {config as commerceCartContentWebConfig} from './tests/commerce/commerce-cart-content-web/main/config';
+import {config as commerceCatalogWebConfig} from './tests/commerce/commerce-catalog-web/main/config';
 import {config as commerceChannelWebConfig} from './tests/commerce/commerce-channel-web/main/config';
 import {config as commerceCheckoutWebConfig} from './tests/commerce/commerce-checkout-web/main/config';
 import {config as commerceCurrencyWebConfig} from './tests/commerce/commerce-currency-web/main/config';
@@ -49,6 +52,7 @@ import {config as depotWebConfig} from './tests/depot-web/main/config';
 import {config as dispatchWebConfig} from './tests/dispatch-web/main/config';
 import {config as documentLibraryWebConfig} from './tests/document-library-web/main/config';
 import {config as dynamicDataMappingFormWebConfig} from './tests/dynamic-data-mapping-form-web/main/config';
+import {config as exportImportServiceConfig} from './tests/export-import-service/main/config';
 import {config as exportImportWebConfig} from './tests/export-import-web/main/config';
 import {config as featureFlagWebConfig} from './tests/feature-flag-web/main/config';
 import {config as fragmentWebConfig} from './tests/fragment-web/main/config';
@@ -56,11 +60,13 @@ import {config as friendlyURLConfig} from './tests/friendly-url-web/main/config'
 import {config as frontendDataSetAdminWebConfig} from './tests/frontend-data-set-admin-web/main/config';
 import {config as frontendDataSetWebConfig} from './tests/frontend-data-set-web/main/config';
 import {config as frontendEditorCKEditorWebConfig} from './tests/frontend-editor-ckeditor-web/main/config';
+import {config as frontendJsBootstrapSupportWebConfig} from './tests/frontend-js-bootstrap-support-web/main/config';
 import {config as frontendJsComponentsWebConfig} from './tests/frontend-js-components-web/main/config';
 import {config as frontendJsSpaWebConfig} from './tests/frontend-js-spa-web/main/config';
 import {config as frontendJsWebConfig} from './tests/frontend-js-web/main/config';
 import {config as frontendTaglibClayConfig} from './tests/frontend-taglib-clay/main/config';
 import {config as frontendTaglibConfig} from './tests/frontend-taglib/main/config';
+import {config as frontendTaglibSpaOffConfig} from './tests/frontend-taglib/spa-off/config';
 import {config as frontendTheme} from './tests/frontend-theme/main/config';
 import {config as headlessBuilderImplConfig} from './tests/headless-builder-impl/main/config';
 import {config as headlessBuilderWebConfig} from './tests/headless-builder-web/main/config';
@@ -100,6 +106,7 @@ import {config as portalToolsRestBuilderTestImpl} from './tests/portal-tools-res
 import {config as portalUserLocaleOptionsConfig} from './tests/portal-user-locale-options-web/main/config';
 import {config as portalWebConfig} from './tests/portal-web/main/config';
 import {config as portalWorkflowKaleoDesignerWebConfig} from './tests/portal-workflow-kaleo-designer-web/main/config';
+import {config as portalWorkflowKaleoFormsWebConfig} from './tests/portal-workflow-kaleo-forms-web/main/config';
 import {config as portalWorkflowTaskWebConfig} from './tests/portal-workflow-task-web/main/config';
 import {config as portletConfigurationCssWebConfig} from './tests/portlet-configuration-css-web/main/config';
 import {config as productNavigationProductMenuWeb} from './tests/product-navigation-product-menu-web/main/config';
@@ -114,10 +121,8 @@ import {config as scimConfiguraitonWebConfig} from './tests/scim-configuration-w
 import {config as searchExperiencesWebConfig} from './tests/search-experiences-web/main/config';
 import {config as segmentExperimentWebConfig} from './tests/segment-experiment-web/main/config';
 import {config as segmentsWebConfig} from './tests/segments-web/main/config';
-import {
-	pageManagementSiteSetup,
-	pageManagementSiteTeardown,
-} from './tests/setup/page-management-site/config';
+import {config as pageManagementSiteConfig} from './tests/setup/page-management-site/main/config';
+import {config as pageManagementSiteTeardownConfig} from './tests/setup/page-management-site/teardown/config';
 import {config as siteAdminWebConfig} from './tests/site-admin-web/main/config';
 import {config as siteCmsSiteInitializerConfig} from './tests/site-cms-site-initializer/main/config';
 import {config as siteNavigationAdminWebConfig} from './tests/site-navigation-admin-web/main/config';
@@ -138,7 +143,10 @@ import {config as commerceWorkspaceConfig} from './tests/workspaces/liferay-work
 import {config as jethr0Config} from './tests/workspaces/liferay-workspace-jethr0/main/config';
 import {config as marketplaceConfig} from './tests/workspaces/liferay-workspace-marketplace/main/config';
 
-const setupProjects = [pageManagementSiteSetup, pageManagementSiteTeardown];
+const setupProjects = [
+	pageManagementSiteConfig,
+	pageManagementSiteTeardownConfig,
+];
 
 const resultsPath = 'test-results/TEST-playwright.xml';
 
@@ -152,6 +160,7 @@ export default defineConfig({
 		accessibilityMenuWeb,
 		accountAdminWebConfig,
 		addressWebConfig,
+		analyticsClientJs,
 		analyticsReportsJsComponentsWeb,
 		analyticsSettingsWebConfig,
 		analyticsWebConfig,
@@ -162,12 +171,14 @@ export default defineConfig({
 		batchPlannerConfig,
 		blogsWebConfig,
 		calendarWebConfig,
+		captchaWebClientExtensionConfig,
 		captchaWebConfig,
 		changeTrackingWebConfig,
 		clientExtensionWebConfig,
 		clientExtensionWebClusterConfig,
 		commerceAccountWebConfig,
 		commerceCartContentWebConfig,
+		commerceCatalogWebConfig,
 		commerceChannelWebConfig,
 		commerceCheckoutWebConfig,
 		commerceCurrencyWebConfig,
@@ -193,6 +204,7 @@ export default defineConfig({
 		dispatchWebConfig,
 		documentLibraryWebConfig,
 		dynamicDataMappingFormWebConfig,
+		exportImportServiceConfig,
 		exportImportWebConfig,
 		featureFlagWebConfig,
 		fragmentWebConfig,
@@ -200,11 +212,13 @@ export default defineConfig({
 		frontendDataSetAdminWebConfig,
 		frontendDataSetWebConfig,
 		frontendEditorCKEditorWebConfig,
+		frontendJsBootstrapSupportWebConfig,
 		frontendJsComponentsWebConfig,
 		frontendJsSpaWebConfig,
 		frontendJsWebConfig,
 		frontendTaglibClayConfig,
 		frontendTaglibConfig,
+		frontendTaglibSpaOffConfig,
 		frontendTheme,
 		headlessBuilderImplConfig,
 		headlessBuilderWebConfig,
@@ -246,6 +260,7 @@ export default defineConfig({
 		portalUserLocaleOptionsConfig,
 		portalWebConfig,
 		portalWorkflowKaleoDesignerWebConfig,
+		portalWorkflowKaleoFormsWebConfig,
 		portalWorkflowTaskWebConfig,
 		portletConfigurationCssWebConfig,
 		productNavigationProductMenuWeb,

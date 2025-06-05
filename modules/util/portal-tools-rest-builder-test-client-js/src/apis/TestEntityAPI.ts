@@ -29,6 +29,62 @@ export class TestEntityAPI {
 
 		/**
 		 * 
+				 * @param testEntityId
+				 * @param permanent
+		 * @param headers Optional custom request headers
+		 */
+		public async deleteTestEntity(
+						testEntityId: number,
+						permanent?: boolean,
+			headers?: {[name: string]: string},
+		): Promise<{
+				body?: any;
+			response: Response;
+		}> {
+
+			const path = this._basePath + "/test/v1.0/test-entities/{testEntityId}"
+						.replace("{testEntityId}",encodeURIComponent(testEntityId))
+								;
+
+			const queryParameters: any = {};
+
+						if (testEntityId === null || testEntityId === undefined) {
+							throw new Error("Required parameter testEntityId was null or undefined when calling deleteTestEntity.");
+						}
+
+						if (permanent !== undefined) {
+							queryParameters["permanent"] = ObjectSerializer.serialize(permanent, "boolean");
+						}
+
+			const queryString = Object.keys(queryParameters).length ?
+				"?" + new URLSearchParams(queryParameters).toString() :
+					"";
+
+			const response = await fetch(path + queryString, {
+				headers:
+					Object.assign({}, this._defaultHeaders
+					,headers || {}
+					),
+				method: "DELETE",
+			});
+
+			if (response.ok) {
+				const contentType = response.headers.get("content-type") || "";
+
+					if (contentType.includes("application/json")) {
+						return {body: await response.json(), response};
+					}
+					else {
+						return {body: await response.text(), response};
+					}
+			}
+			else {
+				throw new Error("HTTP Error " + response.status + ": " + response.statusText + ". " + await response.text());
+			}
+		}
+
+		/**
+		 * 
 		 * @param headers Optional custom request headers
 		 */
 		public async getTestEntitiesPage(
@@ -464,6 +520,56 @@ export class TestEntityAPI {
 							headers
 						);
 					}
+		/**
+		 * 
+				 	* @param testEntities
+		 * @param headers Optional custom request headers
+		 */
+		public async postTestEntityMultipartBulk(
+						testEntities?: Array<TestEntity>,
+			headers?: {[name: string]: string},
+		): Promise<{
+				body?: any;
+			response: Response;
+		}> {
+				let body;
+						const formData = new FormData();
+								formData.append("testEntities", JSON.stringify(ObjectSerializer.serialize(testEntities, "Array<TestEntity>")));
+						body = formData;
+
+			const path = this._basePath + "/test/v1.0/test-entities/multipart/bulk"
+;
+
+			const queryParameters: any = {};
+
+			const queryString = Object.keys(queryParameters).length ?
+				"?" + new URLSearchParams(queryParameters).toString() :
+					"";
+
+			const response = await fetch(path + queryString, {
+					body: body,
+				headers:
+					Object.assign({}, this._defaultHeaders
+					,headers || {}
+					),
+				method: "POST",
+			});
+
+			if (response.ok) {
+				const contentType = response.headers.get("content-type") || "";
+
+					if (contentType.includes("application/json")) {
+						return {body: await response.json(), response};
+					}
+					else {
+						return {body: await response.text(), response};
+					}
+			}
+			else {
+				throw new Error("HTTP Error " + response.status + ": " + response.statusText + ". " + await response.text());
+			}
+		}
+
 		/**
 		 * 
 				 * @param testEntityId

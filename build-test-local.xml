@@ -342,15 +342,30 @@ local.bundles.backup.file=${liferay.home.parent.dir}/bundles-master-${git.commit
 			replace="\1{test.batch.names[portal-release-acceptance]}"
 		/>
 
-		<replace
-			file="${project.dir}/test.properties"
-		>
-			<replacetoken><![CDATA[{test.batch.names[portal-release-acceptance]}]]></replacetoken>
-			<replacevalue><![CDATA[\
+		<if>
+			<equals arg1="${integration.suite.enabled}" arg2="true" />
+			<then>
+				<replace
+					file="${project.dir}/test.properties"
+				>
+					<replacetoken><![CDATA[{test.batch.names[portal-release-acceptance]}]]></replacetoken>
+					<replacevalue><![CDATA[\
 		functional-tomcat-postgresql163-jdk21_zulu,\
 		modules-integration-postgresql163,\
 		playwright-js-tomcat90-postgresql163]]></replacevalue>
-		</replace>
+				</replace>
+			</then>
+			<else>
+				<replace
+					file="${project.dir}/test.properties"
+				>
+					<replacetoken><![CDATA[{test.batch.names[portal-release-acceptance]}]]></replacetoken>
+					<replacevalue><![CDATA[\
+		functional-tomcat-postgresql163-jdk21_zulu,\
+		playwright-js-tomcat90-postgresql163]]></replacevalue>
+				</replace>
+			</else>
+		</if>
 
 		<replaceregexp
 			file="${project.dir}/test.properties"

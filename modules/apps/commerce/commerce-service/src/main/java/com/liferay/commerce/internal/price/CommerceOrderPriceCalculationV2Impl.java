@@ -128,6 +128,19 @@ public class CommerceOrderPriceCalculationV2Impl
 
 				subtotalDiscounted = subtotalDiscounted.subtract(
 					discountAmountCommerceMoney.getPrice());
+
+				BigDecimal subtotalTaxAmount = taxValueCommerceMoney.getPrice();
+
+				BigDecimal subtotalTaxValueDifference =
+					subtotalTaxAmount.multiply(
+						orderSubtotalCommerceDiscountValue.
+							getDiscountPercentage());
+
+				subtotalTaxValueDifference = subtotalTaxValueDifference.divide(
+					_ONE_HUNDRED);
+
+				totalTaxValue = totalTaxValue.subtract(
+					subtotalTaxValueDifference);
 			}
 
 			totalAmount = totalAmount.add(shippingAmount);

@@ -9,6 +9,9 @@ import com.liferay.change.tracking.constants.CTActionKeys;
 import com.liferay.change.tracking.constants.CTPortletKeys;
 import com.liferay.change.tracking.constants.CTRoleConstants;
 import com.liferay.change.tracking.model.CTCollection;
+import com.liferay.change.tracking.web.internal.util.PublicationsRegularRolesUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.instance.lifecycle.BasePortalInstanceLifecycleListener;
 import com.liferay.portal.instance.lifecycle.PortalInstanceLifecycleListener;
 import com.liferay.portal.kernel.log.Log;
@@ -27,6 +30,8 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.util.PropsUtil;
 
 import java.util.Arrays;
 
@@ -48,9 +53,52 @@ public class CTPortletPermissionPortalInstanceLifecycleListener
 					" permissions for publications roles");
 		}
 
+		_checkPublicationsRegularRoles(company);
+
 		_checkPublicationsReviewerRole(company);
 
 		_checkPublicationsUserRole(company.getCompanyId());
+	}
+
+	private void _checkPublicationsRegularRoles(Company company)
+		throws Exception {
+
+		for (String publicationsRegularRole :
+				PublicationsRegularRolesUtil.PUBLICATIONS_REGULAR_ROLES) {
+
+			Role role = _roleLocalService.fetchRole(
+				company.getCompanyId(), publicationsRegularRole);
+
+			if (role == null) {
+				User guestUser = company.getGuestUser();
+
+				role = _roleLocalService.addRole(
+					null, guestUser.getUserId(), null, 0,
+					publicationsRegularRole, null,
+					HashMapBuilder.put(
+						company.getLocale(),
+						PropsUtil.get(
+							StringBundler.concat(
+								"system.role.",
+								StringUtil.replace(
+									publicationsRegularRole, CharPool.SPACE,
+									CharPool.PERIOD),
+								".description"))
+					).build(),
+					RoleConstants.TYPE_REGULAR, null, null);
+			}
+
+			for (String actionId :
+					PublicationsRegularRolesUtil.getModelResourceActions(
+						publicationsRegularRole)) {
+
+				_resourcePermissionLocalService.addResourcePermission(
+					company.getCompanyId(), CTCollection.class.getName(),
+					ResourceConstants.SCOPE_COMPANY,
+					String.valueOf(company.getCompanyId()), role.getRoleId(),
+					actionId);
+			}
+		}
 	}
 
 	private void _checkPublicationsReviewerRole(Company company)
@@ -137,7 +185,7 @@ public class CTPortletPermissionPortalInstanceLifecycleListener
 		CTPortletPermissionPortalInstanceLifecycleListener.class);
 
 	@Reference(
-		target = "(javax.portlet.name=" + CTPortletKeys.PUBLICATIONS + ")"
+		target = "(jakarta.portlet.name=" + CTPortletKeys.PUBLICATIONS + ")"
 	)
 	private Portlet _portlet;
 

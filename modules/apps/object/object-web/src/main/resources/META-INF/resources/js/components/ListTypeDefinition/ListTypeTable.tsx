@@ -27,6 +27,7 @@ interface ItemData {
 	key: string;
 	name: {props: {id: number}};
 	name_i18n: LocalizedValue<string>;
+	system: boolean;
 }
 
 interface fdsItem {
@@ -79,7 +80,7 @@ export default function ListTypeTable({
 	) : null;
 }
 
-function getDataSetProps(
+export function getDataSetProps(
 	fireModal: (modalProps: IModalState) => void,
 	pickListId: number,
 	readOnly: boolean,
@@ -96,7 +97,9 @@ function getDataSetProps(
 				modalType: 'edit',
 				name_i18n: itemData.name_i18n,
 				readOnly,
-				system: values.system,
+				system: Liferay.FeatureFlags['LPD-24055']
+					? itemData.system
+					: values.system,
 			});
 		}
 
@@ -138,7 +141,10 @@ function getDataSetProps(
 		type: 'item',
 	};
 
-	const addItemMenu = readOnly || values?.system ? [] : [addButton];
+	const addItemMenu =
+		readOnly || (!Liferay.FeatureFlags['LPD-24055'] && values?.system)
+			? []
+			: [addButton];
 
 	return {
 		actionParameterName: '',

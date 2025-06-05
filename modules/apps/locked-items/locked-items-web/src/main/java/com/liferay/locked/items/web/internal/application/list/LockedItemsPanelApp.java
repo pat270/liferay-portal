@@ -25,7 +25,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = {
-		"panel.app.order:Integer=300",
+		"panel.app.order:Integer=350",
 		"panel.category.key=" + PanelCategoryKeys.SITE_ADMINISTRATION_CONFIGURATION
 	},
 	service = PanelApp.class
@@ -46,7 +46,8 @@ public class LockedItemsPanelApp extends BasePanelApp {
 	public boolean isShow(PermissionChecker permissionChecker, Group group)
 		throws PortalException {
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPD-11003") ||
+		if (!FeatureFlagManagerUtil.isEnabled(
+				group.getCompanyId(), "LPD-11003") ||
 			(_lockedItemsRendererRegistry.getLockedItemsRenderersCount() < 1) ||
 			group.isCompany() || _stagingGroupHelper.isLocalLiveGroup(group) ||
 			_stagingGroupHelper.isRemoteLiveGroup(group)) {
@@ -61,7 +62,7 @@ public class LockedItemsPanelApp extends BasePanelApp {
 	private LockedItemsRendererRegistry _lockedItemsRendererRegistry;
 
 	@Reference(
-		target = "(javax.portlet.name=" + LockedItemsPortletKeys.LOCKED_ITEMS + ")"
+		target = "(jakarta.portlet.name=" + LockedItemsPortletKeys.LOCKED_ITEMS + ")"
 	)
 	private Portlet _portlet;
 

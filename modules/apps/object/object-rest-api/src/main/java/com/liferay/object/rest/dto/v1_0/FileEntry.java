@@ -16,6 +16,12 @@ import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
+import jakarta.annotation.Generated;
+
+import jakarta.validation.Valid;
+
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 import java.io.Serializable;
 
 import java.util.Iterator;
@@ -23,12 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import javax.annotation.Generated;
-
-import javax.validation.Valid;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * @author Javier Gamarra
@@ -173,7 +173,7 @@ public class FileEntry implements Serializable {
 	@GraphQLField(
 		description = "optional field that specifies the source of the file to be downloaded, can be embedded with nestedFields (the format of the nested field must be `<attachment field name>.fileURL`)"
 	)
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String fileURL;
 
 	@JsonIgnore
@@ -338,6 +338,51 @@ public class FileEntry implements Serializable {
 
 	@JsonIgnore
 	private Supplier<String> _nameSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "optional field that specifies the preview URL of the file to be used, can be embedded with nestedFields (the format of the nested field must be `<attachment field name>.previewURL`)"
+	)
+	public String getPreviewURL() {
+		if (_previewURLSupplier != null) {
+			previewURL = _previewURLSupplier.get();
+
+			_previewURLSupplier = null;
+		}
+
+		return previewURL;
+	}
+
+	public void setPreviewURL(String previewURL) {
+		this.previewURL = previewURL;
+
+		_previewURLSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setPreviewURL(
+		UnsafeSupplier<String, Exception> previewURLUnsafeSupplier) {
+
+		_previewURLSupplier = () -> {
+			try {
+				return previewURLUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "optional field that specifies the preview URL of the file to be used, can be embedded with nestedFields (the format of the nested field must be `<attachment field name>.previewURL`)"
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String previewURL;
+
+	@JsonIgnore
+	private Supplier<String> _previewURLSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
@@ -547,6 +592,22 @@ public class FileEntry implements Serializable {
 			sb.append("\"");
 
 			sb.append(_escape(name));
+
+			sb.append("\"");
+		}
+
+		String previewURL = getPreviewURL();
+
+		if (previewURL != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"previewURL\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(previewURL));
 
 			sb.append("\"");
 		}

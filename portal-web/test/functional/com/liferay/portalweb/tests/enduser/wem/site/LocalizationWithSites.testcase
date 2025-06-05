@@ -78,12 +78,6 @@ definition {
 	test CannotRemoveSiteDefaultLanguageInInstanceSettings {
 		property portal.acceptance = "true";
 
-		task ("Add a widget page") {
-			JSONLayout.addPublicLayout(
-				groupName = "Test Site Name 1",
-				layoutName = "Test Page Name");
-		}
-
 		task ("Configure site languages") {
 			Site.openSiteSettingsAdmin(siteURLKey = "test-site-name-1");
 
@@ -189,7 +183,7 @@ definition {
 
 			ProductMenu.gotoPortlet(
 				category = "Generador del sitio",
-				portlet = "Páginas del sitio web");
+				portlet = "Páginas");
 
 			PagesAdmin.gotoPageEllipsisMenuItem(
 				menuItem = "Configurar",
@@ -497,7 +491,7 @@ definition {
 
 				ProductMenu.gotoPortlet(
 					category = "Generador del sitio",
-					portlet = "Páginas del sitio web");
+					portlet = "Páginas");
 
 				PagesAdmin.gotoPageEllipsisMenuItem(
 					menuItem = "Configurar",
@@ -525,7 +519,7 @@ definition {
 
 			ProductMenu.gotoPortlet(
 				category = "Configuración",
-				portlet = "Ajustes del sitio");
+				portlet = "Configuración del sitio web");
 
 			Site.configureCurrentLanguagesCP(
 				category = "Localización",

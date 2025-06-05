@@ -12,6 +12,7 @@ import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.configuration.metatype.definitions.ExtendedMetaTypeInformation;
@@ -48,6 +49,8 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PrefsProps;
 import com.liferay.portal.kernel.util.Props;
 
+import jakarta.portlet.PortletPreferences;
+
 import java.io.Serializable;
 
 import java.lang.reflect.Method;
@@ -60,8 +63,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-
-import javax.portlet.PortletPreferences;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -511,6 +512,9 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 
 				return null;
 			}
+			else if (bundleSymbolicName.startsWith("org.apache")) {
+				return null;
+			}
 
 			ExtendedMetaTypeInformation metaTypeInformation =
 				_extendedMetaTypeService.getMetaTypeInformation(bundle);
@@ -532,10 +536,12 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 					configurationBeanClass = bundle.loadClass(pid);
 				}
 				catch (ClassNotFoundException classNotFoundException) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(
-							"Class not found: " +
-								classNotFoundException.getMessage());
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Unable to find configuration interface with ",
+								"fully qualified class name \"", pid, "\""),
+							classNotFoundException);
 					}
 
 					continue;

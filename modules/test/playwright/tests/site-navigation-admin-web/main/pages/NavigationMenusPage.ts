@@ -5,6 +5,7 @@
 
 import {FrameLocator, Locator, Page} from '@playwright/test';
 
+import {PageEditorPage} from '../../../../pages/layout-content-page-editor-web/PageEditorPage';
 import {DisplayPageTemplatesPage} from '../../../../pages/layout-page-template-admin-web/DisplayPageTemplatesPage';
 import {clickAndExpectToBeVisible} from '../../../../utils/clickAndExpectToBeVisible';
 import {PORTLET_URLS} from '../../../../utils/portletUrls';
@@ -22,6 +23,7 @@ export class NavigationMenusPage {
 	readonly blogsModal: FrameLocator;
 	readonly categoriesModal: FrameLocator;
 	readonly displayTemplate: Locator;
+	readonly documentsModal: FrameLocator;
 	readonly journalArticleModal: FrameLocator;
 	readonly pagesModal: FrameLocator;
 	readonly previewButton: Locator;
@@ -35,7 +37,10 @@ export class NavigationMenusPage {
 		this.page = page;
 
 		this.getMenuItem = async (menuItemName: string) => {
-			return page.getByRole('menuitem', {name: menuItemName});
+			return page.getByRole('menuitem', {
+				exact: true,
+				name: menuItemName,
+			});
 		};
 		this.getModalListItem = async (itemName: string) => {
 			return page
@@ -59,6 +64,9 @@ export class NavigationMenusPage {
 			'iframe[title="Select Categories"]'
 		);
 		this.displayTemplate = page.getByLabel('Display Template');
+		this.documentsModal = page.frameLocator(
+			'iframe[title="Select Document"]'
+		);
 		this.journalArticleModal = page.frameLocator(
 			'iframe[title="Select Web Content Article"]'
 		);
@@ -86,15 +94,84 @@ export class NavigationMenusPage {
 
 		await this.page.waitForSelector('iframe', {state: 'attached'});
 
-		const blogItemButton = this.blogsModal.getByRole('button', {
-			name,
-		});
+		await this.blogsModal
+			.getByRole('button', {
+				name,
+			})
+			.click();
 
-		while (await blogItemButton.isVisible()) {
-			await blogItemButton.click();
-		}
+		await waitForAlert(
+			this.page,
+			'Success:1 Blogs Entry was added to this menu.'
+		);
+	}
+
+	async changeBlogItem(current: string, next: string) {
+		await this.page.getByText(current, {exact: true}).click();
+
+		await this.page.getByLabel('Item', {exact: true}).click();
+
+		await this.page.waitForSelector('iframe', {state: 'attached'});
+
+		await this.blogsModal.getByRole('button', {name: next}).click();
 
 		await this.page.waitForSelector('iframe', {state: 'detached'});
+
+		await this.saveButton.click();
+
+		await waitForAlert(
+			this.page,
+			'Success:Your request completed successfully.'
+		);
+	}
+
+	async addDocumentImageItem(imageName: string) {
+		await this.addMenuItemButton.click();
+
+		await (await this.getMenuItem('Document')).click();
+
+		await this.page.waitForSelector('iframe', {state: 'attached'});
+
+		await this.documentsModal
+			.getByRole('link', {name: 'Sites and Libraries'})
+			.click();
+
+		await this.documentsModal
+			.getByRole('link', {name: 'Liferay DXP'})
+			.click();
+
+		await this.documentsModal
+			.getByRole('link', {name: 'Provided by Liferay'})
+			.click();
+
+		await this.documentsModal.getByText(imageName).click();
+	}
+
+	async changeDocumentImageItem(current: string, next: string) {
+		await this.page.getByText(current, {exact: true}).click();
+
+		await this.page.getByLabel('Item', {exact: true}).click();
+
+		await this.documentsModal
+			.getByRole('link', {name: 'Sites and Libraries'})
+			.click();
+
+		await this.documentsModal
+			.getByRole('link', {name: 'Liferay DXP'})
+			.click();
+
+		await this.documentsModal
+			.getByRole('link', {name: 'Provided by Liferay'})
+			.click();
+
+		await this.documentsModal.getByText(next).click();
+
+		await this.saveButton.click();
+
+		await waitForAlert(
+			this.page,
+			'Success:Your request completed successfully.'
+		);
 	}
 
 	async addOrChangeIcon(iconName: string) {
@@ -103,6 +180,18 @@ export class NavigationMenusPage {
 		await this.page.getByLabel('Select ' + iconName + ' icon').click();
 
 		await this.saveButton.click();
+	}
+
+	async addPageItem(pageNames: string[]) {
+		await this.openAddPageModal();
+
+		for (const pageName of pageNames) {
+			await this.pagesModal.getByText(pageName, {exact: true}).click();
+		}
+
+		await this.selectButton.click();
+
+		await waitForAlert(this.page, 'Success');
 	}
 
 	async addSubmenuItem(submenuName: string) {
@@ -118,28 +207,36 @@ export class NavigationMenusPage {
 
 		await textBox.fill(submenuName);
 
-		const addButton = this.submenuModal.getByRole('button', {name: 'Add'});
+		await this.page.waitForTimeout(500);
 
-		await this.page.waitForTimeout(300);
+		await this.submenuModal.getByRole('button', {name: 'Add'}).click();
 
-		await addButton.click();
-
-		await this.page.waitForSelector('iframe', {state: 'detached'});
+		await waitForAlert(
+			this.page,
+			'Success:1 Submenu was added to this menu.'
+		);
 	}
 
-	async addURLItem(urlName: string, submenuItemName: string) {
-		await this.page
-			.locator('p.card-title')
-			.filter({hasText: submenuItemName})
-			.hover();
+	async addURLItem(urlName: string, submenuItemName?: string) {
+		if (submenuItemName) {
+			await this.page
+				.locator('p.card-title')
+				.filter({hasText: submenuItemName})
+				.hover();
 
-		await this.page
-			.getByLabel('View ' + submenuItemName + ' Options')
-			.click();
+			await this.page
+				.getByLabel('View ' + submenuItemName + ' Options')
+				.click();
 
-		await (await this.getMenuItem('Add Child')).hover();
+			await (await this.getMenuItem('Add Child')).hover();
 
-		await this.page.getByText('URL').nth(3).click();
+			await this.page.getByText('URL').nth(3).click();
+		}
+		else {
+			await this.addMenuItemButton.click();
+
+			await (await this.getMenuItem('URL')).click();
+		}
 
 		// Wait until the modal is fully loaded
 
@@ -155,11 +252,11 @@ export class NavigationMenusPage {
 
 		const addButton = this.urlModal.getByRole('button', {name: 'Add'});
 
-		await this.page.waitForTimeout(300);
+		await this.page.waitForTimeout(500);
 
 		await addButton.click();
 
-		await this.page.waitForSelector('iframe', {state: 'detached'});
+		await waitForAlert(this.page, 'Success:1 URL was added to this menu.');
 	}
 
 	async addWebContentArticleItem(name: string) {
@@ -169,16 +266,12 @@ export class NavigationMenusPage {
 
 		await this.page.waitForSelector('iframe', {state: 'attached'});
 
-		const journalArticleItemButton =
-			this.journalArticleModal.getByText(name);
+		await this.journalArticleModal.getByText(name).click();
 
-		await journalArticleItemButton.click();
-
-		while (await journalArticleItemButton.isVisible()) {
-			await journalArticleItemButton.click();
-		}
-
-		await this.page.waitForSelector('iframe', {state: 'detached'});
+		await waitForAlert(
+			this.page,
+			'Success:1 Web Content Article was added to this menu.'
+		);
 	}
 
 	async addWidgetToPageTemplate(templateName: string) {
@@ -186,22 +279,23 @@ export class NavigationMenusPage {
 			this.page
 		);
 
+		const pageEditorPage = new PageEditorPage(this.page);
+
 		await displayPageTemplatesPage.editTemplate(templateName);
 
-		await this.page.getByLabel('Search Fragments and Widgets').click();
+		await pageEditorPage.addFragment(
+			'Content Display',
+			'Display Page Content'
+		);
 
-		await this.page
-			.getByLabel('Search Fragments and Widgets')
-			.fill('display page content');
+		await pageEditorPage.waitForChangesSaved();
 
-		await this.page.waitForTimeout(300);
+		await pageEditorPage.publishButton.click();
 
-		await (await this.getMenuItem('Display Page Content Add'))
-			.locator('div')
-			.first()
-			.dragTo(this.page.locator('#page-editor div').nth(1));
-
-		await this.page.getByLabel('Publish').click();
+		await waitForAlert(
+			this.page,
+			'Success:The display page template was published successfully.'
+		);
 
 		await displayPageTemplatesPage.markAsDefault(templateName);
 	}
@@ -248,5 +342,29 @@ export class NavigationMenusPage {
 		});
 
 		await this.vocabulariesModal.getByPlaceholder('Search').waitFor();
+	}
+
+	async translateName(itemName: string, useCustomName = false) {
+		await this.page.getByText(itemName).click();
+
+		if (useCustomName) {
+			await this.page.getByText('Use Custom Name').click();
+		}
+
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: this.page.locator("a[data-languageId='es_ES']"),
+			trigger: this.page.getByText('en-US', {exact: true}),
+		});
+
+		await this.page
+			.locator(
+				'input[id="_com_liferay_site_navigation_admin_web_portlet_SiteNavigationAdminPortlet_name"]'
+			)
+			.fill(`${itemName} Spanish`);
+
+		await this.page.getByRole('button', {name: 'Save'}).click();
+
+		await waitForAlert(this.page);
 	}
 }

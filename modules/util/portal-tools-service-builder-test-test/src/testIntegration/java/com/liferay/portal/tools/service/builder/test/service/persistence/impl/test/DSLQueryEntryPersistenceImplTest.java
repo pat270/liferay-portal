@@ -8,7 +8,9 @@ package com.liferay.portal.tools.service.builder.test.service.persistence.impl.t
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.sql.dsl.expression.Expression;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.petra.sql.dsl.spi.expression.NullExpression;
 import com.liferay.petra.sql.dsl.spi.expression.Scalar;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -323,14 +325,21 @@ public class DSLQueryEntryPersistenceImplTest {
 	}
 
 	@Test
-	public void testDSLQueryWithAlias() {
+	public void testDSLQueryWithCaseWhenThen() {
 		Assert.assertEquals(
-			Arrays.asList(0L, 1L, 1L),
+			Arrays.asList(0.5F, 1.0F, 1.5F),
 			_dslQueryEntryPersistence.dslQuery(
 				DSLQueryFactoryUtil.select(
-					DSLFunctionFactoryUtil.divide(
-						DSLQueryStatusEntryTable.INSTANCE.dslQueryStatusEntryId,
-						new Scalar<>(2L)
+					DSLFunctionFactoryUtil.caseWhenThen(
+						DSLQueryStatusEntryTable.INSTANCE.dslQueryStatusEntryId.
+							eq(new Scalar<>(0L)),
+						(Expression<Float>)
+							(Expression<?>)NullExpression.INSTANCE
+					).elseEnd(
+						DSLFunctionFactoryUtil.floatDivide(
+							DSLQueryStatusEntryTable.INSTANCE.
+								dslQueryStatusEntryId,
+							new Scalar<>(2L))
 					).as(
 						"alias"
 					)
@@ -340,15 +349,19 @@ public class DSLQueryEntryPersistenceImplTest {
 					DSLQueryStatusEntryTable.INSTANCE.dslQueryStatusEntryId.
 						ascending()
 				)));
+	}
+
+	@Test
+	public void testDSLQueryWithDivide() {
 		Assert.assertEquals(
-			Arrays.asList(0.5, 1.0, 1.5),
+			Arrays.asList(0L, 1L, 1L),
 			_dslQueryEntryPersistence.dslQuery(
 				DSLQueryFactoryUtil.select(
 					DSLFunctionFactoryUtil.divide(
 						DSLQueryStatusEntryTable.INSTANCE.dslQueryStatusEntryId,
 						new Scalar<>(2L)
 					).as(
-						"alias", Double.class
+						"alias"
 					)
 				).from(
 					DSLQueryStatusEntryTable.INSTANCE
@@ -383,6 +396,26 @@ public class DSLQueryEntryPersistenceImplTest {
 					DSLFunctionFactoryUtil.subtract(
 						new Scalar<>(3L),
 						DSLQueryStatusEntryTable.INSTANCE.dslQueryStatusEntryId
+					).as(
+						"alias"
+					)
+				).from(
+					DSLQueryStatusEntryTable.INSTANCE
+				).orderBy(
+					DSLQueryStatusEntryTable.INSTANCE.dslQueryStatusEntryId.
+						ascending()
+				)));
+	}
+
+	@Test
+	public void testDSLQueryWithFloatDivide() {
+		Assert.assertEquals(
+			Arrays.asList(0.5F, 1.0F, 1.5F),
+			_dslQueryEntryPersistence.dslQuery(
+				DSLQueryFactoryUtil.select(
+					DSLFunctionFactoryUtil.floatDivide(
+						DSLQueryStatusEntryTable.INSTANCE.dslQueryStatusEntryId,
+						new Scalar<>(2L)
 					).as(
 						"alias"
 					)

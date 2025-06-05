@@ -11,7 +11,13 @@ import React, {
 	useReducer,
 } from 'react';
 
-import {Field, MultiselectField, SingleSelectField} from '../utils/field';
+import actionGeneratesChanges from '../utils/actionGeneratesChanges';
+import {
+	Field,
+	MultiselectField,
+	SingleSelectField,
+	getDefaultField,
+} from '../utils/field';
 import findAvailableFieldName from '../utils/findAvailableFieldName';
 import getRandomId from '../utils/getRandomId';
 import getUuid from '../utils/getUuid';
@@ -48,6 +54,7 @@ export type State = {
 	selection: Uuid[];
 	spaces: Spaces;
 	status: Status;
+	unsavedChanges: boolean;
 	uuid: Uuid;
 };
 
@@ -68,6 +75,7 @@ const INITIAL_STATE: State = {
 	selection: [],
 	spaces: [],
 	status: 'new',
+	unsavedChanges: false,
 	uuid: getUuid(),
 };
 
@@ -143,6 +151,10 @@ export type Action =
 	| ValidateAction;
 
 function reducer(state: State, action: Action): State {
+	if (actionGeneratesChanges(action.type)) {
+		state = {...state, unsavedChanges: true};
+	}
+
 	switch (action.type) {
 		case 'add-field': {
 			const {field} = action;
@@ -248,6 +260,7 @@ function reducer(state: State, action: Action): State {
 					Array.from(state.fields.values()).map((field) => field.uuid)
 				),
 				status: 'published' as Status,
+				unsavedChanges: false,
 			};
 
 			if (action.id) {
@@ -392,7 +405,7 @@ function initState(state: State) {
 		return state;
 	}
 
-	return {...state, erc: getRandomId()};
+	return {...state, erc: getRandomId(), fields: getDefaultFields()};
 }
 
 const StateContext = createContext<{dispatch: Dispatch<Action>; state: State}>({
@@ -428,6 +441,34 @@ function useSelector<T>(selector: (state: State) => T) {
 
 function useStateDispatch() {
 	return useContext(StateContext).dispatch;
+}
+
+function getDefaultFields() {
+	const url = new URL(window.location.href);
+
+	const type = url.searchParams.get('objectFolderExternalReferenceCode');
+
+	const fields = new Map();
+
+	const title = getDefaultField({
+		label: Liferay.Language.get('title'),
+		name: 'title',
+		type: 'text',
+	});
+
+	fields.set(title.uuid, title);
+
+	if (type === 'L_CMS_FILE_TYPES') {
+		const file = getDefaultField({
+			label: Liferay.Language.get('file'),
+			name: 'file',
+			type: 'upload',
+		});
+
+		fields.set(file.uuid, file);
+	}
+
+	return fields;
 }
 
 export {StateContext, StateContextProvider, useSelector, useStateDispatch};

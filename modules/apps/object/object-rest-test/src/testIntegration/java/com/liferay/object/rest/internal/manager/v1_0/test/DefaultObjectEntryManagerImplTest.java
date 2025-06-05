@@ -43,6 +43,7 @@ import com.liferay.object.exception.ObjectDefinitionAccountEntryRestrictedExcept
 import com.liferay.object.exception.ObjectEntryDefaultLanguageIdException;
 import com.liferay.object.exception.ObjectEntryValuesException;
 import com.liferay.object.exception.ObjectRelationshipDeletionTypeException;
+import com.liferay.object.exception.RequiredObjectEntryVersionException;
 import com.liferay.object.exception.RequiredObjectRelationshipException;
 import com.liferay.object.field.builder.AggregationObjectFieldBuilder;
 import com.liferay.object.field.builder.AttachmentObjectFieldBuilder;
@@ -101,6 +102,7 @@ import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.scheduler.TimeUnit;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
@@ -156,6 +158,7 @@ import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.SearchResponse;
 import com.liferay.portal.search.searcher.Searcher;
 import com.liferay.portal.security.script.management.test.rule.ScriptManagementConfigurationTestRule;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -213,7 +216,12 @@ import org.junit.runner.RunWith;
 /**
  * @author Feliphe Marinho
  */
-@FeatureFlags({"LPD-32050", "LPD-34594", "LPS-164801", "LPS-172017"})
+@FeatureFlags(
+	featureFlags = {
+		@FeatureFlag(value = "LPD-32050"), @FeatureFlag(value = "LPD-34594"),
+		@FeatureFlag(value = "LPS-164801"), @FeatureFlag(value = "LPS-172017")
+	}
+)
 @RunWith(Arquillian.class)
 public class DefaultObjectEntryManagerImplTest
 	extends BaseObjectEntryManagerImplTestCase {
@@ -700,7 +708,7 @@ public class DefaultObjectEntryManagerImplTest
 		_objectDefinition3 =
 			objectDefinitionLocalService.addCustomObjectDefinition(
 				adminUser.getUserId(), 0, null, false, false, true, true, false,
-				false,
+				false, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -1096,6 +1104,43 @@ public class DefaultObjectEntryManagerImplTest
 					}
 				},
 				ObjectDefinitionConstants.SCOPE_COMPANY));
+	}
+
+	@Test
+	public void testAddObjectEntryWithAccountEntryRestricted3()
+		throws Exception {
+
+		// Account entry restricted with implicit role Organization User
+
+		AccountEntry accountEntry = _addAccountEntry();
+
+		Organization organization = OrganizationTestUtil.addOrganization();
+
+		_addAccountEntryOrganizationRel(accountEntry, organization);
+
+		_user = _addUser();
+
+		_organizationLocalService.addUserOrganization(
+			_user.getUserId(), organization.getOrganizationId());
+
+		Role role = _roleLocalService.getRole(
+			companyId, RoleConstants.ORGANIZATION_USER);
+
+		_addResourcePermission(
+			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition3, role);
+
+		Assert.assertNotNull(_addObjectEntry(accountEntry));
+
+		_removeResourcePermission(
+			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition3, role);
+
+		AssertUtils.assertFailure(
+			PrincipalException.MustHavePermission.class,
+			StringBundler.concat(
+				"User ", _user.getUserId(),
+				" must have ADD_OBJECT_ENTRY permission for ",
+				_objectDefinition3.getResourceName(), StringPool.SPACE),
+			() -> _addObjectEntry(accountEntry));
 	}
 
 	@Test
@@ -2003,7 +2048,8 @@ public class DefaultObjectEntryManagerImplTest
 				listTypeDefinition.getListTypeDefinitionId(),
 				RandomTestUtil.randomString(),
 				Collections.singletonMap(
-					LocaleUtil.US, RandomTestUtil.randomString()));
+					LocaleUtil.US, RandomTestUtil.randomString()),
+				listTypeDefinition.isSystem());
 
 		ListEntry listEntry = new ListEntry() {
 			{
@@ -2153,6 +2199,42 @@ public class DefaultObjectEntryManagerImplTest
 		}
 	}
 
+	@FeatureFlag("LPD-17564")
+	@Test
+	public void testAddObjectEntryWithScheduledObjectFields() throws Exception {
+		ObjectDefinition objectDefinition = _createObjectDefinition(
+			Collections.singletonList(
+				new TextObjectFieldBuilder(
+				).labelMap(
+					LocalizedMapUtil.getLocalizedMap(
+						RandomTestUtil.randomString())
+				).name(
+					"textObjectFieldName"
+				).build()));
+
+		Date date = new Date(
+			System.currentTimeMillis() + TimeUnit.DAY.toMillis(1));
+
+		ObjectEntry objectEntry = _defaultObjectEntryManager.addObjectEntry(
+			_simpleDTOConverterContext, objectDefinition,
+			new ObjectEntry() {
+				{
+					setDisplayDate(date);
+					setExpirationDate(date);
+					setProperties(
+						HashMapBuilder.<String, Object>put(
+							"textObjectFieldName", RandomTestUtil.randomString()
+						).build());
+					setReviewDate(date);
+				}
+			},
+			null);
+
+		Assert.assertEquals(date, objectEntry.getDisplayDate());
+		Assert.assertEquals(date, objectEntry.getExpirationDate());
+		Assert.assertEquals(date, objectEntry.getReviewDate());
+	}
+
 	@Test
 	public void testAddObjectEntryWithStaticObjectFieldValues()
 		throws Exception {
@@ -2197,11 +2279,16 @@ public class DefaultObjectEntryManagerImplTest
 			});
 	}
 
-	@FeatureFlags("LPD-21926")
+	@FeatureFlag("LPD-21926")
 	@Test
 	public void testAddOrUpdateObjectEntryWithFriendlyURL() throws Exception {
 		ObjectDefinition objectDefinition =
 			ObjectDefinitionTestUtil.publishObjectDefinition();
+
+		objectDefinition.setFriendlyURLSeparator("test");
+
+		objectDefinition = objectDefinitionLocalService.updateObjectDefinition(
+			objectDefinition);
 
 		ObjectEntry objectEntry = _defaultObjectEntryManager.addObjectEntry(
 			_simpleDTOConverterContext, objectDefinition,
@@ -2402,6 +2489,47 @@ public class DefaultObjectEntryManagerImplTest
 	}
 
 	@Test
+	public void testCopyObjectEntryByVersion() throws Exception {
+		_enableObjectEntryVersioning();
+
+		ObjectEntry objectEntry1 = new ObjectEntry() {
+			{
+				externalReferenceCode = RandomTestUtil.randomString();
+				keywords = new String[] {RandomTestUtil.randomString()};
+				properties = HashMapBuilder.<String, Object>put(
+					"textObjectFieldName", RandomTestUtil.randomString()
+				).build();
+				systemProperties = new SystemProperties() {
+					{
+						version = new Version() {
+							{
+								number = 1;
+							}
+						};
+					}
+				};
+			}
+		};
+
+		objectEntry1 = _defaultObjectEntryManager.addObjectEntry(
+			dtoConverterContext, _objectDefinition1, objectEntry1,
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		objectEntry1 = _updateObjectEntryVersion(objectEntry1, 2);
+
+		ObjectEntry objectEntry2 =
+			_defaultObjectEntryManager.copyObjectEntryByVersion(
+				dtoConverterContext, _objectDefinition1, objectEntry1.getId(),
+				2);
+
+		assertEquals(
+			_defaultObjectEntryManager.getObjectEntryByVersion(
+				dtoConverterContext, objectEntry1.getExternalReferenceCode(),
+				_objectDefinition1, 2),
+			objectEntry2);
+	}
+
+	@Test
 	public void testDeleteObjectEntry() throws Exception {
 		ObjectDefinition objectDefinition1 = _createObjectDefinition(
 			Collections.singletonList(
@@ -2543,6 +2671,82 @@ public class DefaultObjectEntryManagerImplTest
 			objectDefinition1.getObjectDefinitionId());
 		objectDefinitionLocalService.deleteObjectDefinition(
 			objectDefinition2.getObjectDefinitionId());
+	}
+
+	@Test
+	public void testDeleteObjectEntryVersion() throws Exception {
+		_enableObjectEntryVersioning();
+
+		ObjectEntry objectEntry = new ObjectEntry() {
+			{
+				externalReferenceCode = RandomTestUtil.randomString();
+				keywords = new String[] {RandomTestUtil.randomString()};
+				properties = HashMapBuilder.<String, Object>put(
+					"textObjectFieldName", RandomTestUtil.randomString()
+				).build();
+				systemProperties = new SystemProperties() {
+					{
+						version = new Version() {
+							{
+								number = 1;
+							}
+						};
+					}
+				};
+			}
+		};
+
+		objectEntry = _defaultObjectEntryManager.addObjectEntry(
+			dtoConverterContext, _objectDefinition1, objectEntry,
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		assertEquals(
+			_defaultObjectEntryManager.getObjectEntryByVersion(
+				dtoConverterContext, objectEntry.getExternalReferenceCode(),
+				_objectDefinition1, 1),
+			objectEntry);
+
+		long objectEntryId = objectEntry.getId();
+
+		AssertUtils.assertFailure(
+			RequiredObjectEntryVersionException.MustHaveOneVersion.class,
+			"At least one version must remain",
+			() -> _defaultObjectEntryManager.deleteObjectEntryByVersion(
+				_objectDefinition1, objectEntryId, 1));
+
+		objectEntry = _updateObjectEntryVersion(objectEntry, 2);
+
+		assertEquals(
+			_defaultObjectEntryManager.getObjectEntryByVersion(
+				dtoConverterContext, objectEntry.getExternalReferenceCode(),
+				_objectDefinition1, 2),
+			objectEntry);
+
+		Assert.assertEquals(
+			2,
+			_defaultObjectEntryManager.getVersionedObjectEntries(
+				dtoConverterContext, objectEntry.getExternalReferenceCode(),
+				_objectDefinition1, null
+			).getItems(
+			).size());
+
+		AssertUtils.assertFailure(
+			RequiredObjectEntryVersionException.MustNotDeleteLatestVersion.
+				class,
+			"The latest version cannot be deleted",
+			() -> _defaultObjectEntryManager.deleteObjectEntryByVersion(
+				_objectDefinition1, objectEntryId, 2));
+
+		_defaultObjectEntryManager.deleteObjectEntryByVersion(
+			_objectDefinition1, objectEntry.getId(), 1);
+
+		Assert.assertEquals(
+			1,
+			_defaultObjectEntryManager.getVersionedObjectEntries(
+				dtoConverterContext, objectEntry.getExternalReferenceCode(),
+				_objectDefinition1, null
+			).getItems(
+			).size());
 	}
 
 	@Test
@@ -2825,6 +3029,86 @@ public class DefaultObjectEntryManagerImplTest
 
 		_testDeleteObjectEntryWithAccountEntryRestricted2(
 			ActionKeys.VIEW, tree);
+	}
+
+	@FeatureFlag("LPD-17564")
+	@Test
+	public void testExpireObjectEntryByVersion() throws Exception {
+		_enableObjectEntryVersioning();
+
+		String objectEntryExternalReferenceCode = RandomTestUtil.randomString();
+
+		_defaultObjectEntryManager.addObjectEntry(
+			dtoConverterContext, _objectDefinition1,
+			new ObjectEntry() {
+				{
+					externalReferenceCode = objectEntryExternalReferenceCode;
+					keywords = new String[] {RandomTestUtil.randomString()};
+					properties = HashMapBuilder.<String, Object>put(
+						"textObjectFieldName", RandomTestUtil.randomString()
+					).build();
+					systemProperties = new SystemProperties() {
+						{
+							version = new Version() {
+								{
+									number = 1;
+								}
+							};
+						}
+					};
+				}
+			},
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		_defaultObjectEntryManager.updateObjectEntry(
+			TestPropsValues.getCompanyId(), dtoConverterContext,
+			objectEntryExternalReferenceCode, _objectDefinition1,
+			new ObjectEntry() {
+				{
+					keywords = new String[] {RandomTestUtil.randomString()};
+					properties = HashMapBuilder.<String, Object>put(
+						"textObjectFieldName", RandomTestUtil.randomString()
+					).build();
+					systemProperties = new SystemProperties() {
+						{
+							version = new Version() {
+								{
+									number = 2;
+								}
+							};
+						}
+					};
+				}
+			},
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		ObjectEntry objectEntry =
+			_defaultObjectEntryManager.expireObjectEntryByVersion(
+				dtoConverterContext, objectEntryExternalReferenceCode,
+				_objectDefinition1, 1);
+
+		AssertUtils.assertEquals(
+			WorkflowConstants.STATUS_EXPIRED,
+			objectEntry.getStatus(
+			).getCode());
+
+		objectEntry = _defaultObjectEntryManager.expireObjectEntryByVersion(
+			dtoConverterContext, objectEntryExternalReferenceCode,
+			_objectDefinition1, 2);
+
+		AssertUtils.assertEquals(
+			WorkflowConstants.STATUS_EXPIRED,
+			objectEntry.getStatus(
+			).getCode());
+
+		objectEntry = _defaultObjectEntryManager.getObjectEntry(
+			companyId, _simpleDTOConverterContext,
+			objectEntryExternalReferenceCode, _objectDefinition1, null);
+
+		AssertUtils.assertEquals(
+			WorkflowConstants.STATUS_EXPIRED,
+			objectEntry.getStatus(
+			).getCode());
 	}
 
 	@Test
@@ -3638,6 +3922,11 @@ public class DefaultObjectEntryManagerImplTest
 				"search", fileEntry.getTitle()
 			).build(),
 			childObjectEntry1);
+		testGetObjectEntries(
+			HashMapBuilder.put(
+				"search", StringUtil.toLowerCase(fileEntry.getTitle())
+			).build(),
+			childObjectEntry1);
 
 		// "Starts with" expression
 
@@ -4098,14 +4387,10 @@ public class DefaultObjectEntryManagerImplTest
 			1, String.valueOf(parentObjectEntry2.getId()), page);
 	}
 
-	@FeatureFlags("LPD-17564")
+	@FeatureFlag("LPD-17564")
 	@Test
 	public void testGetObjectEntryByVersion() throws Exception {
-		_objectDefinition1.setEnableObjectEntryVersioning(true);
-
-		_objectDefinition1 =
-			objectDefinitionLocalService.updateObjectDefinition(
-				_objectDefinition1);
+		_enableObjectEntryVersioning();
 
 		ObjectEntry objectEntry1 = new ObjectEntry() {
 			{
@@ -4471,14 +4756,10 @@ public class DefaultObjectEntryManagerImplTest
 		Assert.assertEquals(objectEntries.toString(), 1, objectEntries.size());
 	}
 
-	@FeatureFlags("LPD-17564")
+	@FeatureFlag("LPD-17564")
 	@Test
 	public void testGetVersionedObjectEntries() throws Exception {
-		_objectDefinition1.setEnableObjectEntryVersioning(true);
-
-		_objectDefinition1 =
-			objectDefinitionLocalService.updateObjectDefinition(
-				_objectDefinition1);
+		_enableObjectEntryVersioning();
 
 		ObjectEntry objectEntry1 = new ObjectEntry() {
 			{
@@ -4590,7 +4871,8 @@ public class DefaultObjectEntryManagerImplTest
 							listTypeDefinition.getListTypeDefinitionId(),
 							RandomTestUtil.randomString(),
 							Collections.singletonMap(
-								LocaleUtil.US, RandomTestUtil.randomString()));
+								LocaleUtil.US, RandomTestUtil.randomString()),
+							listTypeDefinition.isSystem());
 
 					return Collections.singletonList(
 						new ListEntry() {
@@ -4994,14 +5276,10 @@ public class DefaultObjectEntryManagerImplTest
 			"Edited", objectEntry.getPropertyValue("textObjectFieldName"));
 	}
 
-	@FeatureFlags("LPD-17564")
+	@FeatureFlag("LPD-17564")
 	@Test
 	public void testRestoreObjectEntryByVersion() throws Exception {
-		_objectDefinition1.setEnableObjectEntryVersioning(true);
-
-		_objectDefinition1 =
-			objectDefinitionLocalService.updateObjectDefinition(
-				_objectDefinition1);
+		_enableObjectEntryVersioning();
 
 		ObjectEntry objectEntry1 = new ObjectEntry() {
 			{
@@ -5809,6 +6087,76 @@ public class DefaultObjectEntryManagerImplTest
 			});
 	}
 
+	@FeatureFlag("LPD-17564")
+	@Test
+	public void testUpdateObjectEntryWithScheduledObjectFields()
+		throws Exception {
+
+		ObjectDefinition objectDefinition = _createObjectDefinition(
+			Collections.singletonList(
+				new TextObjectFieldBuilder(
+				).labelMap(
+					LocalizedMapUtil.getLocalizedMap(
+						RandomTestUtil.randomString())
+				).name(
+					"textObjectFieldName"
+				).build()));
+
+		ObjectEntry objectEntry = _defaultObjectEntryManager.addObjectEntry(
+			_simpleDTOConverterContext, objectDefinition,
+			new ObjectEntry() {
+				{
+					setDisplayDate(new Date());
+					setExpirationDate(new Date());
+					setProperties(
+						HashMapBuilder.<String, Object>put(
+							"textObjectFieldName", RandomTestUtil.randomString()
+						).build());
+					setReviewDate(new Date());
+				}
+			},
+			null);
+
+		Date date = new Date(
+			System.currentTimeMillis() + TimeUnit.DAY.toMillis(1));
+
+		objectEntry = _defaultObjectEntryManager.updateObjectEntry(
+			_simpleDTOConverterContext, objectDefinition, objectEntry.getId(),
+			new ObjectEntry() {
+				{
+					setDisplayDate(date);
+					setExpirationDate(date);
+					setProperties(
+						HashMapBuilder.<String, Object>put(
+							"textObjectFieldName", RandomTestUtil.randomString()
+						).build());
+					setReviewDate(date);
+				}
+			});
+
+		Assert.assertEquals(date, objectEntry.getDisplayDate());
+		Assert.assertEquals(date, objectEntry.getExpirationDate());
+		Assert.assertEquals(date, objectEntry.getReviewDate());
+
+		objectEntry = _defaultObjectEntryManager.updateObjectEntry(
+			_simpleDTOConverterContext, objectDefinition, objectEntry.getId(),
+			new ObjectEntry() {
+				{
+					setDisplayDate((Date)null);
+					setExpirationDate((Date)null);
+					setProperties(
+						HashMapBuilder.<String, Object>put(
+							"textObjectFieldName", RandomTestUtil.randomString()
+						).build());
+					setReviewDate((Date)null);
+				}
+			});
+
+		Assert.assertNull(objectEntry.getDisplayDate());
+		Assert.assertNull(objectEntry.getExpirationDate());
+		Assert.assertNull(objectEntry.getReviewDate());
+	}
+
 	@Rule
 	public TestName testName = new TestName();
 
@@ -6132,7 +6480,8 @@ public class DefaultObjectEntryManagerImplTest
 				listTypeDefinition.getListTypeDefinitionId(),
 				RandomTestUtil.randomString(),
 				Collections.singletonMap(
-					LocaleUtil.US, RandomTestUtil.randomString()));
+					LocaleUtil.US, RandomTestUtil.randomString()),
+				listTypeDefinition.isSystem());
 
 		return listTypeEntry.getKey();
 	}
@@ -6625,7 +6974,7 @@ public class DefaultObjectEntryManagerImplTest
 		ObjectDefinition objectDefinition =
 			objectDefinitionLocalService.addCustomObjectDefinition(
 				adminUser.getUserId(), 0, null, false, false, true, true, false,
-				false,
+				false, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -6686,6 +7035,13 @@ public class DefaultObjectEntryManagerImplTest
 			deleteAccountEntryOrganizationRel(
 				accountEntry.getAccountEntryId(),
 				organization.getOrganizationId());
+	}
+
+	private ObjectDefinition _enableObjectEntryVersioning() {
+		_objectDefinition1.setEnableObjectEntryVersioning(true);
+
+		return objectDefinitionLocalService.updateObjectDefinition(
+			_objectDefinition1);
 	}
 
 	private Long _getAttachmentObjectFieldValue() throws Exception {
@@ -7155,6 +7511,34 @@ public class DefaultObjectEntryManagerImplTest
 					properties = new HashMap<>(values);
 				}
 			});
+	}
+
+	private ObjectEntry _updateObjectEntryVersion(
+			ObjectEntry objectEntry, int versionNumber)
+		throws Exception {
+
+		return _defaultObjectEntryManager.updateObjectEntry(
+			TestPropsValues.getCompanyId(), dtoConverterContext,
+			objectEntry.getExternalReferenceCode(), _objectDefinition1,
+			new ObjectEntry() {
+				{
+					externalReferenceCode = RandomTestUtil.randomString();
+					keywords = new String[] {RandomTestUtil.randomString()};
+					properties = HashMapBuilder.<String, Object>put(
+						"textObjectFieldName", RandomTestUtil.randomString()
+					).build();
+					systemProperties = new SystemProperties() {
+						{
+							version = new Version() {
+								{
+									number = versionNumber;
+								}
+							};
+						}
+					};
+				}
+			},
+			ObjectDefinitionConstants.SCOPE_COMPANY);
 	}
 
 	private static DefaultObjectEntryManager _defaultObjectEntryManager;

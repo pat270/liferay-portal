@@ -133,6 +133,14 @@ test(
 			name,
 		});
 
+		await editVocabularyPage.multiSelectToggle.click();
+
+		await editVocabularyPage.changeVisibility('Private');
+
+		await editVocabularyPage.assetTypesButton.click();
+
+		await editVocabularyPage.selectAssetTypes('Blog');
+
 		await clickAndExpectToBeVisible({
 			target: page.getByText(
 				`Success:${name} was published successfully.`
@@ -149,12 +157,34 @@ test(
 
 		await expect(page.getByText(`Edit ${name}`)).toBeVisible();
 
+		await expect(editVocabularyPage.multiSelectToggle).not.toBeChecked();
+
+		await expect(editVocabularyPage.visibilitySelector).toBeDisabled();
+
+		await expect(editVocabularyPage.visibilitySelector).toContainText(
+			'Private'
+		);
+
+		const spacesInputLocator = page
+			.locator('.categorization-spaces .input-group-item span')
+			.nth(1);
+
+		await expect(spacesInputLocator).toContainText('All Spaces');
+
 		const newName = `Vocabulary${getRandomInt()}`;
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
 			name: newName,
 		});
+
+		await editVocabularyPage.assetTypesButton.click();
+
+		const assetTypesInputLocator = page
+			.locator('.input-group-item span')
+			.nth(1);
+
+		await expect(assetTypesInputLocator).toContainText('Blog');
 
 		await clickAndExpectToBeVisible({
 			target: page.getByText(
@@ -168,6 +198,100 @@ test(
 );
 
 test(
+	'Validate change asset types when saving',
+	{tag: '@LPD-52591'},
+	async ({editVocabularyPage, page, vocabulariesPage}) => {
+		editVocabularyPage.goto();
+
+		const name = `Vocabulary${getRandomInt()}`;
+
+		await editVocabularyPage.changeGeneralInfo({
+			description: getRandomString(),
+			name,
+		});
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText(
+				`Success:${name} was published successfully.`
+			),
+			trigger: editVocabularyPage.saveButton,
+		});
+
+		const newVocabRow = vocabulariesPage.getItem(name);
+		await expect(newVocabRow).toBeVisible();
+
+		const newVocabualry = page.getByRole('link', {name});
+
+		await newVocabualry.click();
+
+		await expect(page.getByText(`Edit ${name}`)).toBeVisible();
+
+		await editVocabularyPage.assetTypesButton.click();
+
+		await editVocabularyPage.selectAssetTypes('Blog');
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText('Confirm Asset Type Change'),
+			trigger: editVocabularyPage.saveButton,
+		});
+
+		const modalSaveButton = page.locator('.modal .btn-primary');
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText(`Success:${name} was updated successfully.`),
+			trigger: modalSaveButton,
+		});
+	}
+);
+
+test(
+	'Validate change spaces when saving',
+	{tag: '@LPD-52592'},
+	async ({editVocabularyPage, page, vocabulariesPage}) => {
+		editVocabularyPage.goto();
+
+		const name = `Vocabulary${getRandomInt()}`;
+
+		await editVocabularyPage.changeGeneralInfo({
+			description: getRandomString(),
+			name,
+		});
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText(
+				`Success:${name} was published successfully.`
+			),
+			trigger: editVocabularyPage.saveButton,
+		});
+
+		const newVocabRow = vocabulariesPage.getItem(name);
+		await expect(newVocabRow).toBeVisible();
+
+		const newVocabualry = page.getByRole('link', {name});
+
+		await newVocabualry.click();
+
+		await expect(page.getByText(`Edit ${name}`)).toBeVisible();
+
+		const spaceName = 'Default';
+
+		await editVocabularyPage.selectSpaces(spaceName);
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText('Confirm Space Change'),
+			trigger: editVocabularyPage.saveButton,
+		});
+
+		const modalSaveButton = page.locator('.modal .btn-primary');
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText(`Success:${name} was updated successfully.`),
+			trigger: modalSaveButton,
+		});
+	}
+);
+
+test(
 	'Validate vocabulary inputs when saving',
 	{tag: '@LPD-32750'},
 	async ({editVocabularyPage, page}) => {
@@ -177,6 +301,35 @@ test(
 
 		await clickAndExpectToBeVisible({
 			target: page.getByText('The Name field is required'),
+			trigger: editVocabularyPage.saveButton,
+		});
+
+		const name = `Vocabulary${getRandomInt()}`;
+
+		await editVocabularyPage.changeGeneralInfo({
+			description: getRandomString(),
+			name,
+		});
+
+		// Check we can't publish without selecting a space
+
+		await editVocabularyPage.spaceCheckbox.click();
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText('The Space field is required'),
+			trigger: editVocabularyPage.saveButton,
+		});
+
+		await editVocabularyPage.spaceCheckbox.click();
+
+		// Check we can't publish without selecting an asset type
+
+		await editVocabularyPage.assetTypesButton.click();
+
+		await editVocabularyPage.assetTypeCheckbox.click();
+
+		await clickAndExpectToBeVisible({
+			target: page.getByText('The Asset Types field is required.'),
 			trigger: editVocabularyPage.saveButton,
 		});
 	}

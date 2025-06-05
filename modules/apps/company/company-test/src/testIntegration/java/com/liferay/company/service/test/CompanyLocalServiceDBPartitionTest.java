@@ -65,12 +65,14 @@ import com.liferay.portal.service.impl.ClassNameLocalServiceImpl;
 import com.liferay.portal.service.impl.CompanyLocalServiceImpl;
 import com.liferay.portal.service.impl.ResourceActionLocalServiceImpl;
 import com.liferay.portal.spring.aop.AopInvocationHandler;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.test.rule.TransactionalTestRule;
 import com.liferay.portal.util.PortalInstances;
+
+import jakarta.portlet.Portlet;
 
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -83,8 +85,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.portlet.Portlet;
 
 import org.apache.felix.cm.PersistenceManager;
 
@@ -264,7 +264,7 @@ public class CompanyLocalServiceDBPartitionTest
 		}
 	}
 
-	@FeatureFlags("LPD-11342")
+	@FeatureFlag("LPD-11342")
 	@Test
 	public void testAddDBPartitionCompany() throws Exception {
 		Company company = CompanyTestUtil.addCompany();
@@ -275,7 +275,7 @@ public class CompanyLocalServiceDBPartitionTest
 
 		String pid = configuration.getPid();
 
-		companyLocalService.extractCompany(company.getCompanyId());
+		companyLocalService.exportCompany(company.getCompanyId());
 
 		try {
 			CompanyLocalServiceTestUtil.assertConfiguration(
@@ -298,7 +298,7 @@ public class CompanyLocalServiceDBPartitionTest
 				Assert.assertTrue(
 					dbPartitionDB.existsPartition(
 						connection,
-						CompanyLocalServiceTestUtil.getExtractedPartitionName(
+						CompanyLocalServiceTestUtil.getExportedPartitionName(
 							company.getCompanyId())));
 			}
 
@@ -327,7 +327,7 @@ public class CompanyLocalServiceDBPartitionTest
 		finally {
 			db.runSQL(
 				dbPartitionDB.getDropPartitionSQL(
-					CompanyLocalServiceTestUtil.getExtractedPartitionName(
+					CompanyLocalServiceTestUtil.getExportedPartitionName(
 						company.getCompanyId())));
 
 			if (ArrayUtil.contains(
@@ -342,7 +342,7 @@ public class CompanyLocalServiceDBPartitionTest
 		}
 	}
 
-	@FeatureFlags("LPD-11342")
+	@FeatureFlag("LPD-11342")
 	@Test
 	public void testAddDBPartitionCompanyWhenCompanyLocalServiceFails()
 		throws Exception {
@@ -350,7 +350,7 @@ public class CompanyLocalServiceDBPartitionTest
 		Company company = CompanyTestUtil.addCompany();
 
 		try {
-			companyLocalService.extractCompany(company.getCompanyId());
+			companyLocalService.exportCompany(company.getCompanyId());
 
 			_companyLocalService.deleteCompany(company);
 
@@ -372,7 +372,7 @@ public class CompanyLocalServiceDBPartitionTest
 
 				CompanyLocalServiceTestUtil.checkStandaloneDBPartitionTables(
 					connection, dbPartitionDB,
-					CompanyLocalServiceTestUtil.getExtractedPartitionName(
+					CompanyLocalServiceTestUtil.getExportedPartitionName(
 						company.getCompanyId()),
 					"Company", "VirtualHost");
 			}
@@ -380,7 +380,7 @@ public class CompanyLocalServiceDBPartitionTest
 		finally {
 			db.runSQL(
 				dbPartitionDB.getDropPartitionSQL(
-					CompanyLocalServiceTestUtil.getExtractedPartitionName(
+					CompanyLocalServiceTestUtil.getExportedPartitionName(
 						company.getCompanyId())));
 
 			if (ArrayUtil.contains(
@@ -395,7 +395,7 @@ public class CompanyLocalServiceDBPartitionTest
 		}
 	}
 
-	@FeatureFlags("LPD-11342")
+	@FeatureFlag("LPD-11342")
 	@Test
 	public void testAddDBPartitionCompanyWhenDBPartitionUtilFails()
 		throws Exception {
@@ -403,7 +403,7 @@ public class CompanyLocalServiceDBPartitionTest
 		Company company = CompanyTestUtil.addCompany();
 
 		try {
-			companyLocalService.extractCompany(company.getCompanyId());
+			companyLocalService.exportCompany(company.getCompanyId());
 
 			_companyLocalService.deleteCompany(company);
 
@@ -438,7 +438,7 @@ public class CompanyLocalServiceDBPartitionTest
 
 				CompanyLocalServiceTestUtil.checkStandaloneDBPartitionTables(
 					connection, dbPartitionDB,
-					CompanyLocalServiceTestUtil.getExtractedPartitionName(
+					CompanyLocalServiceTestUtil.getExportedPartitionName(
 						company.getCompanyId()),
 					"Company", "VirtualHost");
 			}
@@ -446,7 +446,7 @@ public class CompanyLocalServiceDBPartitionTest
 		finally {
 			db.runSQL(
 				dbPartitionDB.getDropPartitionSQL(
-					CompanyLocalServiceTestUtil.getExtractedPartitionName(
+					CompanyLocalServiceTestUtil.getExportedPartitionName(
 						company.getCompanyId())));
 
 			if (ArrayUtil.contains(
@@ -480,7 +480,7 @@ public class CompanyLocalServiceDBPartitionTest
 		}
 	}
 
-	@FeatureFlags("LPD-11342")
+	@FeatureFlag("LPD-11342")
 	@Test
 	public void testCopyDBPartitionCompany() throws Exception {
 		int rulesCount = _getRulesCount(defaultPartitionName);
@@ -521,7 +521,7 @@ public class CompanyLocalServiceDBPartitionTest
 					Portlet.class,
 					StringBundler.concat(
 						"(&(com.liferay.portlet.company=",
-						copiedCompany.getCompanyId(), ")(javax.portlet.name=",
+						copiedCompany.getCompanyId(), ")(jakarta.portlet.name=",
 						objectDefinition.getPortletId(), "))"));
 
 			Assert.assertFalse(serviceReferences.isEmpty());
@@ -572,7 +572,7 @@ public class CompanyLocalServiceDBPartitionTest
 		}
 	}
 
-	@FeatureFlags("LPD-11342")
+	@FeatureFlag("LPD-11342")
 	@Test
 	public void testCopyDBPartitionCompanyWhenCompanyLocalServiceFails()
 		throws Exception {
@@ -607,7 +607,7 @@ public class CompanyLocalServiceDBPartitionTest
 		}
 	}
 
-	@FeatureFlags("LPD-11342")
+	@FeatureFlag("LPD-11342")
 	@Test
 	public void testCopyDBPartitionCompanyWhenDBPartitionUtilFails()
 		throws Exception {

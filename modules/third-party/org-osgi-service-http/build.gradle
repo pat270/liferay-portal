@@ -1,6 +1,5 @@
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
+apply from: "../../build-jakarta-transformer.gradle"
 
 dependencies {
-	compileOnly group: "org.osgi", name: "org.osgi.service.http", transitive: false, version: "1.2.2"
+	compileOnly group: "com.liferay", name: "org.osgi.service.http", transitive: false, version: "1.2.2.LIFERAY-PATCHED-1"
 }

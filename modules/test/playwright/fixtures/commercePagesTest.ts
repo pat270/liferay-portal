@@ -9,6 +9,7 @@ import {CommerceAccountManagementPage} from '../pages/commerce/commerce-account-
 import {CommerceChannelDefaultsPage} from '../pages/commerce/commerce-account-web/commerceChannelDefaultsPage';
 import {CommerceCartPage} from '../pages/commerce/commerce-cart-content-web/commerceCartPage';
 import {CommerceCartSummaryPage} from '../pages/commerce/commerce-cart-content-web/commerceCartSummaryPage';
+import {CommerceAdminCatalogsPage} from '../pages/commerce/commerce-catalog-web/commerceAdminCatalogsPage';
 import {CommerceAdminChannelDetailsCountriesPage} from '../pages/commerce/commerce-channel-web/commerceAdminChannelDetailsCountriesPage';
 import {CommerceAdminChannelDetailsCurrenciesPage} from '../pages/commerce/commerce-channel-web/commerceAdminChannelDetailsCurrenciesPage';
 import {CommerceAdminChannelDetailsPage} from '../pages/commerce/commerce-channel-web/commerceAdminChannelDetailsPage';
@@ -18,6 +19,7 @@ import {CommerceAdminCurrenciesPage} from '../pages/commerce/commerce-currency-w
 import {CommerceAdminCurrencyDetailsPage} from '../pages/commerce/commerce-currency-web/commerceAdminCurrencyDetailsPage';
 import {CommerceLayoutsPage} from '../pages/commerce/commerce-order-content-web/commerceLayoutsPage';
 import {PendingOrdersPage} from '../pages/commerce/commerce-order-content-web/pendingOrdersPage';
+import {PlacedOrderPage} from '../pages/commerce/commerce-order-content-web/placedOrderPage';
 import {PlacedOrdersPage} from '../pages/commerce/commerce-order-content-web/placedOrdersPage';
 import {ReturnDetailsPage} from '../pages/commerce/commerce-order-content-web/returnDetailsPage';
 import {ReturnsPage} from '../pages/commerce/commerce-order-content-web/returnsPage';
@@ -61,6 +63,7 @@ const commercePagesTest = test.extend<{
 	attachmentsPage: AttachmentsPage;
 	checkoutPage: CheckoutPage;
 	commerceAccountManagementPage: CommerceAccountManagementPage;
+	commerceAdminCatalogsPage: CommerceAdminCatalogsPage;
 	commerceAdminChannelDetailsCountriesPage: CommerceAdminChannelDetailsCountriesPage;
 	commerceAdminChannelDetailsCurrenciesPage: CommerceAdminChannelDetailsCurrenciesPage;
 	commerceAdminChannelDetailsPage: CommerceAdminChannelDetailsPage;
@@ -103,6 +106,7 @@ const commercePagesTest = test.extend<{
 	commerceWishListPage: CommerceWishListPage;
 	organizationManagementPage: OrganizationManagementPage;
 	pendingOrdersPage: PendingOrdersPage;
+	placedOrderPage: PlacedOrderPage;
 	placedOrdersPage: PlacedOrdersPage;
 	productDetailsPage: ProductDetailsPage;
 	productPublisherPage: ProductPublisherPage;
@@ -118,6 +122,9 @@ const commercePagesTest = test.extend<{
 	},
 	commerceAccountManagementPage: async ({page}, use) => {
 		await use(new CommerceAccountManagementPage(page));
+	},
+	commerceAdminCatalogsPage: async ({page}, use) => {
+		await use(new CommerceAdminCatalogsPage(page));
 	},
 	commerceAdminChannelDetailsCountriesPage: async ({page}, use) => {
 		await use(new CommerceAdminChannelDetailsCountriesPage(page));
@@ -244,6 +251,9 @@ const commercePagesTest = test.extend<{
 	},
 	pendingOrdersPage: async ({page}, use) => {
 		await use(new PendingOrdersPage(page));
+	},
+	placedOrderPage: async ({page}, use) => {
+		await use(new PlacedOrderPage(page));
 	},
 	placedOrdersPage: async ({page}, use) => {
 		await use(new PlacedOrdersPage(page));

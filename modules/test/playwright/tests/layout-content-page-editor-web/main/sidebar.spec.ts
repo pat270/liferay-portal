@@ -31,8 +31,8 @@ import {closeProductMenu, openProductMenu} from '../../../utils/productMenu';
 import getBasicWebContentStructureId from '../../../utils/structured-content/getBasicWebContentStructureId';
 import {waitForAlert} from '../../../utils/waitForAlert';
 import {journalPagesTest} from '../../journal-web/main/fixtures/journalPagesTest';
-import {ANIMALS_COLLECTION_NAME} from '../../setup/page-management-site/constants/animals';
-import {getObjectERC} from '../../setup/page-management-site/utils/getObjectERC';
+import {ANIMALS_COLLECTION_NAME} from '../../setup/page-management-site/main/constants/animals';
+import {getObjectERC} from '../../setup/page-management-site/main/utils/getObjectERC';
 import getCollectionDefinition from './utils/getCollectionDefinition';
 import getFormContainerDefinition from './utils/getFormContainerDefinition';
 import getFragmentDefinition from './utils/getFragmentDefinition';
@@ -2708,7 +2708,9 @@ test(
 
 		await panel.waitFor({state: 'visible'});
 
-		await expect(page.locator('.notification')).toBeAttached();
+		await expect(
+			page.locator('.marketplace-button--notification')
+		).toBeAttached();
 
 		// Click the marketplace button and wait for the modal
 
@@ -2722,6 +2724,8 @@ test(
 
 		await page.getByRole('button', {name: 'Cancel'}).click();
 
-		await expect(page.locator('.notification')).not.toBeVisible();
+		await expect(
+			page.locator('.marketplace-button--notification')
+		).not.toBeVisible();
 	}
 );

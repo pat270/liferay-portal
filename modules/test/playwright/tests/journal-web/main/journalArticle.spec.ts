@@ -23,6 +23,7 @@ import {nextPage, setItemsPerPage} from '../../../utils/pagination';
 import addApprovedStructuredContent from '../../../utils/structured-content/addApprovedStructuredContent';
 import getBasicWebContentStructureId from '../../../utils/structured-content/getBasicWebContentStructureId';
 import {waitForAlert} from '../../../utils/waitForAlert';
+import {ckeditor4PageTest} from '../../frontend-editor-ckeditor-web/main/fixtures/ckeditor4PageTest';
 import {journalPagesTest} from './fixtures/journalPagesTest';
 import getDataStructureDefinition from './utils/getDataStructureDefinition';
 
@@ -75,6 +76,8 @@ const assetPublisherDeprecationTest = mergeTests(
 		'LPD-39304': {enabled: true},
 	})
 );
+
+const ckeditor4Test = mergeTests(baseTest, ckeditor4PageTest);
 
 const ckeditor5Test = mergeTests(
 	baseTest,
@@ -229,74 +232,6 @@ baseTest(
 		templateName = page.getByLabel('Template Name');
 
 		await expect(templateName).toHaveValue('Basic Web Content');
-	}
-);
-
-baseTest(
-	'Web Content Schedule Publication Feature Flag is only in UTC and wrong time is displayed after scheduled',
-	{
-		tag: '@LPD-31427',
-	},
-	async ({journalEditArticlePage, page, site}) => {
-		page.on('dialog', (dialog) => dialog.accept());
-
-		await journalEditArticlePage.goto({siteUrl: site.friendlyUrlPath});
-
-		const title = getRandomString();
-
-		await journalEditArticlePage.content.waitFor();
-
-		await journalEditArticlePage.fillTitle(title);
-
-		await expect(async () => {
-			await clickAndExpectToBeVisible({
-				autoClick: true,
-				target: page.getByRole('menuitem', {
-					name: 'Schedule Publication',
-				}),
-				trigger: page.getByRole('button', {
-					name: /select and confirm publish settings|sélectionnez et confirmez les/i,
-				}),
-			});
-
-			await expect(page.getByLabel('Date and Time')).toBeVisible({
-				timeout: 2000,
-			});
-		}).toPass();
-
-		const currentDate = new Date();
-
-		currentDate.setMinutes(currentDate.getMinutes() - 5);
-
-		const beforeCurrentDateUTC = new Date(
-			currentDate.toLocaleString('en-US', {timeZone: 'UTC'})
-		);
-
-		await page
-			.getByPlaceholder('YYYY-MM-DD HH:mm')
-			.fill(
-				`${beforeCurrentDateUTC.getFullYear()}-${String(beforeCurrentDateUTC.getMonth() + 1).padStart(2, '0')}-${String(beforeCurrentDateUTC.getDate()).padStart(2, '0')} ${String(beforeCurrentDateUTC.getHours()).padStart(2, '0')}:${String(beforeCurrentDateUTC.getMinutes()).padStart(2, '0')}`
-			);
-
-		await expect(
-			page.getByText('Error: The date entered is in the past.')
-		).toBeVisible();
-
-		currentDate.setMinutes(currentDate.getMinutes() + 10);
-
-		const afterCurrentDateUTC = new Date(
-			currentDate.toLocaleString('en-US', {timeZone: 'UTC'})
-		);
-
-		await page
-			.getByPlaceholder('YYYY-MM-DD HH:mm')
-			.fill(
-				`${afterCurrentDateUTC.getFullYear()}-${String(afterCurrentDateUTC.getMonth() + 1).padStart(2, '0')}-${String(afterCurrentDateUTC.getDate()).padStart(2, '0')} ${String(afterCurrentDateUTC.getHours()).padStart(2, '0')}:${String(afterCurrentDateUTC.getMinutes()).padStart(2, '0')}`
-			);
-
-		await expect(
-			page.getByText('Error: The date entered is in the past.')
-		).not.toBeVisible();
 	}
 );
 
@@ -509,7 +444,7 @@ baseTest(
 		const contentStructureId =
 			await getBasicWebContentStructureId(apiHelpers);
 
-		for (let i = 0; i < 10; i++) {
+		for (let i = 0; i < 42; i++) {
 			await apiHelpers.jsonWebServicesJournal.addWebContent({
 				ddmStructureId: contentStructureId,
 				groupId: site.id,
@@ -518,7 +453,7 @@ baseTest(
 
 		await journalPage.goto(site.friendlyUrlPath);
 
-		await setItemsPerPage(page, 4);
+		await setItemsPerPage(page, 20);
 
 		await page.getByTestId('row').nth(0).getByRole('checkbox').check();
 		await page.getByTestId('row').nth(1).getByRole('checkbox').check();
@@ -526,7 +461,7 @@ baseTest(
 		await nextPage(page);
 
 		await expect(
-			page.getByText('Showing 5 to 8 of 10 entries.')
+			page.getByText('Showing 21 to 40 of 42 entries.')
 		).toBeVisible();
 
 		await page.getByTestId('row').nth(0).getByRole('checkbox').check();
@@ -535,7 +470,7 @@ baseTest(
 		await nextPage(page);
 
 		await expect(
-			page.getByText('Showing 9 to 10 of 10 entries.')
+			page.getByText('Showing 41 to 42 of 42 entries.')
 		).toBeVisible();
 
 		await page.getByTestId('row').nth(0).getByRole('checkbox').check();
@@ -1701,8 +1636,7 @@ assetPublisherDeprecationTest(
 		await configurationFrame
 			.getByRole('tab', {name: 'Asset Selection'})
 			.click();
-		await configurationFrame.getByText('Dynamic').click();
-		await configurationFrame.getByLabel('close').click();
+		await configurationFrame.getByText('Dynamic', {exact: true}).click();
 		await configurationFrame
 			.getByRole('tab', {name: 'Display Settings'})
 			.click();
@@ -1718,6 +1652,44 @@ assetPublisherDeprecationTest(
 		await page.getByLabel('Go to page, 2').click();
 
 		await expect(page.getByText('page2')).toBeVisible();
+	}
+);
+
+ckeditor4Test(
+	'Change image from context menu, in editor with "adaptivemedia" plugin',
+	{tag: ['@LPD-53880']},
+	async ({ckeditor4Page, journalEditArticlePage, site}) => {
+		await ckeditor4Test.step('Open new Basic Web Content', async () => {
+			await journalEditArticlePage.goto({siteUrl: site.friendlyUrlPath});
+		});
+
+		await ckeditor4Page.insertHTML(
+			'<img src="/documents/d/guest/moon-png" />'
+		);
+
+		const editableFrame = journalEditArticlePage.page
+			.locator('.edit-article-panel')
+			.frameLocator('iframe[title="editor"]');
+
+		await editableFrame
+			.locator('img[src="/documents/d/guest/moon-png"]')
+			.dblclick();
+
+		await ckeditor4Page.contextMenu.getByText('Browse Server').click();
+
+		await ckeditor4Page.selectImageWithItemSelector({
+			cardTitle: 'satellite.png',
+		});
+
+		await expect(ckeditor4Page.contextMenu.getByLabel('URL')).toHaveValue(
+			'/documents/d/guest/satellite-png'
+		);
+
+		await ckeditor4Page.contextMenu.getByText('OK').click();
+
+		await expect(
+			editableFrame.locator('img[src="/documents/d/guest/satellite-png"]')
+		).toBeVisible();
 	}
 );
 

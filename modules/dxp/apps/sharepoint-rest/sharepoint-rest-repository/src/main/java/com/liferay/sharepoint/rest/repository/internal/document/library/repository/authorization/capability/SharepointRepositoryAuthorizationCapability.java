@@ -20,13 +20,13 @@ import com.liferay.sharepoint.rest.repository.internal.configuration.SharepointR
 import com.liferay.sharepoint.rest.repository.internal.document.library.repository.authorization.oauth2.SharepointRepositoryRequestState;
 import com.liferay.sharepoint.rest.repository.internal.document.library.repository.authorization.oauth2.SharepointRepositoryTokenBroker;
 
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.PortletResponse;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
-
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Adolfo Pérez
@@ -85,12 +85,9 @@ public class SharepointRepositoryAuthorizationCapability
 		if (token == null) {
 			return true;
 		}
-		else if (token.isExpired()) {
-			if (Validator.isNotNull(token.getRefreshToken())) {
-				return false;
-			}
 
-			return true;
+		if (token.isExpired()) {
+			return Validator.isNull(token.getRefreshToken());
 		}
 
 		return false;
@@ -157,11 +154,7 @@ public class SharepointRepositoryAuthorizationCapability
 
 		String code = ParamUtil.getString(httpServletRequest, "code");
 
-		if (Validator.isNull(code)) {
-			return false;
-		}
-
-		return true;
+		return Validator.isNotNull(code);
 	}
 
 	private void _refreshAccessToken(

@@ -27,6 +27,115 @@ export const test = mergeTests(
 	loginTest()
 );
 
+test(
+	'As admin, I can cancel an order without getting an error',
+	{tag: ['@COMMERCE-11386', '@LPD-56462']},
+	async ({
+		apiHelpers,
+		commerceAdminOrderDetailsPage,
+		commerceAdminOrdersPage,
+		page,
+	}) => {
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const channel =
+			await apiHelpers.headlessCommerceAdminChannel.postChannel({
+				name: getRandomString(),
+				siteGroupId: site.id,
+			});
+
+		const catalog =
+			await apiHelpers.headlessCommerceAdminCatalog.postCatalog();
+
+		const product =
+			await apiHelpers.headlessCommerceAdminCatalog.postProduct({
+				catalogId: catalog.id,
+				name: {en_US: 'Product'},
+			});
+
+		const productSkus = await apiHelpers.headlessCommerceAdminCatalog
+			.getProduct(product.productId)
+			.then((product) => {
+				return product.skus;
+			});
+
+		const sku = productSkus[0];
+
+		const account = await apiHelpers.headlessAdminUser.postAccount({
+			name: getRandomString(),
+			type: 'business',
+		});
+
+		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
+			account.id,
+			['test@liferay.com']
+		);
+
+		const address =
+			await apiHelpers.headlessCommerceAdminAccount.postAddress(
+				account.id,
+				{
+					regionISOCode: 'LA',
+				}
+			);
+
+		const warehouse =
+			await apiHelpers.headlessCommerceAdminInventoryApiHelper.postWarehouses(
+				{
+					active: true,
+					latitude: getRandomInt(),
+					longitude: getRandomInt(),
+					warehouseItems: [
+						{
+							quantity: 1,
+							sku: sku.sku,
+						},
+					],
+				}
+			);
+
+		await apiHelpers.headlessCommerceAdminInventoryApiHelper.postWarehousesChannels(
+			warehouse.id,
+			channel.id
+		);
+
+		const order = await apiHelpers.headlessCommerceAdminOrder.postOrder({
+			accountId: account.id,
+			billingAddressId: address.id,
+			channelId: channel.id,
+			orderItems: [
+				{
+					quantity: 1,
+					skuId: sku.id,
+				},
+			],
+			orderStatus: '1',
+			paymentMethod: 'money-order',
+			paymentStatus: '2',
+			shippingAddressId: address.id,
+			shippingMethod: 'by-weight',
+			shippingOption: 'standard-option',
+		});
+
+		await commerceAdminOrdersPage.goto();
+
+		await (
+			await commerceAdminOrdersPage.tableRowLink({
+				colIndex: 1,
+				rowValue: order.id,
+			})
+		).click();
+
+		await commerceAdminOrderDetailsPage.cancelButton.click();
+
+		await waitForAlert(page);
+	}
+);
+
 test('LPD-15231 Escape account name on admin order details page', async ({
 	apiHelpers,
 	commerceAdminOrderDetailsPage,
@@ -45,8 +154,6 @@ test('LPD-15231 Escape account name on admin order details page', async ({
 	const account = await apiHelpers.headlessAdminUser.postAccount({
 		name: '<img src="x" onError="alert(document.location)">',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
@@ -138,8 +245,6 @@ test('LPD-26244 Split order items are shown on admin order details page when sho
 		type: 'person',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
 		['test@liferay.com']
@@ -229,8 +334,6 @@ test('COMMERCE-11888. As a supplier user, I can edit the order details, payments
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: accountBusiness.id, type: 'account'});
-
 	const phoneNumber = '12345';
 
 	const address = await apiHelpers.headlessCommerceAdminAccount.postAddress(
@@ -242,8 +345,6 @@ test('COMMERCE-11888. As a supplier user, I can edit the order details, payments
 		name: 'Account Supplier',
 		type: 'supplier',
 	});
-
-	apiHelpers.data.push({id: accountSupplier.id, type: 'account'});
 
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		accountSupplier.id,
@@ -381,7 +482,7 @@ test('COMMERCE-11888. As a supplier user, I can edit the order details, payments
 	apiHelpers.data.push({id: order.id, type: 'order'});
 
 	await performLogout(page);
-	await performLoginViaApi(page, 'demo.unprivileged');
+	await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 	await applicationsMenuPage.goToCommerceOrders(false);
 
@@ -621,8 +722,6 @@ test('LPD-30856 Can update order status by deleting unshipped items', async ({
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,

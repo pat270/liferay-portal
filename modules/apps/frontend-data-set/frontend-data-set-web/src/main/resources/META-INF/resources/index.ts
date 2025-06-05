@@ -6,6 +6,7 @@
 import {ModalStatus} from 'frontend-js-components-web';
 
 import {TRenderer} from './FrontendDataSetContext';
+import {ICreationActionItem} from './management_bar/controls/CreationMenu';
 
 export declare function FrontendDataSet({
 	actionParameterName,
@@ -160,6 +161,8 @@ export type TSort = {
 export interface IField {
 	actionId?: string;
 	contentRenderer?: string;
+	contentRendererClientExtension?: boolean;
+	contentRendererModuleURL?: string;
 	expand?: boolean;
 	fieldName: string | [];
 	label: string;
@@ -201,30 +204,37 @@ export interface ICardSchema {
 
 export type ISchema = ITableSchema | ICardSchema;
 
-type TViews = {
+export type TViews = {
 	component?: any;
 	contentRenderer?: string;
 	contentRendererClientExtension?: boolean;
 	contentRendererModuleURL?: string;
+	default?: boolean;
 	label?: string;
 	name?: string;
 	schema?: ISchema;
 	thumbnail?: string;
+	views?: Array<any>;
 };
 
 export interface IFrontendDataSetProps {
 	actionParameterName?: string;
 	activeViewSettings?: string;
+	additionalAPIURLParameters?: string;
 	apiURL?: string;
 	appURL?: string;
 	bulkActions?: any[];
 	creationMenu?: {
-		primaryItems?: any[];
+		loadData?: Function;
+		primaryItems: Array<ICreationActionItem>;
 		secondaryItems?: any[];
 	};
 	currentURL?: string;
 	customDataRenderers?: any;
-	customRenderers?: {tableCell: Array<TRenderer>};
+	customRenderers?: {
+		tableCell?: Array<TRenderer>;
+		views?: Array<TRenderer>;
+	};
 	customViews?: string;
 	customViewsEnabled?: boolean;
 	emptyState?: {
@@ -235,7 +245,7 @@ export interface IFrontendDataSetProps {
 	enableInlineAddModeSetting?: {
 		defaultBodyContent?: object;
 	};
-	filters?: any;
+	filters?: Array<any>;
 	formId?: string;
 	formName?: string;
 	header?: {
@@ -245,6 +255,7 @@ export interface IFrontendDataSetProps {
 	inlineAddingSettings?: {
 		apiURL: string;
 		defaultBodyContent: object;
+		method?: string;
 	};
 	inlineEditingSettings?: IInlineEditingSettings;
 	items?: any[];
@@ -255,6 +266,7 @@ export interface IFrontendDataSetProps {
 	onActionDropdownItemClick?: any;
 	onBulkActionItemClick?: any;
 	onSelect?: ({selectedItems}: {selectedItems: Array<any>}) => void;
+	onSelectedItemsChange?: (selectedItems: Array<any>) => void;
 	overrideEmptyResultView?: boolean;
 	pagination?: {
 		deltas?: TDelta[];
@@ -265,14 +277,36 @@ export interface IFrontendDataSetProps {
 	selectedItems?: any[];
 	selectedItemsKey?: string;
 	selectionType?: 'single' | 'multiple';
+	showBulkActionsManagementBar?: boolean;
+	showBulkActionsManagementBarActions?: boolean;
 	showManagementBar?: boolean;
 	showPagination?: boolean;
 	showSearch?: boolean;
+	showSelectAll?: boolean;
 	sidePanelId?: string;
 	sorts?: TSort[];
 	style?: 'default' | 'fluid' | 'stacked';
+	uniformActionsDisplay?: boolean;
 	views: TViews[];
 	viewsTitle?: string;
+}
+
+export interface IModalConfig {
+	disableHeader: boolean;
+	size: string;
+	title: string;
+	url: string;
+}
+
+export interface IRequestOptions {
+	body?: string;
+	headers: {[key: string]: string};
+	method?: string;
+}
+
+export interface ISuccessNotification {
+	message: string;
+	showSuccessNotification?: boolean;
 }
 
 export {
@@ -281,6 +315,7 @@ export {
 } from './FrontendDataSetContext';
 export {INTERNAL_CELL_RENDERERS as FDS_INTERNAL_CELL_RENDERERS} from './cell_renderers/InternalCellRenderer';
 export {
+	DEFAULT_FETCH_HEADERS,
 	FDS_ARRAY_FIELD_NAME_DELIMITER,
 	FDS_ARRAY_FIELD_NAME_PARENT_SUFFIX,
 	FDS_NESTED_FIELD_NAME_DELIMITER,

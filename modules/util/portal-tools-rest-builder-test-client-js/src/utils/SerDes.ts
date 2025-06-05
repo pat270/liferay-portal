@@ -10,14 +10,19 @@
 	import {EntityModelResourceTestEntity1} from '../models/EntityModelResourceTestEntity1';
 	import {EntityModelResourceTestEntity2} from '../models/EntityModelResourceTestEntity2';
 	import {EnumTestEntity} from '../models/EnumTestEntity';
+	import {ERCAssetLibraryTestEntity} from '../models/ERCAssetLibraryTestEntity';
+	import {ERCSiteTestEntity} from '../models/ERCSiteTestEntity';
 	import {Facet} from '../models/Facet';
 	import {FacetValue} from '../models/FacetValue';
 	import {Filter} from '../models/Filter';
 	import {JSONMapAttributeTestEntity} from '../models/JSONMapAttributeTestEntity';
+	import {MultipartTestEntity} from '../models/MultipartTestEntity';
 	import {NestedArrayItemsTestEntity} from '../models/NestedArrayItemsTestEntity';
 	import {NestedTestEntity} from '../models/NestedTestEntity';
 	import {PageCompanyTestEntity} from '../models/PageCompanyTestEntity';
 	import {PageEntityModelResourceTestEntity1} from '../models/PageEntityModelResourceTestEntity1';
+	import {PageERCAssetLibraryTestEntity} from '../models/PageERCAssetLibraryTestEntity';
+	import {PageERCSiteTestEntity} from '../models/PageERCSiteTestEntity';
 	import {PageFilter} from '../models/PageFilter';
 	import {PagePermission} from '../models/PagePermission';
 	import {PageSchema} from '../models/PageSchema';
@@ -73,14 +78,19 @@ const typeMap: {[index: string]: any} = {
 	EntityModelResourceTestEntity1,
 	EntityModelResourceTestEntity2,
 	EnumTestEntity,
+	ERCAssetLibraryTestEntity,
+	ERCSiteTestEntity,
 	Facet,
 	FacetValue,
 	Filter,
 	JSONMapAttributeTestEntity,
+	MultipartTestEntity,
 	NestedArrayItemsTestEntity,
 	NestedTestEntity,
 	PageCompanyTestEntity,
 	PageEntityModelResourceTestEntity1,
+	PageERCAssetLibraryTestEntity,
+	PageERCSiteTestEntity,
 	PageFilter,
 	PagePermission,
 	PageSchema,

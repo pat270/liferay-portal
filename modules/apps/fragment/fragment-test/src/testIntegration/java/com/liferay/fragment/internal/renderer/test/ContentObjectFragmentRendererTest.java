@@ -6,9 +6,9 @@
 package com.liferay.fragment.internal.renderer.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentEntryLinkConstants;
-import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.renderer.DefaultFragmentRendererContext;
@@ -21,11 +21,15 @@ import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
+import com.liferay.info.list.provider.item.selector.criterion.InfoListProviderItemSelectorReturnType;
 import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.layout.provider.LayoutStructureProvider;
+import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -55,10 +59,11 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.struts.Definition;
 import com.liferay.portal.struts.TilesUtil;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -66,9 +71,9 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.template.model.TemplateEntry;
 import com.liferay.template.test.util.TemplateTestUtil;
 
-import java.util.HashMap;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -114,7 +119,7 @@ public class ContentObjectFragmentRendererTest {
 		ServiceContextThreadLocal.popServiceContext();
 	}
 
-	@FeatureFlags("LPD-39437")
+	@FeatureFlag("LPD-39437")
 	@Test
 	public void testRenderAssertAnalyticsAttributesInEditMode()
 		throws Exception {
@@ -125,7 +130,7 @@ public class ContentObjectFragmentRendererTest {
 		Assert.assertFalse(content.contains("data-analytics-asset-action"));
 	}
 
-	@FeatureFlags("LPD-39437")
+	@FeatureFlag("LPD-39437")
 	@Test
 	public void testRenderAssertAnalyticsAttributesInViewMode()
 		throws Exception {
@@ -151,6 +156,54 @@ public class ContentObjectFragmentRendererTest {
 			content.contains(
 				"data-analytics-asset-type=\"" +
 					JournalArticle.class.getName() + "\""));
+	}
+
+	@Test
+	@TestInfo("LPD-55325")
+	public void testRenderContentInCollectionDisplay() throws Exception {
+		Layout draftLayout = _layout.fetchDraftLayout();
+
+		long segmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				draftLayout.getPlid());
+
+		ContentLayoutTestUtil.addCollectionDisplayToLayout(
+			JSONUtil.put(
+				"itemType", AssetEntry.class.getName()
+			).put(
+				"key",
+				"com.liferay.asset.internal.info.collection.provider." +
+					"RecentContentInfoCollectionProvider"
+			).put(
+				"type", InfoListProviderItemSelectorReturnType.class.getName()
+			),
+			draftLayout, _layoutStructureProvider, null, null, 0,
+			segmentsExperienceId,
+			_addFragmentEntryLink(
+				JSONUtil.put(
+					FragmentEntryProcessorConstants.
+						KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR,
+					JSONUtil.put(
+						"itemSelector",
+						JSONUtil.put(
+							"template",
+							JSONUtil.put(
+								"infoItemRendererKey",
+								"com.liferay.asset.info.internal.item." +
+									"renderer." +
+										"AssetEntryTitleInfoItemRenderer")))
+				).toString(),
+				draftLayout.getPlid()));
+
+		ContentLayoutTestUtil.publishLayout(draftLayout, _layout);
+
+		Assert.assertTrue(
+			StringUtil.contains(
+				ContentLayoutTestUtil.getRenderLayoutHTML(
+					_layout, _layoutServiceContextHelper,
+					_layoutStructureProvider, segmentsExperienceId),
+				_journalArticle.getTitle(LocaleUtil.getSiteDefault()),
+				StringPool.BLANK));
 	}
 
 	@Test
@@ -345,7 +398,7 @@ public class ContentObjectFragmentRendererTest {
 		throws Exception {
 
 		String content = _render(
-			_addFragmentEntryLink(StringPool.BLANK),
+			_addFragmentEntryLink(StringPool.BLANK, _layout.getPlid()),
 			FragmentEntryLinkConstants.VIEW);
 
 		Assert.assertTrue(content.isEmpty());
@@ -396,19 +449,20 @@ public class ContentObjectFragmentRendererTest {
 							String.valueOf(templateEntry.getTemplateEntryId())
 						)
 					))
-			).toString());
+			).toString(),
+			_layout.getPlid());
 	}
 
-	private FragmentEntryLink _addFragmentEntryLink(String editableValues)
+	private FragmentEntryLink _addFragmentEntryLink(
+			String editableValues, long plid)
 		throws Exception {
 
 		return _fragmentEntryLinkLocalService.addFragmentEntryLink(
 			null, TestPropsValues.getUserId(), _group.getGroupId(), 0, 0,
 			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				_layout.getPlid()),
-			_layout.getPlid(), StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, editableValues,
-			StringPool.BLANK, 0,
+				plid),
+			plid, StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, editableValues, StringPool.BLANK, 0,
 			"com.liferay.fragment.internal.renderer." +
 				"ContentObjectFragmentRenderer",
 			FragmentConstants.TYPE_COMPONENT, _serviceContext);
@@ -438,7 +492,8 @@ public class ContentObjectFragmentRendererTest {
 							"templateKey",
 							String.valueOf(templateEntry.getTemplateEntryId())
 						)))
-			).toString());
+			).toString(),
+			_layout.getPlid());
 	}
 
 	private HttpServletRequest _getMockHttpServletRequest() throws Exception {
@@ -551,10 +606,6 @@ public class ContentObjectFragmentRendererTest {
 	private CompanyLocalService _companyLocalService;
 
 	@Inject
-	private FragmentCollectionContributorRegistry
-		_fragmentCollectionContributorRegistry;
-
-	@Inject
 	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
 
 	@Inject(
@@ -574,6 +625,12 @@ public class ContentObjectFragmentRendererTest {
 	private JournalArticleLocalService _journalArticleLocalService;
 
 	private Layout _layout;
+
+	@Inject
+	private LayoutServiceContextHelper _layoutServiceContextHelper;
+
+	@Inject
+	private LayoutStructureProvider _layoutStructureProvider;
 
 	@Inject
 	private Portal _portal;

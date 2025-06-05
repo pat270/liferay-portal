@@ -35,11 +35,11 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.util.PropsValues;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -201,6 +201,12 @@ public abstract class BaseFDSSerializerTestCase {
 	protected static final String[] DESCRIPTIONS = RandomTestUtil.randomStrings(
 		2);
 
+	protected static final String[] DISPLAY_TYPE_KEYS =
+		RandomTestUtil.randomStrings(4);
+
+	protected static final String[] DISPLAY_TYPE_VALUES =
+		RandomTestUtil.randomStrings(4);
+
 	protected static final String[] FDS_NAMES = RandomTestUtil.randomStrings(2);
 
 	protected static final String[] FIELD_NAMES = RandomTestUtil.randomStrings(
@@ -229,6 +235,12 @@ public abstract class BaseFDSSerializerTestCase {
 
 	protected static final String[] PROPS_TRANSFORMERS =
 		RandomTestUtil.randomStrings(2);
+
+	protected static final String REST_APPLICATION = "/app";
+
+	protected static final String REST_ENDPOINT = "/endpoint";
+
+	protected static final String REST_SCHEMA = "schema";
 
 	protected static final String[] STICKERS = RandomTestUtil.randomStrings(2);
 

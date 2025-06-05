@@ -5,7 +5,6 @@
 
 package com.liferay.paypal;
 
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.math.BigDecimal;
@@ -80,7 +79,7 @@ public class RefundRestController extends BaseRestController {
 					).put(
 						"Prefer", "return=representation"
 					).build(),
-					StringBundler.concat(
+					createURI(
 						getPayPalURL(typeSettingsJSONObject.getString("mode")),
 						"v2/payments/captures/",
 						commercePaymentEntryJSONObject.getString(

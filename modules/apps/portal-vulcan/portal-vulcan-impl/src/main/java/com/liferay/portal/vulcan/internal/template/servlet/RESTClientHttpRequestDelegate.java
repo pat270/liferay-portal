@@ -15,15 +15,15 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.vulcan.internal.constants.VulcanConstants;
 
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 /**
  * @author Alejandro Tardín
@@ -122,6 +122,22 @@ public class RESTClientHttpRequestDelegate {
 
 	public String getMethod() {
 		return HttpMethods.GET;
+	}
+
+	public String getParameter(String name) {
+		return null;
+	}
+
+	public Map<String, String[]> getParameterMap() {
+		return Collections.emptyMap();
+	}
+
+	public Enumeration<String> getParameterNames() {
+		return Collections.emptyEnumeration();
+	}
+
+	public String[] getParameterValues(String name) {
+		return new String[0];
 	}
 
 	public String getPathInfo() {

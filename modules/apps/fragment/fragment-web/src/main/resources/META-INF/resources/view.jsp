@@ -80,9 +80,9 @@ ImportDisplayContext importDisplayContext = new ImportDisplayContext(request, re
 									</c:if>
 								</li>
 
-								<c:if test="<%= fragmentDisplayContext.isShowMarketplace() %>">
+								<c:if test='<%= FeatureFlagManagerUtil.isEnabled(themeDisplay.getCompanyId(), "LPD-34938") && fragmentDisplayContext.isShowMarketplace() %>'>
 									<li>
-										<div class="marketplace-button">
+										<div>
 											<react:component
 												module="{MarketplaceButton} from layout-js-components-web"
 												props="<%= fragmentDisplayContext.getMarketplaceProps() %>"

@@ -11,50 +11,59 @@ import ClayForm, {
 	ClayToggle,
 } from '@clayui/form';
 import ClayIcon from '@clayui/icon';
+import ClayLayout from '@clayui/layout';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import {sub} from 'frontend-js-web';
 import React, {useState} from 'react';
 
+import {IVocabulary} from '../../../types/IVocabulary';
+import {IPermissionItem} from '../../components/forms/PermissionsTable';
 import CategorizationSpaces from '../components/CategorizationSpaces';
-import {IVocabulary} from '../types/IVocabulary';
+import PermissionsFormGroup from '../components/PermissionsFormGroup';
 
 const VISIBILITY_OPTIONS = [
 	{
 		label: Liferay.Language.get('public'),
-		value: 0,
+		value: 'PUBLIC',
 	},
 	{
 		label: Liferay.Language.get('private'),
-		value: 1,
+		value: 'INTERNAL',
 	},
 ];
 
 export default function EditGeneralInfo({
+	assetLibraries,
 	defaultLanguageId,
+	isNew,
 	locales,
 	nameInputError,
 	onChangeVocabulary,
 	setNameInputError,
+	setSpaceChange,
 	setSpaceInputError,
+	setVocabularyPermissions,
+	showPermissions,
+	spaceInputError,
 	spritemap,
 	vocabulary,
 }: {
+	assetLibraries: AssetLibraryType[];
 	defaultLanguageId: string;
+	isNew: boolean;
 	locales: any[];
 	nameInputError: string;
 	onChangeVocabulary: Function;
 	setNameInputError: Function;
+	setSpaceChange: (value: boolean) => void;
 	setSpaceInputError: (value: string) => void;
+	setVocabularyPermissions: Function;
+	showPermissions: boolean;
+	spaceInputError: string;
 	spritemap: string;
 	vocabulary: IVocabulary;
 }) {
 	const [languageId, setLanguageId] = useState<string>(defaultLanguageId);
-	const [toggled, setToggle] = useState<boolean>(true);
-	const [selectedSpaces, setSelectedSpaces] = useState<string[]>([]);
-
-	const assetLibraries = selectedSpaces.map((number) => ({
-		id: number,
-	}));
 
 	const getLanguageLabel = (languageId: string) => {
 		return languageId.replace('_', '-');
@@ -90,7 +99,6 @@ export default function EditGeneralInfo({
 			...vocabulary,
 			...(languageId === defaultLanguageId && {
 				name: newName,
-				siteId: assetLibraries,
 			}),
 			name_i18n: {
 				...vocabulary.name_i18n,
@@ -99,11 +107,22 @@ export default function EditGeneralInfo({
 		}));
 	};
 
+	const onChangeSelectedSpaces = (newSelectedSpaces: number[]) => {
+		onChangeVocabulary(() => ({
+			...vocabulary,
+			assetLibraries: newSelectedSpaces.length
+				? newSelectedSpaces.map((number) => ({
+						id: number,
+					}))
+				: [],
+		}));
+	};
+
 	return (
 		<div className="vertical-nav-content-wrapper">
 			<ClayForm.Group className="c-gap-4 d-flex flex-column p-4">
-				<div className="d-flex">
-					<div className="autofit-col autofit-col-expand form-title">
+				<ClayLayout.Row className="form-title" justify="between">
+					<div className="form-title">
 						{Liferay.Language.get('basic-info')}
 					</div>
 
@@ -122,7 +141,7 @@ export default function EditGeneralInfo({
 							/>
 						</Provider>
 					</div>
-				</div>
+				</ClayLayout.Row>
 
 				<div className={nameInputError ? 'has-error' : ''}>
 					<label>
@@ -178,8 +197,13 @@ export default function EditGeneralInfo({
 				<label className="toggle-switch">
 					<ClayToggle
 						aria-label="Multi Value"
-						onToggle={setToggle}
-						toggled={toggled}
+						onToggle={(checked) => {
+							onChangeVocabulary(() => ({
+								...vocabulary,
+								multiValued: checked,
+							}));
+						}}
+						toggled={vocabulary.multiValued}
 					/>
 
 					{Liferay.Language.get('allow-multiple-categories')}
@@ -210,7 +234,16 @@ export default function EditGeneralInfo({
 
 					<ClaySelectWithOption
 						aria-label={Liferay.Language.get('visibility')}
+						className={isNew ? undefined : 'bg-white'}
+						disabled={!isNew}
+						onChange={(event) =>
+							onChangeVocabulary(() => ({
+								...vocabulary,
+								visibilityType: event.target.value,
+							}))
+						}
 						options={VISIBILITY_OPTIONS}
+						value={vocabulary.visibilityType}
 					/>
 				</div>
 			</ClayForm.Group>
@@ -221,11 +254,29 @@ export default function EditGeneralInfo({
 				</div>
 
 				<CategorizationSpaces
+					assetLibraries={assetLibraries}
 					checkboxText="vocabulary"
-					setSelectedSpaces={setSelectedSpaces}
+					selectedSpaces={
+						vocabulary.assetLibraries
+							? vocabulary.assetLibraries.map(
+									(item: AssetLibraryType) => item.id
+								)
+							: []
+					}
+					setSelectedSpaces={onChangeSelectedSpaces}
+					setSpaceChange={setSpaceChange}
 					setSpaceInputError={setSpaceInputError}
+					spaceInputError={spaceInputError}
 				/>
 			</ClayForm.Group>
+
+			{showPermissions && (
+				<PermissionsFormGroup
+					onChange={(newPermissions: IPermissionItem[]) => {
+						setVocabularyPermissions(newPermissions);
+					}}
+				/>
+			)}
 		</div>
 	);
 }

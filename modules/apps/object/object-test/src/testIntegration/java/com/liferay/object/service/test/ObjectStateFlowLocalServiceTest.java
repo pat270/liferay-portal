@@ -80,7 +80,7 @@ public class ObjectStateFlowLocalServiceTest {
 		_objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(), 0, null, false, false, true, false,
-				false, false,
+				false, false, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -389,7 +389,8 @@ public class ObjectStateFlowLocalServiceTest {
 		return _listTypeEntryLocalService.addListTypeEntry(
 			null, TestPropsValues.getUserId(),
 			_listTypeDefinition.getListTypeDefinitionId(), key,
-			LocalizedMapUtil.getLocalizedMap(key));
+			LocalizedMapUtil.getLocalizedMap(key),
+			_listTypeDefinition.isSystem());
 	}
 
 	private ObjectField _addObjectField(

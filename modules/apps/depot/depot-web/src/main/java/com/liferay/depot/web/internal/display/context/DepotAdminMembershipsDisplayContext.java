@@ -35,14 +35,14 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 
+import jakarta.portlet.PortletURL;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
-
-import javax.portlet.PortletURL;
 
 /**
  * @author Cristina González
@@ -169,11 +169,7 @@ public class DepotAdminMembershipsDisplayContext {
 	public boolean isInheritedDepotGroupsEmpty() throws PortalException {
 		List<Group> groups = getInheritedDepotGroups();
 
-		if (groups.isEmpty()) {
-			return true;
-		}
-
-		return false;
+		return groups.isEmpty();
 	}
 
 	public boolean isSelectable() {

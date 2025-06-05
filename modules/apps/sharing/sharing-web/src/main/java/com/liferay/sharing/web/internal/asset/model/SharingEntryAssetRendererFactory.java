@@ -23,7 +23,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Mikel Lorza
  */
 @Component(
-	property = "javax.portlet.name=" + SharingPortletKeys.SHARING,
+	property = "jakarta.portlet.name=" + SharingPortletKeys.SHARING,
 	service = AssetRendererFactory.class
 )
 public class SharingEntryAssetRendererFactory
@@ -71,13 +71,8 @@ public class SharingEntryAssetRendererFactory
 
 	@Override
 	public boolean isSearchable() {
-		if (FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-17564")) {
-
-			return true;
-		}
-
-		return false;
+		return FeatureFlagManagerUtil.isEnabled(
+			CompanyThreadLocal.getCompanyId(), "LPD-17564");
 	}
 
 	@Reference

@@ -83,6 +83,10 @@ export class CommerceAdminChannelDetailsPage {
 		buttonName: string,
 		tableName: string
 	) => Promise<Locator>;
+	readonly sidePanelFrameInput: (
+		input: string,
+		tableName: string
+	) => Promise<Locator>;
 	readonly sidePanelFrameEditMenuItem: (
 		tableName: string
 	) => Promise<Locator>;
@@ -312,6 +316,12 @@ export class CommerceAdminChannelDetailsPage {
 				{exact: true, name: buttonName}
 			);
 		};
+		this.sidePanelFrameInput = async (
+			inputName: string,
+			tableName: string
+		) => {
+			return (await this.sidePanelFrame(tableName)).getByLabel(inputName);
+		};
 		this.sidePanelFrameEditMenuItem = async (tableName: string) => {
 			return (await this.sidePanelFrame(tableName)).getByRole(
 				'menuitem',
@@ -366,6 +376,20 @@ export class CommerceAdminChannelDetailsPage {
 			await isActiveCheckbox.check();
 		}
 		await (await this.isActive(tableName)).check();
+		await (await this.frameSaveButton(false, tableName)).click();
+		await waitForAlert(await this.sidePanelFrame(tableName));
+		await (await this.closeSidePanelFrame(false, tableName)).click();
+	}
+
+	async deactivateChannelConfiguration(name: string, tableName: string) {
+		const isActiveCheckbox = await this.isActive(tableName);
+
+		await (await this.generalCommerceAdminChannelTableLink(name)).click();
+
+		if (await isActiveCheckbox.isChecked()) {
+			await isActiveCheckbox.uncheck();
+		}
+		await (await this.isActive(tableName)).uncheck();
 		await (await this.frameSaveButton(false, tableName)).click();
 		await waitForAlert(await this.sidePanelFrame(tableName));
 		await (await this.closeSidePanelFrame(false, tableName)).click();

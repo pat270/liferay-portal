@@ -20,17 +20,17 @@ import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTa
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
+import jakarta.annotation.Generated;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import jakarta.ws.rs.core.UriInfo;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.annotation.Generated;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -51,14 +51,15 @@ public interface PageTemplateResource {
 			String pageTemplateExternalReferenceCode)
 		throws Exception;
 
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getSitePageTemplatePermissionsPage(
+				String siteExternalReferenceCode,
+				String pageTemplateExternalReferenceCode, String roleNames)
+		throws Exception;
+
 	public PageTemplate getSiteSiteByExternalReferenceCodePageTemplate(
 			String siteExternalReferenceCode,
 			String pageTemplateExternalReferenceCode)
-		throws Exception;
-
-	public Page<com.liferay.portal.vulcan.permission.Permission>
-			getSiteSiteByExternalReferenceCodePageTemplatePermissionsPage(
-				String siteExternalReferenceCode, String roleNames)
 		throws Exception;
 
 	public Page<PageTemplate>
@@ -74,12 +75,6 @@ public interface PageTemplateResource {
 				com.liferay.portal.kernel.search.filter.Filter filter,
 				Pagination pagination,
 				com.liferay.portal.kernel.search.Sort[] sorts)
-		throws Exception;
-
-	public Page<com.liferay.portal.vulcan.permission.Permission>
-			getSiteSiteExternalReferenceCodePageTemplatePermissionsPage(
-				String siteExternalReferenceCode,
-				String pageTemplateExternalReferenceCode, String roleNames)
 		throws Exception;
 
 	public PageTemplate patchSiteSiteByExternalReferenceCodePageTemplate(
@@ -105,22 +100,16 @@ public interface PageTemplateResource {
 				PageTemplate pageTemplate)
 		throws Exception;
 
-	public PageTemplate putSiteSiteByExternalReferenceCodePageTemplate(
-			String siteExternalReferenceCode,
-			String pageTemplateExternalReferenceCode, PageTemplate pageTemplate)
-		throws Exception;
-
 	public Page<com.liferay.portal.vulcan.permission.Permission>
-			putSiteSiteByExternalReferenceCodePageTemplatePermissionsPage(
-				String siteExternalReferenceCode,
-				com.liferay.portal.vulcan.permission.Permission[] permissions)
-		throws Exception;
-
-	public Page<com.liferay.portal.vulcan.permission.Permission>
-			putSiteSiteExternalReferenceCodePageTemplatePermissionsPage(
+			putSitePageTemplatePermissionsPage(
 				String siteExternalReferenceCode,
 				String pageTemplateExternalReferenceCode,
 				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception;
+
+	public PageTemplate putSiteSiteByExternalReferenceCodePageTemplate(
+			String siteExternalReferenceCode,
+			String pageTemplateExternalReferenceCode, PageTemplate pageTemplate)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

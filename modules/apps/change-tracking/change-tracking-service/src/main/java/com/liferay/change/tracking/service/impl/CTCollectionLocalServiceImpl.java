@@ -7,7 +7,7 @@ package com.liferay.change.tracking.service.impl;
 
 import com.liferay.change.tracking.closure.CTClosure;
 import com.liferay.change.tracking.closure.CTClosureFactory;
-import com.liferay.change.tracking.configuration.CTConflictConfiguration;
+import com.liferay.change.tracking.configuration.CTSettingsConfiguration;
 import com.liferay.change.tracking.conflict.CTEntryConflictHelper;
 import com.liferay.change.tracking.conflict.ConflictInfo;
 import com.liferay.change.tracking.constants.CTConstants;
@@ -70,6 +70,8 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.IndexWriterHelper;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
@@ -78,6 +80,8 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
@@ -119,7 +123,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Preston Crary
  */
 @Component(
-	configurationPid = "com.liferay.change.tracking.configuration.CTConflictConfiguration",
+	configurationPid = "com.liferay.change.tracking.configuration.CTSettingsConfiguration",
 	property = "model.class.name=com.liferay.change.tracking.model.CTCollection",
 	service = AopService.class
 )
@@ -164,6 +168,24 @@ public class CTCollectionLocalServiceImpl
 			CTCollection.class.getName(), ctCollection.getCtCollectionId(),
 			false, false, false);
 
+		CTSettingsConfiguration ctSettingsConfiguration =
+			_configurationProvider.getCompanyConfiguration(
+				CTSettingsConfiguration.class, ctCollection.getCompanyId());
+
+		if (ArrayUtil.isNotEmpty(
+				ctSettingsConfiguration.defaultOwnerActionIds())) {
+
+			Role role = _roleLocalService.getRole(
+				ctCollection.getCompanyId(), RoleConstants.OWNER);
+
+			_resourcePermissionLocalService.setResourcePermissions(
+				ctCollection.getCompanyId(), CTCollection.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL,
+				String.valueOf(ctCollection.getCtCollectionId()),
+				role.getRoleId(),
+				ctSettingsConfiguration.defaultOwnerActionIds());
+		}
+
 		return ctCollection;
 	}
 
@@ -191,9 +213,9 @@ public class CTCollectionLocalServiceImpl
 		Map<Long, List<ConflictInfo>> conflictInfoMap = new HashMap<>();
 
 		Map<Long, CTConflictChecker<?>> ctConflictCheckers = new HashMap<>();
-		CTConflictConfiguration ctConflictConfiguration =
+		CTSettingsConfiguration ctSettingsConfiguration =
 			_configurationProvider.getCompanyConfiguration(
-				CTConflictConfiguration.class, companyId);
+				CTSettingsConfiguration.class, companyId);
 
 		for (CTEntry ctEntry : ctEntries) {
 			CTConflictChecker<?> ctConflictChecker =
@@ -215,10 +237,10 @@ public class CTCollectionLocalServiceImpl
 						return new CTConflictChecker<>(
 							_classNameLocalService,
 							_constraintResolverServiceTrackerMap,
-							ctConflictConfiguration,
 							_ctDisplayRendererServiceTrackerMap,
 							_ctEntryConflictHelperServiceTrackerMap,
-							_ctEntryLocalService, ctService, modelClassNameId,
+							_ctEntryLocalService, ctService,
+							ctSettingsConfiguration, modelClassNameId,
 							fromCTCollectionId,
 							_tableReferenceDefinitionManager, toCTCollectionId);
 					});
@@ -596,7 +618,8 @@ public class CTCollectionLocalServiceImpl
 		for (Map.Entry<Long, List<CTEntry>> entry :
 				relateCTEntriesMap.entrySet()) {
 
-			_discardCTEntries(ctCollection, entry.getKey(), entry.getValue());
+			_discardCTEntries(
+				ctCollection, entry.getKey(), entry.getValue(), force);
 		}
 
 		_ctClosureFactory.clearCache(ctCollection.getCtCollectionId());
@@ -1208,7 +1231,7 @@ public class CTCollectionLocalServiceImpl
 
 	private void _discardCTEntries(
 			CTCollection ctCollection, long classNameId,
-			List<CTEntry> ctEntries)
+			List<CTEntry> ctEntries, boolean force)
 		throws PortalException {
 
 		if (ListUtil.isEmpty(ctEntries)) {
@@ -1245,7 +1268,7 @@ public class CTCollectionLocalServiceImpl
 		for (CTEntry ctEntry : ctEntries) {
 			modelClassPKs.add(ctEntry.getModelClassPK());
 
-			_ctEntryLocalService.deleteCTEntry(ctEntry);
+			_ctEntryLocalService.deleteCTEntry(ctEntry, force);
 		}
 
 		try (SafeCloseable safeCloseable =
@@ -1732,6 +1755,12 @@ public class CTCollectionLocalServiceImpl
 
 	@Reference
 	private ResourceLocalService _resourceLocalService;
+
+	@Reference
+	private ResourcePermissionLocalService _resourcePermissionLocalService;
+
+	@Reference
+	private RoleLocalService _roleLocalService;
 
 	@Reference
 	private TableReferenceDefinitionManager _tableReferenceDefinitionManager;

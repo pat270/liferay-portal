@@ -6,7 +6,6 @@
 package com.liferay.learn;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.BufferedWriter;
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Nilton Vieira
@@ -77,7 +77,7 @@ public class ExamResultsDownloadRestController extends BaseRestController {
 					"Date of Test Taken", "Test Score", "Test Result"
 				).build())) {
 
-			String filterString = "&filter=";
+			String filterString = "";
 
 			if (Validator.isNotNull(endDate)) {
 				filterString += "date le " + endDate;
@@ -97,9 +97,16 @@ public class ExamResultsDownloadRestController extends BaseRestController {
 				JSONObject jsonObject1 = new JSONObject(
 					get(
 						"Bearer " + jwt.getTokenValue(),
-						StringBundler.concat(
-							"/o/c/p2s3examresults/scopes/", _siteGroupId,
-							"?pageSize=500&page=", i, filterString)));
+						UriComponentsBuilder.fromPath(
+							"/o/c/p2s3examresults/scopes/" + _siteGroupId
+						).queryParam(
+							"filter", filterString
+						).queryParam(
+							"page", i
+						).queryParam(
+							"pageSize", 500
+						).build(
+						).toUri()));
 
 				JSONArray jsonArray = jsonObject1.getJSONArray("items");
 

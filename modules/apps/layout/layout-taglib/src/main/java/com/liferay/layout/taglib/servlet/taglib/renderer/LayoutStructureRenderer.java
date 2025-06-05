@@ -85,17 +85,17 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.layoutconfiguration.util.RuntimePageUtil;
 import com.liferay.portal.util.PropsValues;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.PageContext;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.JspWriter;
-import javax.servlet.jsp.PageContext;
 
 /**
  * @author Mikel Lorza
@@ -284,10 +284,15 @@ public class LayoutStructureRenderer {
 
 		jspWriter.write(" id=\"analytics-targetable-collection-");
 		jspWriter.write(collectionStyledLayoutStructureItem.getItemId());
-		jspWriter.write("\" style=\"");
-		jspWriter.write(
-			_renderLayoutStructureDisplayContext.getStyle(
-				collectionStyledLayoutStructureItem));
+
+		String style = _renderLayoutStructureDisplayContext.getStyle(
+			collectionStyledLayoutStructureItem);
+
+		if (Validator.isNotNull(style)) {
+			jspWriter.write("\" style=\"");
+			jspWriter.write(style);
+		}
+
 		jspWriter.write("\">");
 
 		List<String> collectionStyledLayoutStructureItemIds =
@@ -728,20 +733,27 @@ public class LayoutStructureRenderer {
 
 		jspWriter.write("\" data-layout-structure-item-id=\"");
 		jspWriter.write(containerStyledLayoutStructureItem.getItemId());
-		jspWriter.write("\" style=\"");
 
-		String contentVisibility =
-			containerStyledLayoutStructureItem.getContentVisibility();
+		StringBundler sb = new StringBundler(4);
 
-		if (Validator.isNotNull(contentVisibility)) {
-			jspWriter.append("content-visibility:");
-			jspWriter.append(contentVisibility);
-			jspWriter.append(StringPool.SEMICOLON);
+		if (Validator.isNotNull(
+				containerStyledLayoutStructureItem.getContentVisibility())) {
+
+			sb.append("content-visibility:");
+			sb.append(
+				containerStyledLayoutStructureItem.getContentVisibility());
+			sb.append(StringPool.SEMICOLON);
 		}
 
-		jspWriter.write(
+		sb.append(
 			_renderLayoutStructureDisplayContext.getStyle(
 				containerStyledLayoutStructureItem));
+
+		if (sb.length() > 0) {
+			jspWriter.write("\" style=\"");
+			jspWriter.write(sb.toString());
+		}
+
 		jspWriter.write("\">");
 
 		_renderLayoutStructure(
@@ -917,11 +929,15 @@ public class LayoutStructureRenderer {
 			formStepContainerStyledLayoutStructureItem.getStyledCssClasses());
 		jspWriter.write("\" data-layout-structure-item-id=\"");
 		jspWriter.write(formStepContainerStyledLayoutStructureItem.getItemId());
-		jspWriter.write("\" style=\"");
 
-		jspWriter.write(
-			_renderLayoutStructureDisplayContext.getStyle(
-				formStepContainerStyledLayoutStructureItem));
+		String style = _renderLayoutStructureDisplayContext.getStyle(
+			formStepContainerStyledLayoutStructureItem);
+
+		if (Validator.isNotNull(style)) {
+			jspWriter.write("\" style=\"");
+			jspWriter.write(style);
+		}
+
 		jspWriter.write("\">");
 
 		List<String> childrenItemIds =
@@ -1032,17 +1048,33 @@ public class LayoutStructureRenderer {
 
 		jspWriter.write("\" data-layout-structure-item-id=\"");
 		jspWriter.write(formStyledLayoutStructureItem.getItemId());
-		jspWriter.write(
-			"\" enctype=\"multipart/form-data\" method=\"POST\" style=\"");
-		jspWriter.write(
-			_renderLayoutStructureDisplayContext.getStyle(
-				formStyledLayoutStructureItem));
-		jspWriter.write("\"><input name=\"redirect\" type=\"hidden\" value=\"");
-		jspWriter.write(
+		jspWriter.write("\" enctype=\"multipart/form-data\" id=\"");
+		jspWriter.write(formStyledLayoutStructureItem.getUniqueCssClass());
+		jspWriter.write("\" method=\"POST");
+
+		String style = _renderLayoutStructureDisplayContext.getStyle(
+			formStyledLayoutStructureItem);
+
+		if (Validator.isNotNull(style)) {
+			jspWriter.write("\" style=\"");
+			jspWriter.write(style);
+		}
+
+		jspWriter.write("\">");
+
+		String redirect =
 			_renderLayoutStructureDisplayContext.
 				getFormStyledLayoutStructureItemRedirect(
-					formStyledLayoutStructureItem));
-		jspWriter.write("\"><input name=\"backURL\" type=\"hidden\" value=\"");
+					formStyledLayoutStructureItem);
+
+		if (Validator.isNotNull(redirect)) {
+			jspWriter.write(
+				"<input name=\"redirect\" type=\"hidden\" value=\"");
+			jspWriter.write(redirect);
+			jspWriter.write("\">");
+		}
+
+		jspWriter.write("<input name=\"backURL\" type=\"hidden\" value=\"");
 		jspWriter.write(_themeDisplay.getURLCurrent());
 		jspWriter.write(
 			"\"><input name=\"classNameId\" type=\"hidden\" value=\"");
@@ -1444,10 +1476,15 @@ public class LayoutStructureRenderer {
 		jspWriter.write(rowStyledLayoutStructureItem.getStyledCssClasses());
 		jspWriter.write("\" data-layout-structure-item-id=\"");
 		jspWriter.write(rowStyledLayoutStructureItem.getItemId());
-		jspWriter.write("\" style=\"");
-		jspWriter.write(
-			_renderLayoutStructureDisplayContext.getStyle(
-				rowStyledLayoutStructureItem));
+
+		String style = _renderLayoutStructureDisplayContext.getStyle(
+			rowStyledLayoutStructureItem);
+
+		if (Validator.isNotNull(style)) {
+			jspWriter.write("\" style=\"");
+			jspWriter.write(style);
+		}
+
 		jspWriter.write("\">");
 
 		if (_renderLayoutStructureDisplayContext.isIncludeContainer(
@@ -1529,10 +1566,15 @@ public class LayoutStructureRenderer {
 
 		jspWriter.write("\" data-layout-structure-item-id=\"");
 		jspWriter.write(fragmentStyledLayoutStructureItem.getItemId());
-		jspWriter.write("\" style=\"");
-		jspWriter.write(
-			_renderLayoutStructureDisplayContext.getStyle(
-				fragmentStyledLayoutStructureItem));
+
+		String style = _renderLayoutStructureDisplayContext.getStyle(
+			fragmentStyledLayoutStructureItem);
+
+		if (Validator.isNotNull(style)) {
+			jspWriter.write("\" style=\"");
+			jspWriter.write(style);
+		}
+
 		jspWriter.write("\">");
 	}
 

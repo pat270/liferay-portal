@@ -6,7 +6,6 @@
 package com.liferay.learn;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
-import com.liferay.petra.string.StringBundler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author José Abelenda
@@ -38,12 +38,18 @@ public class ObjectActionCourseRestController extends BaseRestController {
 		JSONObject responseJSONObject = new JSONObject(
 			get(
 				"Bearer " + jwt.getTokenValue(),
-				StringBundler.concat(
-					"/o/c/courses/scopes/", _siteGroupId,
-					"?fields=id,module.lessonDurationMinutes,module.lessons,",
-					"module.quizDurationMinutes,module.quizzes&filter=",
-					"module/id eq '", _getModuleId(json),
-					"'&nestedFields=module")));
+				UriComponentsBuilder.fromPath(
+					"/o/c/courses/scopes/" + _siteGroupId
+				).queryParam(
+					"fields",
+					"id,module.lessonDurationMinutes,module.lessons," +
+						"module.quizDurationMinutes,module.quizzes"
+				).queryParam(
+					"filter", "module/id eq '" + _getModuleId(json) + "'"
+				).queryParam(
+					"nestedFields", "module"
+				).build(
+				).toUri()));
 
 		JSONArray itemsJSONArray = responseJSONObject.getJSONArray("items");
 
@@ -54,7 +60,7 @@ public class ObjectActionCourseRestController extends BaseRestController {
 			_getPayloadJSONObject(
 				itemJSONObject.getJSONArray("module")
 			).toString(),
-			"/o/c/courses/" + itemJSONObject.getLong("id"));
+			createURI("/o/c/courses/", itemJSONObject.getLong("id")));
 
 		if (_log.isInfoEnabled()) {
 			_log.info("Updated course " + itemJSONObject.getLong("id"));

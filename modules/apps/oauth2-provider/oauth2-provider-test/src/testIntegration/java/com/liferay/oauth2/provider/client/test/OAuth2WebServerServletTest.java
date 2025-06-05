@@ -10,26 +10,29 @@ import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.oauth2.provider.internal.test.TestPreviewURLApplication;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.ext.RuntimeDelegate;
+
 import java.util.Arrays;
 import java.util.Collections;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.ext.RuntimeDelegate;
 
 import org.apache.cxf.jaxrs.client.spec.ClientBuilderImpl;
 import org.apache.cxf.jaxrs.impl.RuntimeDelegateImpl;
@@ -80,13 +83,44 @@ public class OAuth2WebServerServletTest extends BaseClientTestCase {
 		Assert.assertEquals(_TEST_FILE_CONTENT, fileContent);
 	}
 
-	public static class OAuth2WebServerServletTestPreparator
+	@Override
+	protected BundleActivator getBundleActivator() {
+		return new OAuth2WebServerServletTestPreparator();
+	}
+
+	private WebTarget _getRootWebTarget(String path) throws Exception {
+		ClientBuilder clientBuilder = new ClientBuilderImpl();
+
+		Client client = clientBuilder.build();
+
+		RuntimeDelegate runtimeDelegate = new RuntimeDelegateImpl();
+
+		UriBuilder uriBuilder = runtimeDelegate.createUriBuilder();
+
+		Company company = CompanyLocalServiceUtil.getCompany(
+			TestPropsValues.getCompanyId());
+
+		return client.target(
+			uriBuilder.uri(
+				StringBundler.concat(
+					"http://", company.getVirtualHostname(), ":8080", path)));
+	}
+
+	private static final String _TEST_FILE_CONTENT = "Test File Content";
+
+	@Inject
+	private DLAppLocalService _dlAppLocalService;
+
+	@Inject
+	private DLURLHelper _dlURLHelper;
+
+	private class OAuth2WebServerServletTestPreparator
 		extends BaseTestPreparatorBundleActivator {
 
 		@Override
 		protected void prepareTest() throws Exception {
 			User user = UserTestUtil.getAdminUser(
-				PortalUtil.getDefaultCompanyId());
+				TestPropsValues.getCompanyId());
 
 			FileEntry fileEntry = _dlAppLocalService.addFileEntry(
 				null, user.getUserId(), user.getGroupId(), 0, "test-file.txt",
@@ -104,36 +138,11 @@ public class OAuth2WebServerServletTest extends BaseClientTestCase {
 				).build());
 
 			createOAuth2Application(
-				PortalUtil.getDefaultCompanyId(), user, "oauthTestApplication",
+				TestPropsValues.getCompanyId(), user, "oauthTestApplication",
 				Collections.singletonList(GrantType.CLIENT_CREDENTIALS),
 				Arrays.asList("GET", "everything.read.documents.download"));
 		}
 
 	}
-
-	@Override
-	protected BundleActivator getBundleActivator() {
-		return new OAuth2WebServerServletTestPreparator();
-	}
-
-	private WebTarget _getRootWebTarget(String path) {
-		ClientBuilder clientBuilder = new ClientBuilderImpl();
-
-		Client client = clientBuilder.build();
-
-		RuntimeDelegate runtimeDelegate = new RuntimeDelegateImpl();
-
-		UriBuilder uriBuilder = runtimeDelegate.createUriBuilder();
-
-		return client.target(uriBuilder.uri("http://localhost:8080" + path));
-	}
-
-	private static final String _TEST_FILE_CONTENT = "Test File Content";
-
-	@Inject
-	private static DLAppLocalService _dlAppLocalService;
-
-	@Inject
-	private static DLURLHelper _dlURLHelper;
 
 }

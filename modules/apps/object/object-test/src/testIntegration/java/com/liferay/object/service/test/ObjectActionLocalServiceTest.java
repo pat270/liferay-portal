@@ -17,7 +17,10 @@ import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceSubscriptionEntry;
 import com.liferay.commerce.order.engine.CommerceOrderEngine;
 import com.liferay.commerce.payment.engine.CommerceSubscriptionEngine;
+import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CommerceChannel;
+import com.liferay.commerce.product.service.CPDefinitionLocalService;
+import com.liferay.commerce.product.test.util.CPTestUtil;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.service.CommerceSubscriptionEntryLocalService;
 import com.liferay.commerce.test.util.CommerceTestUtil;
@@ -94,6 +97,7 @@ import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -138,6 +142,9 @@ import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManager;
 import com.liferay.portal.security.script.management.test.rule.ScriptManagementConfigurationTestRule;
 import com.liferay.portal.security.script.management.test.util.ScriptManagementConfigurationTestUtil;
+import com.liferay.portal.test.mail.MailMessage;
+import com.liferay.portal.test.mail.MailServiceTestUtil;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -153,14 +160,16 @@ import java.lang.reflect.Method;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.FutureTask;
 
 import org.hamcrest.CoreMatchers;
 
@@ -178,7 +187,11 @@ import org.osgi.framework.FrameworkUtil;
 /**
  * @author Brian Wing Shun Chan
  */
-@FeatureFlags({"LPD-34594", "LPS-173537"})
+@FeatureFlags(
+	featureFlags = {
+		@FeatureFlag(value = "LPD-34594"), @FeatureFlag(value = "LPS-173537")
+	}
+)
 @RunWith(Arquillian.class)
 public class ObjectActionLocalServiceTest {
 
@@ -717,7 +730,7 @@ public class ObjectActionLocalServiceTest {
 
 			Assert.assertEquals(0, _argumentsList.size());
 
-			objectEntry = _objectEntryLocalService.updateObjectEntry(
+			objectEntry = _objectEntryLocalService.partialUpdateObjectEntry(
 				TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 				HashMapBuilder.<String, Serializable>put(
 					"firstName", "João"
@@ -775,7 +788,7 @@ public class ObjectActionLocalServiceTest {
 			// Execute standalone system action to update the current object
 			// entry
 
-			objectEntry = _objectEntryLocalService.updateObjectEntry(
+			objectEntry = _objectEntryLocalService.partialUpdateObjectEntry(
 				TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 				HashMapBuilder.<String, Serializable>put(
 					"firstName", RandomTestUtil.randomString()
@@ -1198,6 +1211,13 @@ public class ObjectActionLocalServiceTest {
 					JSONUtil.put(
 						"inputAsValue", true
 					).put(
+						"name", "paymentStatus"
+					).put(
+						"value", CommerceOrderPaymentConstants.STATUS_PENDING
+					),
+					JSONUtil.put(
+						"inputAsValue", true
+					).put(
 						"name", "shippingAmount"
 					).put(
 						"value", "10"
@@ -1259,6 +1279,64 @@ public class ObjectActionLocalServiceTest {
 			CommerceOrderConstants.ORDER_STATUS_OPEN,
 			commerceOrder2.getOrderStatus());
 
+		// Commerce product definition system object definition
+
+		ObjectDefinition commerceProductObjectDefinition =
+			_objectDefinitionLocalService.fetchObjectDefinitionByClassName(
+				TestPropsValues.getCompanyId(), CPDefinition.class.getName());
+
+		_publishCustomObjectDefinition();
+
+		ObjectAction objectAction3 = _addObjectAction(
+			commerceProductObjectDefinition.getObjectDefinitionId(),
+			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
+			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE,
+			UnicodePropertiesBuilder.put(
+				"objectDefinitionId", _objectDefinition.getObjectDefinitionId()
+			).put(
+				"predefinedValues",
+				JSONUtil.putAll(
+					JSONUtil.put(
+						"inputAsValue", true
+					).put(
+						"name", "firstName"
+					).put(
+						"value", RandomTestUtil.randomString()
+					)
+				).toString()
+			).build());
+
+		CPDefinition cpDefinition = CPTestUtil.addCPDefinition(
+			_group.getGroupId());
+
+		Date displayDate = cpDefinition.getDisplayDate();
+		Date expirationDate = cpDefinition.getExpirationDate();
+
+		_cpDefinitionLocalService.updateCPDefinition(
+			cpDefinition.getCPDefinitionId(), cpDefinition.getNameMap(),
+			cpDefinition.getShortDescriptionMap(),
+			cpDefinition.getDescriptionMap(), cpDefinition.getUrlTitleMap(),
+			cpDefinition.getMetaTitleMap(),
+			cpDefinition.getMetaDescriptionMap(),
+			cpDefinition.getMetaKeywordsMap(),
+			cpDefinition.isIgnoreSKUCombinations(), true, true, true,
+			cpDefinition.getShippingExtraPrice(), cpDefinition.getWidth(),
+			cpDefinition.getHeight(), cpDefinition.getDepth(),
+			cpDefinition.getWeight(), cpDefinition.getCPTaxCategoryId(),
+			cpDefinition.isTaxExempt(), cpDefinition.isTelcoOrElectronics(),
+			cpDefinition.getDDMStructureKey(), cpDefinition.isPublished(),
+			displayDate.getMonth(), displayDate.getDate(),
+			displayDate.getYear(), displayDate.getHours(),
+			displayDate.getMinutes(), expirationDate.getMonth(),
+			expirationDate.getDate(), expirationDate.getYear(),
+			expirationDate.getHours(), expirationDate.getMinutes(), true,
+			ServiceContextTestUtil.getServiceContext());
+
+		Assert.assertEquals(
+			1,
+			_objectEntryLocalService.getObjectEntriesCount(
+				0, _objectDefinition.getObjectDefinitionId()));
+
 		// Organization system object definition
 
 		ObjectDefinition organizationObjectDefinition =
@@ -1285,7 +1363,7 @@ public class ObjectActionLocalServiceTest {
 		String objectFieldValue1 = RandomTestUtil.randomString();
 		String organizationName1 = RandomTestUtil.randomString();
 
-		ObjectAction objectAction3 = _addObjectAction(
+		ObjectAction objectAction4 = _addObjectAction(
 			organizationObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1323,7 +1401,7 @@ public class ObjectActionLocalServiceTest {
 		String objectFieldValue2 = RandomTestUtil.randomString();
 		String organizationName2 = RandomTestUtil.randomString();
 
-		ObjectAction objectAction4 = _addObjectAction(
+		ObjectAction objectAction5 = _addObjectAction(
 			RandomTestUtil.randomString(),
 			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1357,8 +1435,6 @@ public class ObjectActionLocalServiceTest {
 				).toString()
 			).build(),
 			false);
-
-		_publishCustomObjectDefinition();
 
 		OrganizationTestUtil.addOrganization(
 			OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID,
@@ -1424,7 +1500,7 @@ public class ObjectActionLocalServiceTest {
 
 		// Add object action to create user after adding an object entry
 
-		ObjectAction objectAction5 = _addObjectAction(
+		ObjectAction objectAction6 = _addObjectAction(
 			RandomTestUtil.randomString(),
 			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1475,7 +1551,7 @@ public class ObjectActionLocalServiceTest {
 
 		// Add object action to update user after adding a user
 
-		ObjectAction objectAction6 = _addObjectAction(
+		ObjectAction objectAction7 = _addObjectAction(
 			userObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_UPDATE_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1530,14 +1606,14 @@ public class ObjectActionLocalServiceTest {
 
 		_userLocalService.deleteUser(user);
 
-		_objectActionLocalService.deleteObjectAction(objectAction3);
 		_objectActionLocalService.deleteObjectAction(objectAction4);
 		_objectActionLocalService.deleteObjectAction(objectAction5);
 		_objectActionLocalService.deleteObjectAction(objectAction6);
+		_objectActionLocalService.deleteObjectAction(objectAction7);
 
 		// Add object action to execute Groovy after adding a user
 
-		objectAction3 = _addObjectAction(
+		objectAction4 = _addObjectAction(
 			userObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_GROOVY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1547,7 +1623,7 @@ public class ObjectActionLocalServiceTest {
 
 		// Add object action to execute Groovy after updating a user
 
-		objectAction4 = _addObjectAction(
+		objectAction5 = _addObjectAction(
 			userObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_GROOVY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE,
@@ -1576,6 +1652,7 @@ public class ObjectActionLocalServiceTest {
 		_objectActionLocalService.deleteObjectAction(objectAction2);
 		_objectActionLocalService.deleteObjectAction(objectAction3);
 		_objectActionLocalService.deleteObjectAction(objectAction4);
+		_objectActionLocalService.deleteObjectAction(objectAction5);
 		_objectFieldLocalService.deleteObjectField(objectField1);
 		_objectFieldLocalService.deleteObjectField(objectField2);
 		_objectFieldLocalService.deleteObjectField(objectField3);
@@ -1725,41 +1802,8 @@ public class ObjectActionLocalServiceTest {
 				PermissionCheckerFactoryUtil.create(_user));
 			PrincipalThreadLocal.setName(_user.getUserId());
 
-			Thread thread1 = new Thread(
-				() -> {
-					try {
-						_objectEntryLocalService.addObjectEntry(
-							TestPropsValues.getUserId(), 0,
-							_objectDefinition.getObjectDefinitionId(),
-							ObjectEntryFolderConstants.
-								PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
-							null,
-							HashMapBuilder.<String, Serializable>put(
-								"firstName", "John"
-							).build(),
-							ServiceContextTestUtil.getServiceContext());
-					}
-					catch (PortalException portalException) {
-					}
-				});
-
-			Thread thread2 = new Thread(
-				() -> {
-					try {
-						_objectEntryLocalService.addObjectEntry(
-							TestPropsValues.getUserId(), 0,
-							_objectDefinition.getObjectDefinitionId(),
-							ObjectEntryFolderConstants.
-								PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
-							null,
-							HashMapBuilder.<String, Serializable>put(
-								"firstName", "Peter"
-							).build(),
-							ServiceContextTestUtil.getServiceContext());
-					}
-					catch (PortalException portalException) {
-					}
-				});
+			Thread thread1 = new Thread(_getAddObjectEntryFutureTask("John"));
+			Thread thread2 = new Thread(_getAddObjectEntryFutureTask("Peter"));
 
 			thread1.start();
 			thread2.start();
@@ -2677,6 +2721,61 @@ public class ObjectActionLocalServiceTest {
 	}
 
 	@Test
+	public void testUpdateNotificationTemplateObjectAction() throws Exception {
+		MailServiceTestUtil.clearMessages();
+
+		ObjectDefinition objectDefinition = _publishCustomObjectDefinition();
+
+		String body = RandomTestUtil.randomString();
+
+		NotificationTemplate notificationTemplate = _addNotificationTemplate(
+			TestPropsValues.getUserId(),
+			objectDefinition.getObjectDefinitionId(), body,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString());
+
+		_addObjectAction(
+			objectDefinition.getObjectDefinitionId(),
+			ObjectActionExecutorConstants.KEY_NOTIFICATION,
+			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
+			UnicodePropertiesBuilder.put(
+				"notificationTemplateId",
+				String.valueOf(notificationTemplate.getNotificationTemplateId())
+			).build());
+
+		_objectEntryLocalService.addObjectEntry(
+			TestPropsValues.getUserId(), 0,
+			objectDefinition.getObjectDefinitionId(),
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			null,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", RandomTestUtil.randomString()
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		_assertEmailNotificationSent(body, 1);
+
+		body = RandomTestUtil.randomString();
+
+		notificationTemplate.setBody(body);
+
+		_notificationTemplateLocalService.updateNotificationTemplate(
+			notificationTemplate);
+
+		_objectEntryLocalService.addObjectEntry(
+			TestPropsValues.getUserId(), 0,
+			objectDefinition.getObjectDefinitionId(),
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			null,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", RandomTestUtil.randomString()
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		_assertEmailNotificationSent(body, 2);
+	}
+
+	@Test
 	public void testUpdateObjectAction() throws Exception {
 		String externalReferenceCode1 = RandomTestUtil.randomString();
 
@@ -2862,23 +2961,23 @@ public class ObjectActionLocalServiceTest {
 				_objectDefinition.getClassName()));
 	}
 
-	private ObjectAction _addNotificationTemplateObjectAction(
-			String objectActionTriggerKey, ObjectDefinition objectDefinition)
+	private NotificationTemplate _addNotificationTemplate(
+			long userId, long objectDefinitionId, String body,
+			String description, String name, String subject)
 		throws Exception {
 
 		NotificationTemplate notificationTemplate =
 			NotificationTemplateLocalServiceUtil.createNotificationTemplate(
 				RandomTestUtil.randomInt());
 
-		notificationTemplate.setUserId(_user.getUserId());
-		notificationTemplate.setObjectDefinitionId(
-			objectDefinition.getObjectDefinitionId());
-		notificationTemplate.setBody(RandomTestUtil.randomString());
-		notificationTemplate.setDescription(RandomTestUtil.randomString());
+		notificationTemplate.setUserId(userId);
+		notificationTemplate.setObjectDefinitionId(objectDefinitionId);
+		notificationTemplate.setBody(body);
+		notificationTemplate.setDescription(description);
 		notificationTemplate.setEditorType(
 			NotificationTemplateConstants.EDITOR_TYPE_RICH_TEXT);
-		notificationTemplate.setName(RandomTestUtil.randomString());
-		notificationTemplate.setSubject(RandomTestUtil.randomString());
+		notificationTemplate.setName(name);
+		notificationTemplate.setSubject(subject);
 		notificationTemplate.setType(NotificationConstants.TYPE_EMAIL);
 
 		NotificationContext notificationContext = new NotificationContext();
@@ -2910,9 +3009,19 @@ public class ObjectActionLocalServiceTest {
 		notificationContext.setNotificationTemplate(notificationTemplate);
 		notificationContext.setType(NotificationConstants.TYPE_EMAIL);
 
-		notificationTemplate =
-			_notificationTemplateLocalService.addNotificationTemplate(
-				notificationContext);
+		return _notificationTemplateLocalService.addNotificationTemplate(
+			notificationContext);
+	}
+
+	private ObjectAction _addNotificationTemplateObjectAction(
+			String objectActionTriggerKey, ObjectDefinition objectDefinition)
+		throws Exception {
+
+		NotificationTemplate notificationTemplate = _addNotificationTemplate(
+			TestPropsValues.getUserId(),
+			objectDefinition.getObjectDefinitionId(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
 		return _addObjectAction(
 			objectDefinition.getObjectDefinitionId(),
@@ -3002,6 +3111,25 @@ public class ObjectActionLocalServiceTest {
 				"firstName"));
 
 		return objectEntry;
+	}
+
+	private void _assertEmailNotificationSent(String body, int inboxSize) {
+		List<NotificationQueueEntry> notificationQueueEntries =
+			_notificationQueueEntryLocalService.getNotificationEntries(
+				NotificationConstants.TYPE_EMAIL,
+				NotificationQueueEntryConstants.STATUS_SENT);
+
+		Assert.assertEquals(
+			notificationQueueEntries.toString(), inboxSize,
+			notificationQueueEntries.size());
+
+		Assert.assertEquals(inboxSize, MailServiceTestUtil.getInboxSize());
+
+		MailMessage lastMailMessage = MailServiceTestUtil.getLastMailMessage();
+
+		String mailMessageBody = lastMailMessage.getBody();
+
+		Assert.assertTrue(mailMessageBody.contains(body));
 	}
 
 	private void _assertGroovyObjectActionExecutorArguments(
@@ -3186,6 +3314,29 @@ public class ObjectActionLocalServiceTest {
 				JSONUtil.getValue(
 					payloadJSONObject, "JSONObject/originalObjectEntry"));
 		}
+	}
+
+	private FutureTask<Void> _getAddObjectEntryFutureTask(String firstName) {
+		return new FutureTask<Void>(
+			new CompanyInheritableThreadLocalCallable(
+				() -> {
+					try {
+						_objectEntryLocalService.addObjectEntry(
+							TestPropsValues.getUserId(), 0,
+							_objectDefinition.getObjectDefinitionId(),
+							ObjectEntryFolderConstants.
+								PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+							null,
+							HashMapBuilder.<String, Serializable>put(
+								"firstName", firstName
+							).build(),
+							ServiceContextTestUtil.getServiceContext());
+					}
+					catch (PortalException portalException) {
+					}
+
+					return null;
+				}));
 	}
 
 	private Object _getAndSetFieldValue(
@@ -3596,7 +3747,8 @@ public class ObjectActionLocalServiceTest {
 	@Inject
 	private AccountEntryLocalService _accountEntryLocalService;
 
-	private final Queue<Object[]> _argumentsList = new LinkedList<>();
+	private final Queue<Object[]> _argumentsList =
+		new ConcurrentLinkedQueue<>();
 	private CommerceChannel _commerceChannel;
 	private CommerceCurrency _commerceCurrency;
 
@@ -3615,6 +3767,9 @@ public class ObjectActionLocalServiceTest {
 
 	@Inject
 	private CompanyLocalService _companyLocalService;
+
+	@Inject
+	private CPDefinitionLocalService _cpDefinitionLocalService;
 
 	private Group _group;
 

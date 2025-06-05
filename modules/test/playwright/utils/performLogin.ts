@@ -37,6 +37,15 @@ export const userData = {
 	},
 };
 
+interface LoginOptions {
+	apiHelpers?: ApiHelpers;
+	domain?: string;
+	loginUrl?: string;
+	page: Page;
+	rememberMe?: boolean;
+	screenName: LoginScreenName | string;
+}
+
 async function performLogin(
 	page: Page,
 	screenName: LoginScreenName | string,
@@ -84,12 +93,14 @@ async function performLogin(
 	return await page.context().cookies();
 }
 
-export async function performLoginViaApi(
-	page: Page,
-	screenName: LoginScreenName | string,
+export async function performLoginViaApi({
+	apiHelpers,
 	domain = '@liferay.com',
-	rememberMe = true
-) {
+	loginUrl = liferayConfig.environment.baseUrl,
+	page,
+	rememberMe = true,
+	screenName,
+}: LoginOptions) {
 	const {password} = userData[screenName || 'test'];
 
 	const params = new URLSearchParams({
@@ -99,26 +110,30 @@ export async function performLoginViaApi(
 	});
 
 	try {
-		await page.goto('/');
+		await page.goto(loginUrl);
 
-		const url = `${liferayConfig.environment.baseUrl}/c/portal/login`;
+		const url = `${loginUrl}/c/portal/login`;
 
 		await page.request.post(url, {
 			data: params.toString(),
 			headers: await getHeader(page, 'application/x-www-form-urlencoded'),
 		});
 
-		await page.goto('/');
+		await page.goto(loginUrl);
 
-		const apiHelpers = new ApiHelpers(page);
+		if (!apiHelpers) {
+			apiHelpers = new ApiHelpers(page, loginUrl);
+		}
 
 		const {alternateName} =
 			await apiHelpers.headlessAdminUser.getMyUserAccount();
 
 		expect(alternateName).toBe(screenName);
 	}
-	catch {
-		throw new Error('Login via API failed');
+	catch (error) {
+		error.message = `Login via API failed\n\n${error.message}`;
+
+		throw error;
 	}
 
 	return await page.context().cookies();

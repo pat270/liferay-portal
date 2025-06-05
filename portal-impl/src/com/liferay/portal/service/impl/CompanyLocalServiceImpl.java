@@ -134,6 +134,9 @@ import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 
+import jakarta.portlet.PortletException;
+import jakarta.portlet.PortletPreferences;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -155,9 +158,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
-
-import javax.portlet.PortletException;
-import javax.portlet.PortletPreferences;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -291,7 +291,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 						_addDemoSettings(updatedCompany);
 					}
 
-					updatedCompany = _checkCompany(updatedCompany, true);
+					updatedCompany = checkCompany(updatedCompany, true);
 
 					if (addDefaultAdminUser) {
 						_userLocalService.addDefaultAdminUser(
@@ -381,7 +381,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				companyId);
 
 		try {
-			DBPartitionUtil.insertDBPartition(companyId);
+			DBPartitionUtil.importDBPartition(companyId);
 		}
 		catch (Throwable throwable) {
 			safeCloseable1.close();
@@ -447,7 +447,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 				_transactionAwareInvoke(
 					() -> {
-						extractCompany(companyId);
+						exportCompany(companyId);
 
 						DBPartitionUtil.removeDBPartition(companyId);
 
@@ -472,6 +472,89 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		}
 	}
 
+	@Override
+	public Company checkCompany(Company company, boolean newCompany)
+		throws PortalException {
+
+		Locale localeThreadLocalDefaultLocale =
+			LocaleThreadLocal.getDefaultLocale();
+		Locale localeThreadSiteDefaultLocale =
+			LocaleThreadLocal.getSiteDefaultLocale();
+
+		try {
+			preregisterCompany(company);
+
+			Locale companyDefaultLocale = LocaleUtil.fromLanguageId(
+				PropsValues.COMPANY_DEFAULT_LOCALE);
+
+			LocaleThreadLocal.setDefaultLocale(companyDefaultLocale);
+
+			LocaleThreadLocal.setSiteDefaultLocale(null);
+
+			// Key
+
+			checkCompanyKey(company.getCompanyId());
+
+			// Virtual host
+
+			company = syncVirtualHost(company);
+
+			// Resource actions
+
+			if (DBPartition.isPartitionEnabled()) {
+				_resourceActionLocalService.checkResourceActions();
+			}
+
+			// System roles
+
+			_roleLocalService.checkSystemRoles(company.getCompanyId());
+
+			// System groups
+
+			_groupLocalService.checkSystemGroups(company.getCompanyId());
+
+			// Company group
+
+			_groupLocalService.checkCompanyGroup(company.getCompanyId());
+
+			// Default password policy
+
+			_passwordPolicyLocalService.checkDefaultPasswordPolicy(
+				company.getCompanyId());
+
+			// Portlets
+
+			_portletLocalService.checkPortlets(company.getCompanyId());
+
+			Company finalCompany = company;
+
+			TransactionCommitCallbackUtil.registerCallback(
+				() -> {
+					registerCompany(finalCompany);
+
+					if (newCompany) {
+						PortalInstances.initCompany(finalCompany, true);
+
+						_synchronizePortalInstances();
+					}
+
+					return null;
+				});
+
+			// Preferences
+
+			_portalPreferencesLocalService.getPreferences(
+				company.getCompanyId(), PortletKeys.PREFS_OWNER_TYPE_COMPANY);
+		}
+		finally {
+			LocaleThreadLocal.setDefaultLocale(localeThreadLocalDefaultLocale);
+			LocaleThreadLocal.setSiteDefaultLocale(
+				localeThreadSiteDefaultLocale);
+		}
+
+		return company;
+	}
+
 	/**
 	 * Returns the company with the web domain.
 	 *
@@ -485,7 +568,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	public Company checkCompany(String webId) throws PortalException {
 		Company company = getCompanyByWebId(webId);
 
-		return _checkCompany(company, false);
+		return checkCompany(company, false);
 	}
 
 	/**
@@ -692,12 +775,12 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	}
 
 	@Override
-	public Company extractCompany(long companyId) throws PortalException {
+	public Company exportCompany(long companyId) throws PortalException {
 		FeatureFlagManagerUtil.checkEnabled("LPD-11342");
 
 		if (companyId == PortalInstancePool.getDefaultCompanyId()) {
 			throw new RequiredCompanyException(
-				"Select another default company before extracting company " +
+				"Select another default company before exporting company " +
 					companyId);
 		}
 
@@ -705,12 +788,12 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		try {
 			if (!DBPartition.isPartitionEnabled()) {
-				DBPartitionUtil.extractCompany(companyId);
+				DBPartitionUtil.exportCompany(companyId);
 
 				return company;
 			}
 
-			DBPartitionUtil.extractDBPartition(companyId);
+			DBPartitionUtil.exportDBPartition(companyId);
 		}
 		catch (Throwable throwable) {
 			throw new PortalException(throwable);
@@ -2303,88 +2386,6 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		_contactPersistence.update(guestContact);
 
 		return guestUser;
-	}
-
-	private Company _checkCompany(Company company, boolean newCompany)
-		throws PortalException {
-
-		Locale localeThreadLocalDefaultLocale =
-			LocaleThreadLocal.getDefaultLocale();
-		Locale localeThreadSiteDefaultLocale =
-			LocaleThreadLocal.getSiteDefaultLocale();
-
-		try {
-			preregisterCompany(company);
-
-			Locale companyDefaultLocale = LocaleUtil.fromLanguageId(
-				PropsValues.COMPANY_DEFAULT_LOCALE);
-
-			LocaleThreadLocal.setDefaultLocale(companyDefaultLocale);
-
-			LocaleThreadLocal.setSiteDefaultLocale(null);
-
-			// Key
-
-			checkCompanyKey(company.getCompanyId());
-
-			// Virtual host
-
-			company = syncVirtualHost(company);
-
-			// Resource actions
-
-			if (DBPartition.isPartitionEnabled()) {
-				_resourceActionLocalService.checkResourceActions();
-			}
-
-			// System roles
-
-			_roleLocalService.checkSystemRoles(company.getCompanyId());
-
-			// System groups
-
-			_groupLocalService.checkSystemGroups(company.getCompanyId());
-
-			// Company group
-
-			_groupLocalService.checkCompanyGroup(company.getCompanyId());
-
-			// Default password policy
-
-			_passwordPolicyLocalService.checkDefaultPasswordPolicy(
-				company.getCompanyId());
-
-			// Portlets
-
-			_portletLocalService.checkPortlets(company.getCompanyId());
-
-			Company finalCompany = company;
-
-			TransactionCommitCallbackUtil.registerCallback(
-				() -> {
-					registerCompany(finalCompany);
-
-					if (newCompany) {
-						PortalInstances.initCompany(finalCompany, true);
-
-						_synchronizePortalInstances();
-					}
-
-					return null;
-				});
-
-			// Preferences
-
-			_portalPreferencesLocalService.getPreferences(
-				company.getCompanyId(), PortletKeys.PREFS_OWNER_TYPE_COMPANY);
-		}
-		finally {
-			LocaleThreadLocal.setDefaultLocale(localeThreadLocalDefaultLocale);
-			LocaleThreadLocal.setSiteDefaultLocale(
-				localeThreadSiteDefaultLocale);
-		}
-
-		return company;
 	}
 
 	private void _clearCache(long companyId) {

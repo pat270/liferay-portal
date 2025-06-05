@@ -104,6 +104,10 @@ public interface ObjectEntryVersionLocalService
 			long objectEntryVersionId)
 		throws PortalException;
 
+	public ObjectEntryVersion deleteObjectEntryVersion(
+			long objectEntryId, int version)
+		throws PortalException;
+
 	/**
 	 * Deletes the object entry version from the database. Also notifies the appropriate model listeners.
 	 *
@@ -201,6 +205,10 @@ public interface ObjectEntryVersionLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long dynamicQueryCount(
 		DynamicQuery dynamicQuery, Projection projection);
+
+	public ObjectEntryVersion expireObjectEntryVersion(
+			long userId, long objectEntryId, int version)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ObjectEntryVersion fetchObjectEntryVersion(

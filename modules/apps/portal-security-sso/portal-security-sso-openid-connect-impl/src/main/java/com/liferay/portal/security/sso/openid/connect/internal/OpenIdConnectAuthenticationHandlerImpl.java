@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
@@ -59,6 +60,10 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.nimbusds.openid.connect.sdk.rp.OIDCClientInformation;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 
 import java.net.URI;
@@ -68,10 +73,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import net.minidev.json.JSONObject;
 
@@ -154,11 +155,16 @@ public class OpenIdConnectAuthenticationHandlerImpl
 				oidcTokens.getAccessToken(), oidcProviderMetadata);
 		}
 
+		ServiceContext serviceContext = ServiceContextFactory.getInstance(
+			httpServletRequest);
+
+		serviceContext.setAttribute(
+			"oAuthClientEntryId", oAuthClientEntry.getOAuthClientEntryId());
+
 		long userId = _oidcUserInfoProcessor.processUserInfo(
 			_portal.getCompanyId(httpServletRequest),
-			String.valueOf(oidcProviderMetadata.getIssuer()),
-			ServiceContextFactory.getInstance(httpServletRequest), userInfoJSON,
-			oAuthClientEntry.getOIDCUserInfoMapperJSON());
+			String.valueOf(oidcProviderMetadata.getIssuer()), serviceContext,
+			userInfoJSON, oAuthClientEntry.getOIDCUserInfoMapperJSON());
 
 		userIdUnsafeConsumer.accept(userId);
 
@@ -275,6 +281,7 @@ public class OpenIdConnectAuthenticationHandlerImpl
 		claims.put("email", jwtClaimsSet.getStringClaim("email"));
 		claims.put("family_name", jwtClaimsSet.getStringClaim("family_name"));
 		claims.put("given_name", jwtClaimsSet.getStringClaim("given_name"));
+		claims.put("groups", jwtClaimsSet.getStringArrayClaim("groups"));
 
 		return claims;
 	}

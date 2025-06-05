@@ -5,16 +5,12 @@
 
 package com.liferay.portal.test.rule;
 
-import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
-import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagListener;
-import com.liferay.portal.kernel.model.CompanyConstants;
-import com.liferay.portal.kernel.module.util.SystemBundleUtil;
+import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
 import com.liferay.portal.kernel.test.rule.AbstractTestRule;
+import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.util.PropsUtil;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,9 +22,8 @@ import org.junit.runner.Description;
 public class FeatureFlagTestRule
 	extends AbstractTestRule<Map<String, String>, Map<String, String>> {
 
-	public FeatureFlagTestRule(boolean enableFeatureFlagListeners) {
-		_enableFeatureFlagListeners = enableFeatureFlagListeners;
-	}
+	public static final FeatureFlagTestRule INSTANCE =
+		new FeatureFlagTestRule();
 
 	@Override
 	protected void afterClass(
@@ -62,28 +57,6 @@ public class FeatureFlagTestRule
 		return _updateFeatureFlags(description);
 	}
 
-	private void _invokeFeatureFlagListeners(
-		String featureFlagKey, boolean enabled) {
-
-		if (!_enableFeatureFlagListeners) {
-			return;
-		}
-
-		try (ServiceTrackerList<FeatureFlagListener> featureFlagListeners =
-				ServiceTrackerListFactory.open(
-					SystemBundleUtil.getBundleContext(),
-					FeatureFlagListener.class,
-					"(featureFlagKey=" + featureFlagKey + ")")) {
-
-			for (FeatureFlagListener featureFlagListener :
-					featureFlagListeners) {
-
-				featureFlagListener.onValue(
-					CompanyConstants.SYSTEM, featureFlagKey, enabled);
-			}
-		}
-	}
-
 	private void _restoreFeatureFlags(Map<String, String> previousValues) {
 		Map<String, String> values = new HashMap<>();
 
@@ -97,9 +70,6 @@ public class FeatureFlagTestRule
 			}
 
 			values.put(entry.getKey(), entry.getValue());
-
-			_invokeFeatureFlagListeners(
-				entry.getKey(), Boolean.parseBoolean(entry.getValue()));
 		}
 
 		PropsUtil.addProperties(
@@ -108,32 +78,52 @@ public class FeatureFlagTestRule
 			).build());
 	}
 
+	private KeyValuePair _updateFeatureFlag(FeatureFlag featureFlag) {
+		String featureFlagKey = FeatureFlagConstants.getKey(
+			featureFlag.value());
+
+		KeyValuePair previousKeyValuePair = new KeyValuePair(
+			featureFlagKey, PropsUtil.get(featureFlagKey));
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				featureFlagKey, String.valueOf(featureFlag.enable())
+			).build());
+
+		return previousKeyValuePair;
+	}
+
 	private Map<String, String> _updateFeatureFlags(Description description) {
+		Map<String, String> previousValues = new HashMap<>();
+
 		FeatureFlags featureFlags = description.getAnnotation(
 			FeatureFlags.class);
 
-		if (featureFlags == null) {
-			return Collections.emptyMap();
+		if (featureFlags != null) {
+			for (FeatureFlag featureFlag : featureFlags.featureFlags()) {
+				if (featureFlag == null) {
+					continue;
+				}
+
+				KeyValuePair previousKeyValuePair = _updateFeatureFlag(
+					featureFlag);
+
+				previousValues.put(
+					previousKeyValuePair.getKey(),
+					previousKeyValuePair.getValue());
+			}
 		}
 
-		Map<String, String> previousValues = new HashMap<>();
+		FeatureFlag featureFlag = description.getAnnotation(FeatureFlag.class);
 
-		for (String key : featureFlags.value()) {
-			String featureFlagKey = "feature.flag." + key;
+		if (featureFlag != null) {
+			KeyValuePair previousKeyValuePair = _updateFeatureFlag(featureFlag);
 
-			previousValues.put(featureFlagKey, PropsUtil.get(featureFlagKey));
-
-			PropsUtil.addProperties(
-				UnicodePropertiesBuilder.setProperty(
-					featureFlagKey, String.valueOf(featureFlags.enable())
-				).build());
-
-			_invokeFeatureFlagListeners(key, featureFlags.enable());
+			previousValues.put(
+				previousKeyValuePair.getKey(), previousKeyValuePair.getValue());
 		}
 
 		return previousValues;
 	}
-
-	private final boolean _enableFeatureFlagListeners;
 
 }

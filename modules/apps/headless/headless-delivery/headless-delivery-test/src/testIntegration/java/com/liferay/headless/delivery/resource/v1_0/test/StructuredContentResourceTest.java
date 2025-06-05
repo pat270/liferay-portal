@@ -36,6 +36,13 @@ import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestHelper;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
+import com.liferay.expando.kernel.model.ExpandoColumn;
+import com.liferay.expando.kernel.model.ExpandoColumnConstants;
+import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
+import com.liferay.expando.test.util.ExpandoTestUtil;
+import com.liferay.headless.delivery.client.custom.field.CustomField;
+import com.liferay.headless.delivery.client.custom.field.CustomValue;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentDocument;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentField;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentFieldValue;
@@ -77,6 +84,7 @@ import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
@@ -94,6 +102,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
@@ -109,6 +118,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -154,6 +164,10 @@ public class StructuredContentResourceTest
 		DLFolder dlFolder = DLTestUtil.addDLFolder(testGroup.getGroupId());
 
 		_dlFileEntry = DLTestUtil.addDLFileEntry(dlFolder.getFolderId());
+
+		_expandoTable = ExpandoTestUtil.addTable(
+			_portal.getClassNameId(JournalArticle.class.getName()),
+			"CUSTOM_FIELDS");
 
 		_irrelevantDDMStructure = _addDDMStructure(
 			irrelevantGroup, "test-ddm-structure.json");
@@ -336,6 +350,7 @@ public class StructuredContentResourceTest
 
 		_testGetContentStructureStructuredContentsPageLocalizedWithFilter();
 		_testGetContentStructureStructuredContentsPageUnlocalizedWithFilter();
+		_testGetContentStructureStructuredContentsPageWithSortDateTimeField();
 	}
 
 	@Override
@@ -712,6 +727,25 @@ public class StructuredContentResourceTest
 	}
 
 	@Override
+	@Test
+	public void testPutSiteStructuredContentByExternalReferenceCode()
+		throws Exception {
+
+		super.testPutSiteStructuredContentByExternalReferenceCode();
+
+		_testPutSiteStructuredContentByExternalReferenceCodeWithCustomField();
+	}
+
+	@Override
+	@Test
+	public void testPutStructuredContent() throws Exception {
+		super.testPutStructuredContent();
+
+		_testPutStructuredContent(false);
+		_testPutStructuredContent(true);
+	}
+
+	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {
 			"contentStructureId", "description", "priority", "title"
@@ -935,6 +969,30 @@ public class StructuredContentResourceTest
 			_read("test-structured-content-template.vm"), LocaleUtil.US);
 	}
 
+	private ExpandoColumn _addExpandoColumn(
+			Object defaultData, String displayType, ExpandoTable expandoTable,
+			int type)
+		throws Exception {
+
+		ExpandoColumn expandoColumn = ExpandoTestUtil.addColumn(
+			expandoTable, "A" + RandomTestUtil.randomString(), type,
+			defaultData);
+
+		if (displayType != null) {
+			UnicodeProperties unicodeProperties =
+				expandoColumn.getTypeSettingsProperties();
+
+			unicodeProperties.putAll(
+				HashMapBuilder.put(
+					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE, displayType
+				).build());
+
+			expandoColumn.setTypeSettingsProperties(unicodeProperties);
+		}
+
+		return _expandoColumnLocalService.updateExpandoColumn(expandoColumn);
+	}
+
 	private void _assertFilterSiteStructuredContentsPageFilteredByDateField(
 			Locale locale)
 		throws Exception {
@@ -1069,6 +1127,72 @@ public class StructuredContentResourceTest
 				_jsonDDMFormDeserializer.deserialize(builder.build());
 
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
+	}
+
+	private boolean _equals(
+		StructuredContent structuredContent1,
+		StructuredContent structuredContent2) {
+
+		assertEquals(structuredContent1, structuredContent2);
+
+		if (!Objects.deepEquals(
+				structuredContent1.getDescription(),
+				structuredContent2.getDescription()) ||
+			!equals(
+				(Map)structuredContent1.getDescription_i18n(),
+				(Map)structuredContent2.getDescription_i18n()) ||
+			!Objects.deepEquals(
+				structuredContent1.getFriendlyUrlPath(),
+				structuredContent2.getFriendlyUrlPath()) ||
+			!equals(
+				(Map)structuredContent1.getFriendlyUrlPath_i18n(),
+				(Map)structuredContent2.getFriendlyUrlPath_i18n()) ||
+			!Objects.deepEquals(
+				structuredContent1.getTitle(), structuredContent2.getTitle()) ||
+			!equals(
+				(Map)structuredContent1.getTitle_i18n(),
+				(Map)structuredContent2.getTitle_i18n())) {
+
+			return false;
+		}
+
+		ContentField[] contentFields1 = structuredContent1.getContentFields();
+		ContentField[] contentFields2 = structuredContent1.getContentFields();
+
+		if (contentFields1.length != contentFields2.length) {
+			return false;
+		}
+
+		for (int i = 0; i < contentFields1.length; i++) {
+			ContentField contentField1 = contentFields1[i];
+			ContentField contentField2 = contentFields2[i];
+
+			if (!Objects.equals(
+					contentField1.getName(), contentField2.getName()) ||
+				!Objects.equals(
+					contentField1.getContentFieldValue(),
+					contentField2.getContentFieldValue()) ||
+				!equals(
+					(Map)contentField1.getContentFieldValue_i18n(),
+					(Map)contentField2.getContentFieldValue_i18n())) {
+
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private CustomField _getCustomField(
+		CustomField[] customFields, String name) {
+
+		for (CustomField customField : customFields) {
+			if (Objects.equals(customField.getName(), name)) {
+				return customField;
+			}
+		}
+
+		return null;
 	}
 
 	private String _randomColor() {
@@ -1421,9 +1545,9 @@ public class StructuredContentResourceTest
 		structuredContent.setDescription_i18n(description_i18n);
 
 		Map<String, String> friendlyUrlPath_i18n = HashMapBuilder.put(
-			"en-US", RandomTestUtil.randomString()
+			"en-US", StringUtil.toLowerCase(RandomTestUtil.randomString())
 		).put(
-			"es-ES", RandomTestUtil.randomString()
+			"es-ES", StringUtil.toLowerCase(RandomTestUtil.randomString())
 		).build();
 
 		structuredContent.setFriendlyUrlPath(
@@ -1598,6 +1722,44 @@ public class StructuredContentResourceTest
 		items = (List<StructuredContent>)page.getItems();
 
 		assertEquals(structuredContent1, items.get(0));
+	}
+
+	private void _testGetContentStructureStructuredContentsPageWithSortDateTimeField()
+		throws Exception {
+
+		DDMStructure ddmStructure = _addDDMStructure(
+			testGroup, "test-ddm-structure-datetime.json");
+
+		JournalArticle journalArticle =
+			JournalTestUtil.addArticleWithXMLContent(
+				JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+				JournalArticleConstants.CLASS_NAME_ID_DEFAULT, 0,
+				_read("test-journal-article-datetime.xml"),
+				ddmStructure.getStructureKey(), null, LocaleUtil.US, null,
+				ServiceContextTestUtil.getServiceContext(
+					testCompany.getCompanyId(), testGroup.getGroupId(),
+					TestPropsValues.getUserId()));
+
+		Page<StructuredContent> page =
+			structuredContentResource.getContentStructureStructuredContentsPage(
+				ddmStructure.getStructureId(), null, null, null,
+				Pagination.of(1, 10), "contentFields/DateTime90775749:asc'");
+
+		Assert.assertNotNull(page);
+
+		List<StructuredContent> items =
+			(List<StructuredContent>)page.getItems();
+
+		Assert.assertEquals(items.toString(), 1, items.size());
+
+		StructuredContent structuredContent = items.get(0);
+
+		Assert.assertEquals(
+			String.valueOf(journalArticle.getResourcePrimKey()),
+			String.valueOf(structuredContent.getId()));
+
+		structuredContentResource.deleteStructuredContent(
+			structuredContent.getId());
 	}
 
 	private void _testGetSiteStructuredContentsPageByDefaultPriority()
@@ -2429,6 +2591,179 @@ public class StructuredContentResourceTest
 		Assert.assertEquals(1, jsonObject.getLong("totalItemsCount"));
 	}
 
+	private void _testPutSiteStructuredContentByExternalReferenceCodeWithCustomField()
+		throws Exception {
+
+		StructuredContent postStructuredContent =
+			testPutSiteStructuredContentByExternalReferenceCode_addStructuredContent();
+
+		long randomLong = RandomTestUtil.randomLong(
+			Long.MIN_VALUE, Long.MAX_VALUE);
+		short randomShort1 = (short)RandomTestUtil.randomInt(
+			Short.MIN_VALUE, Short.MAX_VALUE);
+		short randomShort2 = (short)RandomTestUtil.randomInt(
+			Short.MIN_VALUE, Short.MAX_VALUE);
+
+		ExpandoColumn longExpandoColumn = _addExpandoColumn(
+			null, null, _expandoTable, ExpandoColumnConstants.LONG);
+
+		CustomField longCustomField = new CustomField() {
+			{
+				customValue = new CustomValue() {
+					{
+						data = randomLong;
+					}
+				};
+				dataType = "Integer";
+				name = longExpandoColumn.getName();
+			}
+		};
+
+		ExpandoColumn shortExpandoColumn = _addExpandoColumn(
+			null, null, _expandoTable, ExpandoColumnConstants.SHORT);
+
+		CustomField shortCustomField = new CustomField() {
+			{
+				customValue = new CustomValue() {
+					{
+						data = randomShort1;
+					}
+				};
+				dataType = "Integer";
+				name = shortExpandoColumn.getName();
+			}
+		};
+
+		ExpandoColumn shortArrayExpandoColumn = _addExpandoColumn(
+			null, null, _expandoTable, ExpandoColumnConstants.SHORT_ARRAY);
+
+		CustomField shortArrayCustomField = new CustomField() {
+			{
+				customValue = new CustomValue() {
+					{
+						data = Arrays.asList(randomShort2);
+					}
+				};
+				dataType = "Integer";
+				name = shortArrayExpandoColumn.getName();
+			}
+		};
+
+		StructuredContent randomStructuredContent = new StructuredContent() {
+			{
+				contentStructureId = _ddmStructure.getStructureId();
+				customFields = new CustomField[] {
+					longCustomField, shortCustomField, shortArrayCustomField
+				};
+				title = StringUtil.toLowerCase(RandomTestUtil.randomString());
+			}
+		};
+
+		StructuredContent putStructuredContent =
+			structuredContentResource.
+				putSiteStructuredContentByExternalReferenceCode(
+					testPutSiteStructuredContentByExternalReferenceCode_getSiteId(
+						postStructuredContent),
+					postStructuredContent.getExternalReferenceCode(),
+					randomStructuredContent);
+
+		assertValid(putStructuredContent);
+
+		CustomField[] customFields = putStructuredContent.getCustomFields();
+
+		Assert.assertNotNull(customFields);
+
+		CustomField customField = _getCustomField(
+			customFields, longExpandoColumn.getName());
+
+		Assert.assertNotNull(customField);
+
+		customField = _getCustomField(
+			customFields, shortExpandoColumn.getName());
+
+		Assert.assertNotNull(customField);
+
+		customField = _getCustomField(
+			customFields, shortArrayCustomField.getName());
+
+		Assert.assertNotNull(customField);
+	}
+
+	private void _testPutStructuredContent(boolean containsI18nMap)
+		throws Exception {
+
+		StructuredContent structuredContent1 = _randomStructuredContent(
+			LocaleUtil.getDefault());
+
+		StructuredContent postStructuredContent =
+			structuredContentResource.postSiteStructuredContent(
+				testGetSiteStructuredContentsPage_getSiteId(),
+				structuredContent1);
+
+		StructuredContent structuredContent2 = _randomStructuredContent(
+			LocaleUtil.getDefault());
+
+		ContentFieldValue englishContentFieldValue = new ContentFieldValue() {
+			{
+				data = RandomTestUtil.randomString(10);
+			}
+		};
+
+		if (!containsI18nMap) {
+			structuredContent2.setContentFields(
+				new ContentField[] {
+					new ContentField() {
+						{
+							contentFieldValue = englishContentFieldValue;
+							name = "MyText";
+						}
+					}
+				});
+		}
+
+		StructuredContentResource structuredContentResource =
+			_buildStructureContentResource(LocaleUtil.getDefault());
+
+		StructuredContent putStructuredContent =
+			structuredContentResource.putStructuredContent(
+				postStructuredContent.getId(), structuredContent2);
+
+		if (!containsI18nMap) {
+			structuredContent2.setContentFields(
+				new ContentField[] {
+					new ContentField() {
+						{
+							contentFieldValue = englishContentFieldValue;
+							contentFieldValue_i18n = HashMapBuilder.put(
+								"en-US", () -> englishContentFieldValue
+							).put(
+								"es-ES",
+								() -> {
+									ContentField initialContentField =
+										structuredContent1.getContentFields()
+											[0];
+
+									return initialContentField.
+										getContentFieldValue_i18n(
+										).get(
+											"es-ES"
+										);
+								}
+							).build();
+							name = "MyText";
+						}
+					}
+				});
+		}
+
+		Assert.assertTrue(_equals(structuredContent2, putStructuredContent));
+
+		_assertLocalizedValues(
+			putStructuredContent,
+			LocaleUtil.toW3cLanguageId(LocaleUtil.getDefault()));
+		assertValid(putStructuredContent);
+	}
+
 	private JSONObject _waitForFinish(
 			String expectedExecuteStatus, boolean importTask,
 			JSONObject jsonObject)
@@ -2484,6 +2819,13 @@ public class StructuredContentResourceTest
 	private DDMTemplate _ddmTemplate;
 	private DDMStructure _depotDDMStructure;
 	private DLFileEntry _dlFileEntry;
+
+	@Inject
+	private ExpandoColumnLocalService _expandoColumnLocalService;
+
+	@DeleteAfterTestRun
+	private ExpandoTable _expandoTable;
+
 	private DDMStructure _irrelevantDDMStructure;
 	private JournalFolder _irrelevantJournalFolder;
 

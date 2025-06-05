@@ -39,14 +39,12 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.security.ldap.authenticator.configuration.LDAPAuthConfiguration;
-import com.liferay.portal.security.ldap.configuration.ConfigurationProvider;
+import com.liferay.portal.security.ldap.test.util.configuration.LDAPAuthConfigurationProviderTemporarySwapper;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portlet.passwordpoliciesadmin.util.test.PasswordPolicyTestUtil;
 
 import java.util.Date;
-import java.util.Dictionary;
 import java.util.List;
 
 import org.junit.Assert;
@@ -73,9 +71,15 @@ public class ForgotPasswordMVCActionCommandTest {
 
 		_createUser(true, false);
 
-		List<Ticket> tickets = _processAction(true);
+		try (LDAPAuthConfigurationProviderTemporarySwapper
+				ldapAuthConfigurationProviderTemporarySwapper =
+					new LDAPAuthConfigurationProviderTemporarySwapper(
+						_user.getCompanyId(), true)) {
 
-		Assert.assertTrue(tickets.isEmpty());
+			List<Ticket> tickets = _processAction();
+
+			Assert.assertTrue(tickets.isEmpty());
+		}
 	}
 
 	@Test
@@ -84,9 +88,15 @@ public class ForgotPasswordMVCActionCommandTest {
 
 		_createUser(true, false);
 
-		List<Ticket> tickets = _processAction(false);
+		try (LDAPAuthConfigurationProviderTemporarySwapper
+				ldapAuthConfigurationProviderTemporarySwapper =
+					new LDAPAuthConfigurationProviderTemporarySwapper(
+						_user.getCompanyId(), false)) {
 
-		Assert.assertEquals(tickets.toString(), 1, tickets.size());
+			List<Ticket> tickets = _processAction();
+
+			Assert.assertEquals(tickets.toString(), 1, tickets.size());
+		}
 	}
 
 	@Test
@@ -95,9 +105,15 @@ public class ForgotPasswordMVCActionCommandTest {
 
 		_createUser(false, false);
 
-		List<Ticket> tickets = _processAction(true);
+		try (LDAPAuthConfigurationProviderTemporarySwapper
+				ldapAuthConfigurationProviderTemporarySwapper =
+					new LDAPAuthConfigurationProviderTemporarySwapper(
+						_user.getCompanyId(), true)) {
 
-		Assert.assertEquals(tickets.toString(), 1, tickets.size());
+			List<Ticket> tickets = _processAction();
+
+			Assert.assertEquals(tickets.toString(), 1, tickets.size());
+		}
 	}
 
 	@Test
@@ -205,19 +221,7 @@ public class ForgotPasswordMVCActionCommandTest {
 		return mockLiferayPortletActionRequest;
 	}
 
-	private List<Ticket> _processAction(boolean passwordPolicyEnabled)
-		throws Exception {
-
-		Dictionary<String, Object> configurationProperties =
-			_ldapAuthConfigurationProvider.getConfigurationProperties(
-				_user.getCompanyId());
-
-		Object originalPasswordPolicyEnabled = configurationProperties.put(
-			"passwordPolicyEnabled", passwordPolicyEnabled);
-
-		_ldapAuthConfigurationProvider.updateProperties(
-			_user.getCompanyId(), configurationProperties);
-
+	private List<Ticket> _processAction() throws Exception {
 		try (ConfigurationTemporarySwapper configurationTemporarySwapper =
 				new ConfigurationTemporarySwapper(
 					"com.liferay.captcha.configuration.CaptchaConfiguration",
@@ -247,28 +251,10 @@ public class ForgotPasswordMVCActionCommandTest {
 				_user.getCompanyId(), User.class.getName(), _user.getUserId(),
 				TicketConstants.TYPE_PASSWORD);
 		}
-		finally {
-			if (originalPasswordPolicyEnabled != null) {
-				configurationProperties.put(
-					"passwordPolicyEnabled", originalPasswordPolicyEnabled);
-			}
-			else {
-				configurationProperties.remove("passwordPolicyEnabled");
-			}
-
-			_ldapAuthConfigurationProvider.updateProperties(
-				_user.getCompanyId(), configurationProperties);
-		}
 	}
 
 	@DeleteAfterTestRun
 	private static User _user;
-
-	@Inject(
-		filter = "factoryPid=com.liferay.portal.security.ldap.authenticator.configuration.LDAPAuthConfiguration"
-	)
-	private ConfigurationProvider<LDAPAuthConfiguration>
-		_ldapAuthConfigurationProvider;
 
 	@Inject(
 		filter = "mvc.command.name=/login/forgot_password",

@@ -36,9 +36,9 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.Locale;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Locale;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -126,6 +126,11 @@ public class FreeMarkerFragmentEntryProcessor
 				fragmentEntryProcessorContext.getFragmentElementId()
 			).put(
 				"fragmentEntryLinkNamespace", fragmentEntryLink.getNamespace()
+			).put(
+				"fragmentName",
+				_fragmentEntryLinkHelper.getFragmentEntryName(
+					fragmentEntryLink,
+					fragmentEntryProcessorContext.getLocale())
 			).put(
 				"layoutMode",
 				_getLayoutMode(

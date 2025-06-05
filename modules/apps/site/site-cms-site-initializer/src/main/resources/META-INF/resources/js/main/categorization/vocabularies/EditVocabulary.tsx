@@ -12,8 +12,12 @@ import {ManagementToolbar} from 'frontend-js-components-web';
 import {navigate, sub} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
-import VocabularyService from '../services/VocabularyService';
-import {IVocabulary} from '../types/IVocabulary';
+import CategorizationPermissionService from '../../../services/CategorizationPermissionService';
+import VocabularyService from '../../../services/VocabularyService';
+import {IVocabulary} from '../../../types/IVocabulary';
+import {IPermissionItem} from '../../components/forms/PermissionsTable';
+import {displaySystemErrorToast} from '../../util/ToastUtil';
+import {DEFAULT_PERMISSIONS} from '../utils/CategorizationPermissionsUtil';
 import ConfirmChangesModal from './ConfirmChangesModal';
 import EditAssociatedAssetTypes from './EditAssociatedAssetTypes';
 import EditGeneralInfo from './EditGeneralInfo';
@@ -24,51 +28,64 @@ const NAVIGATION_TABS = {
 };
 
 export default function EditVocabulary({
-	assetTypes,
+	availableAssetTypes,
 	backURL,
 	defaultLanguageId,
 	locales,
-	siteId,
 	spritemap,
 	vocabularyId,
+	vocabularyPermissionsAPIURL,
 }: {
-	assetTypes: AssetType[];
+	availableAssetTypes: AssetType[];
 	backURL: string;
 	defaultLanguageId: string;
 	locales: any[];
-	siteId: number;
 	spritemap: string;
 	vocabularyId: number;
+	vocabularyPermissionsAPIURL: string;
 }) {
 	const [activeVerticalNavKey, setActiveVerticalNavKey] = useState(
 		NAVIGATION_TABS.GENERAL
 	);
-	const [spaceInputError, setSpaceInputError] = useState('');
+	const [assetLibraries, setAssetLibraries] = useState<AssetLibraryType[]>(
+		[]
+	);
+	const [assetTypes, setAssetTypes] = useState<AssetType[]>([]);
+	const [assetTypeChange, setAssetTypeChange] = useState(false);
+	const [assetTypeInputError, setAssetTypeInputError] = useState<string>('');
 	const [nameInputError, setNameInputError] = useState<string>('');
 	const {observer, onOpenChange, open} = useModal();
+	const [spaceChange, setSpaceChange] = useState(false);
+	const [spaceInputError, setSpaceInputError] = useState('');
 	const [title, setTitle] = useState<string>('');
 	const [vocabulary, setVocabulary] = useState<IVocabulary>({
 		assetLibraries: [
 			{
 				id: -1,
+				name: 'All Spaces',
 			},
 		],
 		assetTypes: [
 			{
 				required: false,
-				subtype: '-1',
 				type: 'AllAssetTypes',
-				typeId: '0',
+				typeId: 0,
 			},
 		],
 		description: '',
+		description_i18n: {
+			[defaultLanguageId]: '',
+		},
+		multiValued: true,
 		name: '',
 		name_i18n: {
 			[defaultLanguageId.replace('_', '-')]: '',
 		},
+		visibilityType: 'PUBLIC',
 	});
+	const [vocabularyPermissions, setVocabularyPermissions] =
+		useState<IPermissionItem[]>(DEFAULT_PERMISSIONS);
 
-	const changeType = '';
 	const isNew = Number(vocabularyId) === 0;
 
 	useEffect(() => {
@@ -77,14 +94,16 @@ export default function EditVocabulary({
 				return;
 			}
 			else {
-				try {
-					const fetchedData =
-						await VocabularyService.fetchVocabulary(vocabularyId);
+				const {data, error} =
+					await VocabularyService.fetchVocabulary(vocabularyId);
 
-					setTitle(fetchedData.name);
-					setVocabulary(fetchedData);
+				if (data) {
+					setAssetLibraries(data.assetLibraries);
+					setAssetTypes(data.assetTypes);
+					setTitle(data.name);
+					setVocabulary(data);
 				}
-				catch (error) {
+				else if (error) {
 					console.error(error);
 					navigate(backURL);
 				}
@@ -114,49 +133,78 @@ export default function EditVocabulary({
 			return false;
 		}
 
+		if (assetTypeInputError) {
+			setActiveVerticalNavKey('assetTypes');
+
+			return false;
+		}
+
 		return true;
 	};
 
 	const _handleSave = async () => {
-		try {
-			if (!_handleValidateInputs()) {
-				return;
-			}
+		if (!_handleValidateInputs()) {
+			return;
+		}
 
-			if (isNew) {
+		if (isNew) {
+			const {data, error} =
 				await VocabularyService.createVocabulary(vocabulary);
-			}
-			else {
-				await VocabularyService.updateVocabulary(siteId, vocabulary);
+
+			if (error) {
+				displaySystemErrorToast();
+
+				throw new Error(error);
 			}
 
-			await navigate(backURL);
+			const vocabularyId: number = data?.id || 0;
 
-			if (isNew) {
-				Liferay.Util.openToast({
-					message: Liferay.Util.sub(
-						Liferay.Language.get('x-was-published-successfully'),
-						vocabulary.name
+			const {error: putPermissionsError} =
+				await CategorizationPermissionService.putPermissions(
+					vocabularyPermissionsAPIURL.replace(
+						'{taxonomyVocabularyId}',
+						String(vocabularyId)
 					),
-					type: 'success',
-				});
-			}
-			else {
-				Liferay.Util.openToast({
-					message: Liferay.Util.sub(
-						Liferay.Language.get('x-was-updated-successfully'),
-						vocabulary.name
-					),
-					type: 'success',
-				});
+					vocabularyPermissions
+				);
+
+			if (putPermissionsError) {
+				displaySystemErrorToast();
+
+				throw new Error(
+					`PUT request failed to update permissions at ${vocabularyPermissionsAPIURL} using the following provided data: ${JSON.stringify(vocabularyPermissions)}`
+				);
 			}
 		}
-		catch (error) {
+		else {
+			const {error} =
+				await VocabularyService.updateVocabulary(vocabulary);
+
+			if (error) {
+				displaySystemErrorToast();
+
+				throw new Error(error);
+			}
+		}
+
+		await navigate(backURL);
+
+		if (isNew) {
 			Liferay.Util.openToast({
-				message: Liferay.Language.get(
-					'an-unexpected-system-error-occurred'
+				message: Liferay.Util.sub(
+					Liferay.Language.get('x-was-published-successfully'),
+					vocabulary.name
 				),
-				type: 'danger',
+				type: 'success',
+			});
+		}
+		else {
+			Liferay.Util.openToast({
+				message: Liferay.Util.sub(
+					Liferay.Language.get('x-was-updated-successfully'),
+					vocabulary.name
+				),
+				type: 'success',
 			});
 		}
 	};
@@ -200,7 +248,14 @@ export default function EditVocabulary({
 						<ManagementToolbar.Item>
 							<ClayButton
 								displayType="primary"
-								onClick={_handleSave}
+								onClick={() => {
+									if (assetTypeChange || spaceChange) {
+										onOpenChange(true);
+									}
+									else {
+										_handleSave();
+									}
+								}}
 								size="sm"
 							>
 								{Liferay.Language.get('save')}
@@ -211,7 +266,8 @@ export default function EditVocabulary({
 
 				<ClayLayout.ContainerFluid
 					className="cms-parent-container m-0"
-					size={false}
+					formSize="xl"
+					size="xl"
 				>
 					<ClayLayout.Row className="cms-container-child">
 						<ClayLayout.Col
@@ -254,12 +310,20 @@ export default function EditVocabulary({
 						<ClayLayout.Col md={9} sm={12}>
 							{activeVerticalNavKey === 'general' && (
 								<EditGeneralInfo
+									assetLibraries={assetLibraries}
 									defaultLanguageId={defaultLanguageId}
+									isNew={isNew}
 									locales={locales}
 									nameInputError={nameInputError}
 									onChangeVocabulary={setVocabulary}
 									setNameInputError={setNameInputError}
+									setSpaceChange={setSpaceChange}
 									setSpaceInputError={setSpaceInputError}
+									setVocabularyPermissions={
+										setVocabularyPermissions
+									}
+									showPermissions={isNew}
+									spaceInputError={spaceInputError}
 									spritemap={spritemap}
 									vocabulary={vocabulary}
 								/>
@@ -267,23 +331,29 @@ export default function EditVocabulary({
 
 							{activeVerticalNavKey === 'assetTypes' && (
 								<EditAssociatedAssetTypes
-									assetTypes={assetTypes}
+									assetTypeInputError={assetTypeInputError}
+									availableAssetTypes={availableAssetTypes}
+									initialAssetTypes={assetTypes}
+									onChangeVocabulary={setVocabulary}
+									setAssetTypeChange={setAssetTypeChange}
+									setAssetTypeInputError={
+										setAssetTypeInputError
+									}
+									vocabulary={vocabulary}
 								/>
 							)}
 						</ClayLayout.Col>
 					</ClayLayout.Row>
 				</ClayLayout.ContainerFluid>
 
-				<>
-					{changeType && open && (
-						<ConfirmChangesModal
-							changeType={changeType}
-							observer={observer}
-							onOpenChange={onOpenChange}
-							onSave={_handleSave}
-						/>
-					)}
-				</>
+				<ConfirmChangesModal
+					assetTypeChange={assetTypeChange}
+					observer={observer}
+					onOpenChange={onOpenChange}
+					onSave={_handleSave}
+					open={open}
+					spaceChange={spaceChange}
+				/>
 			</div>
 		</div>
 	);

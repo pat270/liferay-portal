@@ -109,6 +109,7 @@
 		</field>
 		<field name="vocabularyId" type="long" />
 		<field name="lastPublishDate" type="Date" />
+		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.asset.kernel.model.AssetEntry">
 		<field name="mvccVersion" type="long" />
@@ -200,6 +201,7 @@
 		</field>
 		<field name="visibilityType" type="int" />
 		<field name="lastPublishDate" type="Date" />
+		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.asset.kernel.model.AssetVocabularyGroupRel">
 		<field name="mvccVersion" type="long" />
@@ -536,6 +538,7 @@
 		<field name="validationDate" type="Date" />
 		<field name="validationStatus" type="int" />
 		<field name="zip" type="String" />
+		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.BrowserTracker">
 		<field name="mvccVersion" type="long" />
@@ -1055,6 +1058,7 @@
 			<hint name="display-width">400</hint>
 		</field>
 		<field name="logoId" type="long" />
+		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.OrgLabor">
 		<field name="mvccVersion" type="long" />

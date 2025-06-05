@@ -5,19 +5,27 @@
 
 package com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0;
 
+import com.liferay.portal.kernel.exception.NoSuchModelException;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.TestEntity;
 import com.liferay.portal.tools.rest.builder.test.internal.entity.v1_0.TestEntityEntityModel;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.TestEntityResource;
+import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.portal.vulcan.pagination.Page;
+
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
-
-import javax.ws.rs.core.MultivaluedMap;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 /**
@@ -30,6 +38,27 @@ import org.osgi.service.component.annotations.ServiceScope;
 public class TestEntityResourceImpl extends BaseTestEntityResourceImpl {
 
 	@Override
+	public Response deleteTestEntity(Long testEntityId, Boolean permanent)
+		throws Exception {
+
+		Iterator<TestEntity> testEntityIterator = _testEntities.iterator();
+
+		while (testEntityIterator.hasNext()) {
+			TestEntity testEntity = testEntityIterator.next();
+
+			if (Objects.equals(testEntity.getId(), testEntityId)) {
+				testEntityIterator.remove();
+
+				Response.ResponseBuilder responseBuilder = Response.noContent();
+
+				return responseBuilder.build();
+			}
+		}
+
+		throw new NoSuchModelException();
+	}
+
+	@Override
 	public EntityModel getEntityModel(MultivaluedMap multivaluedMap) {
 		return new TestEntityEntityModel();
 	}
@@ -40,8 +69,13 @@ public class TestEntityResourceImpl extends BaseTestEntityResourceImpl {
 	}
 
 	@Override
-	public TestEntity getTestEntity(Long testEntityId) {
-		return _testEntities.get(Math.toIntExact(testEntityId));
+	public TestEntity getTestEntity(Long testEntityId) throws Exception {
+		try {
+			return _testEntities.get(Math.toIntExact(testEntityId));
+		}
+		catch (IndexOutOfBoundsException indexOutOfBoundsException) {
+			throw new NoSuchModelException(indexOutOfBoundsException);
+		}
 	}
 
 	@Override
@@ -68,6 +102,25 @@ public class TestEntityResourceImpl extends BaseTestEntityResourceImpl {
 	}
 
 	@Override
+	public Response postTestEntityMultipartBulk(MultipartBody multipartBody)
+		throws Exception {
+
+		TestEntity[] testEntities = multipartBody.getValueAsInstance(
+			"testEntities", TestEntity[].class);
+
+		if (testEntities == null) {
+			throw new BadRequestException();
+		}
+
+		for (TestEntity testEntity : testEntities) {
+			postTestEntity(testEntity);
+		}
+
+		return Response.ok(
+		).build();
+	}
+
+	@Override
 	public TestEntity putTestEntity(
 		Long testEntityId, Long optionalParameter, TestEntity testEntity) {
 
@@ -82,5 +135,8 @@ public class TestEntityResourceImpl extends BaseTestEntityResourceImpl {
 	}
 
 	private static final List<TestEntity> _testEntities = new ArrayList<>();
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }

@@ -79,7 +79,7 @@ test(
 		for (let i = 0; i < currentInstanceLanguages.length; i++) {
 			await page.waitForTimeout(500);
 			await page
-				.getByLabel('Current')
+				.getByLabel('Current', {exact: true})
 				.selectOption(currentInstanceLanguages[i]);
 			await page
 				.getByRole('button', {
@@ -109,7 +109,7 @@ test(
 		for (let i = 0; i < currentInstanceLanguages.length; i++) {
 			await page.waitForTimeout(500);
 			await page
-				.getByLabel('Available')
+				.getByLabel('Available', {exact: true})
 				.selectOption(currentInstanceLanguages[i]);
 			await page
 				.getByRole('button', {

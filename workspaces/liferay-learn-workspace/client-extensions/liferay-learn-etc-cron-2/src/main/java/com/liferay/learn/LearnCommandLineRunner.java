@@ -31,7 +31,7 @@ public class LearnCommandLineRunner
 			).put(
 				"synchronizationStatus", "InProgress"
 			).toString(),
-			"/o/c/p2s3examresultssynchronizations/scopes/guest");
+			createURI("/o/c/p2s3examresultssynchronizations/scopes/guest"));
 	}
 
 	@Autowired

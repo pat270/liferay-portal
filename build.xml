@@ -565,7 +565,6 @@ message.
 			showFixmeTags="false"
 			showHiddenTags="false"
 			sourceDir="${definitions.dir}"
-			stylesheet="${project.dir}/tools/styles/dtddoc.css"
 		>
 			<include name="liferay-*${lp.version.dtd}.dtd" />
 		</DTDDoc>
@@ -648,14 +647,13 @@ message.
 			maxmemory="2048m"
 			noqualifier="java.*"
 			overview="${module.dir}/src/overview.html"
-			stylesheetfile="${project.dir}/tools/styles/javadoc.css"
 			use="yes"
 			useexternalfile="yes"
 			windowtitle="Liferay ${lp.version} ${module.dir} API"
 		>
-			<link href="http://docs.liferay.com/portlet-api/3.0/javadocs" />
-			<link href="http://java.sun.com/javase/6/docs/api" />
 			<link href="http://docs.liferay.com/portal/${lp.version.major}-latest/javadocs" />
+			<link href="https://docs.liferay.com/portlet-api/3.0/javadocs" />
+			<link href="https://docs.oracle.com/javase/17/docs/api" />
 
 			<packageset dir="${module.dir}/src" />
 
@@ -678,7 +676,6 @@ message.
 			maxmemory="2048m"
 			noqualifier="java.*"
 			overview="${module.dir}/src/overview.html"
-			stylesheetfile="${project.dir}/tools/styles/javadoc.css"
 			use="yes"
 			useexternalfile="yes"
 			windowtitle="Liferay ${lp.version} ${module.dir} API"
@@ -687,9 +684,9 @@ message.
 			<group packages="com.liferay.portal.kernel.*" title="Portal Kernel" />
 			<group packages="com.liferay.*" title="Portlet Services" />
 
-			<link href="http://docs.liferay.com/portlet-api/3.0/javadocs" />
-			<link href="http://java.sun.com/javase/6/docs/api" />
 			<link href="http://docs.liferay.com/portal/${lp.version.major}-latest/javadocs" />
+			<link href="https://docs.liferay.com/portlet-api/3.0/javadocs" />
+			<link href="https://docs.oracle.com/javase/17/docs/api" />
 
 			<packageset dir="${module.dir}/src" />
 
@@ -822,6 +819,7 @@ This target has been renamed to "snapshot-bundle". Please call "snapshot-bundle"
 			<arg value="properties.file=${properties.file}" />
 			<arg value="properties.title=${properties.title}" />
 			<arg value="properties.toc=${properties.toc}" />
+			<jvmarg line="--add-opens java.base/java.lang.invoke=ALL-UNNAMED" />
 		</java>
 	</target>
 

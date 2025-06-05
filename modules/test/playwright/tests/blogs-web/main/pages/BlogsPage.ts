@@ -14,9 +14,10 @@ export class BlogsPage {
 	readonly page: Page;
 	readonly permissionsFrameLocator: FrameLocator;
 	readonly selectAllBlogEntriesCheckBox: Locator;
+	readonly successMessage: Locator;
 
 	constructor(page: Page) {
-		this.blogName = (title: string) => page.getByText(`${title}`);
+		this.blogName = (title: string) => page.getByText(title);
 		this.deleteAllBlogEntriesButton = page.getByRole('button', {
 			name: 'Delete',
 		});
@@ -27,6 +28,7 @@ export class BlogsPage {
 		this.selectAllBlogEntriesCheckBox = page.getByLabel(
 			'Select All Items on the Page'
 		);
+		this.successMessage = page.getByText('Successful');
 	}
 
 	async goto(siteUrl?: Site['friendlyUrlPath']) {

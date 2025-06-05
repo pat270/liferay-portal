@@ -6,19 +6,20 @@
 import {openModal, openToast} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 
-import {postScopeScopeKeyObjectEntryFolder} from '../../../services/api';
-import CreationModalContent, {
-	AssetLibrary,
-} from '../../components/modal/CreationModalContent';
+import FolderService from '../../../services/FolderService';
+import {AssetLibrary} from '../../../types/AssetLibrary';
+import CreationModalContent from '../../components/modal/CreationModalContent';
 
 export type FolderData = {
 	action: 'createFolder';
 	assetLibraries: AssetLibrary[];
+	baseAssetLibraryViewURL: string;
+	baseFolderViewURL: string;
+	parentObjectEntryFolderExternalReferenceCode: string;
 };
 
 export default function createFolderAction(
 	data: FolderData,
-	additionalProps: {parentObjectEntryFolderExternalReferenceCode: string},
 	loadData?: () => {}
 ) {
 	openModal({
@@ -28,31 +29,44 @@ export default function createFolderAction(
 				...data,
 				closeModal,
 				onSubmit: async ({groupId, name: title}) => {
-					const {errorMessage, success} =
-						await postScopeScopeKeyObjectEntryFolder(
+					const {data: folderData, error} =
+						await FolderService.createFolder<{
+							id: string;
+							scopeKey: string;
+							title: string;
+						}>(
 							groupId,
-							title,
-							additionalProps.parentObjectEntryFolderExternalReferenceCode
+							data.parentObjectEntryFolderExternalReferenceCode,
+							title
 						);
 
-					if (success) {
+					if (!error) {
 						loadData?.();
 
 						closeModal();
 
+						const {
+							id: folderId,
+							scopeKey: spaceName,
+							title: folderName,
+						} = folderData || {};
+
 						openToast({
 							message: sub(
 								Liferay.Language.get(
-									'x-was-created-successfully'
+									'x-was-created-successfully-to-x-space'
 								),
-								`<strong>${title}</strong>`
+								[
+									`<a href="${data.baseFolderViewURL}${folderId}" class="alert-link lead"><strong>${folderName}</strong></a>`,
+									`<a href="${data.baseAssetLibraryViewURL}${groupId}" class="alert-link lead"><strong>${spaceName}</strong></a>`,
+								]
 							),
 							type: 'success',
 						});
 					}
 					else {
 						openToast({
-							message: errorMessage,
+							message: error,
 							type: 'danger',
 						});
 					}

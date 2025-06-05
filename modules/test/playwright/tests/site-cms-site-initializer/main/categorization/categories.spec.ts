@@ -12,6 +12,7 @@ import {loginTest} from '../../../../fixtures/loginTest';
 import {clickAndExpectToBeVisible} from '../../../../utils/clickAndExpectToBeVisible';
 import getRandomString from '../../../../utils/getRandomString';
 import {categorizationPagesTest} from '../fixtures/categorizationPagesTest';
+import {DataSetPage} from '../pages/DataSetPage';
 
 const test = mergeTests(
 	categorizationPagesTest,
@@ -86,6 +87,57 @@ test.describe('Category tests that focus on creation', () => {
 				target: page.getByText('The Name field is required'),
 				trigger: editCategoryPage.saveButton,
 			});
+		}
+	);
+
+	test(
+		'Create a Category with non-default permissions',
+		{tag: '@LPD-54328'},
+		async ({categoriesPage, editCategoryPage, page}) => {
+			await categoriesPage.goto(vocabularyId, vocabularyName);
+
+			await categoriesPage.clickCreateNewCategoryButton();
+
+			const categoryName: string = getRandomString();
+
+			await editCategoryPage.fillName(categoryName);
+
+			await editCategoryPage.setViewableByPermissions('Guest');
+			await editCategoryPage.assertDefaultViewableByPermissions('Guest');
+
+			await editCategoryPage.setViewableByPermissions('Site Member');
+			await editCategoryPage.assertDefaultViewableByPermissions(
+				'Site Member'
+			);
+
+			await editCategoryPage.setViewableByPermissions('Owner');
+			await editCategoryPage.assertDefaultViewableByPermissions('Owner');
+
+			await editCategoryPage.setViewableByPermissions('Guest');
+
+			await editCategoryPage.tickPermissionCheckbox('Guest', 'Delete');
+
+			await editCategoryPage.clickSave();
+
+			await categoriesPage.assertBreadcrumbItemText(0, 'Categorization');
+
+			await expect(categoriesPage.getItem(categoryName)).toBeVisible();
+
+			await categoriesPage.execItemAction({
+				action: 'Permissions',
+				filter: categoryName,
+			});
+
+			await expect(
+				page.getByRole('heading', {name: 'Permissions'})
+			).toBeVisible();
+
+			await categoriesPage.assertPermissions([
+				{enabled: true, locator: '#guest_ACTION_DELETE'},
+				{enabled: false, locator: '#guest_ACTION_UPDATE'},
+				{enabled: true, locator: '#guest_ACTION_VIEW'},
+				{enabled: false, locator: '#site-member_ACTION_DELETE'},
+			]);
 		}
 	);
 });
@@ -183,6 +235,192 @@ test.describe("Category tests that don't focus on creation", () => {
 			await expect(
 				page.getByRole('heading', {name: 'Permissions'})
 			).toBeVisible();
+		}
+	);
+
+	test(
+		"Edit a Category's properties",
+		{tag: '@54213'},
+		async ({categoriesPage, editCategoryPage, page}) => {
+			await categoriesPage.goto(vocabularyId, vocabularyName);
+
+			await page.getByRole('link', {name: categoryName}).click();
+
+			await expect(page.getByText(`Edit ${categoryName}`)).toBeVisible();
+
+			await editCategoryPage.clickSidebarTab('Properties');
+
+			await editCategoryPage.fillProperties([
+				{key: 'key1', value: 'value1'},
+				{key: 'key2', value: 'value2'},
+			]);
+			await editCategoryPage.assertProperties([
+				{key: 'key1', value: 'value1'},
+				{key: 'key2', value: 'value2'},
+			]);
+
+			await editCategoryPage.deleteNthPropertyRow(0);
+			await editCategoryPage.assertProperties([
+				{key: 'key2', value: 'value2'},
+			]);
+
+			// Add an empty property row to test that we handle basic linting of empty property row data
+
+			await editCategoryPage.addPropertyRow();
+			await editCategoryPage.assertProperties([
+				{key: 'key2', value: 'value2'},
+				{key: '', value: ''},
+			]);
+
+			await editCategoryPage.addPropertyRow('key3', 'value3');
+			await editCategoryPage.assertProperties([
+				{key: 'key2', value: 'value2'},
+				{key: '', value: ''},
+				{key: 'key3', value: 'value3'},
+			]);
+
+			await page.waitForTimeout(2000);
+
+			await editCategoryPage.clickSave();
+			await editCategoryPage.handleEditConfirmationModal(true);
+
+			await categoriesPage.assertBreadcrumbItemText(0, 'Categorization');
+
+			await expect(categoriesPage.getItem(categoryName)).toBeVisible();
+
+			await page.getByRole('link', {name: categoryName}).click();
+
+			await expect(page.getByText(`Edit ${categoryName}`)).toBeVisible();
+
+			await editCategoryPage.clickSidebarTab('Properties');
+
+			await editCategoryPage.assertProperties([
+				{key: 'key2', value: 'value2'},
+				{key: 'key3', value: 'value3'},
+			]);
+		}
+	);
+
+	test(
+		"View a Category's usages",
+		{tag: '@LPD-54560'},
+		async ({apiHelpers, categoriesPage, page}) => {
+			await categoriesPage.goto(vocabularyId, vocabularyName);
+
+			await categoriesPage.execItemAction({
+				action: 'View Usages',
+				filter: categoryName,
+			});
+
+			await expect(page.getByText('No Results Found')).toBeVisible();
+
+			const basicWebContentObjectEntry = {
+				objectEntryFolderExternalReferenceCode: 'L_CONTENTS',
+				taxonomyCategoryIds: [categoryId],
+				title: getRandomString(),
+			};
+
+			await apiHelpers.objectEntry.postObjectEntry(
+				basicWebContentObjectEntry,
+				'cms/basic-web-contents/scopes/Default'
+			);
+
+			await categoriesPage.goto(vocabularyId, vocabularyName);
+
+			await categoriesPage.execItemAction({
+				action: 'View Usages',
+				filter: categoryName,
+			});
+
+			const dataSetPage = new DataSetPage(page);
+
+			await expect(
+				dataSetPage.getRow(basicWebContentObjectEntry.title)
+			).toBeVisible();
+		}
+	);
+});
+
+test.describe('Subcategory tests', () => {
+	let categoryName: string;
+	let categoryId: number;
+
+	test.beforeEach('Create Subcategory via API', async ({apiHelpers}) => {
+		categoryName = getRandomString();
+
+		categoryId = await apiHelpers.headlessAdminTaxonomy
+			.postTaxonomyVocabularyTaxonomyCategory({
+				name: categoryName,
+				vocabularyId,
+			})
+			.then((response) => response.id);
+	});
+
+	test(
+		'Subcategories can be created within a Category with both the "Save and Add Another" and "Save" buttons',
+		{tag: '@LPD-56092'},
+		async ({categoriesPage, editCategoryPage}) => {
+			await categoriesPage.gotoSubcategories(
+				categoryId,
+				categoryName,
+				vocabularyId,
+				vocabularyName
+			);
+
+			await categoriesPage.clickCreateNewSubcategoryButton();
+
+			const subcategoryName1: string = getRandomString();
+
+			await editCategoryPage.fillName(subcategoryName1);
+			await editCategoryPage.fillDescription(getRandomString());
+
+			await editCategoryPage.clickSaveAndAddAnother();
+
+			const subcategoryName2: string = getRandomString();
+
+			await editCategoryPage.fillName(subcategoryName2);
+			await editCategoryPage.fillDescription(getRandomString());
+
+			await editCategoryPage.clickSave();
+
+			await categoriesPage.assertBreadcrumbItemText(2, categoryName);
+
+			await expect(
+				categoriesPage.getItem(subcategoryName1)
+			).toBeVisible();
+			await expect(
+				categoriesPage.getItem(subcategoryName2)
+			).toBeVisible();
+		}
+	);
+
+	test(
+		'Subcategories can be created within a Category from the dropdown actions',
+		{tag: '@LPD-56092'},
+		async ({categoriesPage, editCategoryPage}) => {
+			await categoriesPage.goto(vocabularyId, vocabularyName);
+
+			await categoriesPage.execItemAction({
+				action: 'Add Subcategory',
+				filter: categoryName,
+			});
+
+			const subcategoryName: string = getRandomString();
+
+			await editCategoryPage.fillName(subcategoryName);
+			await editCategoryPage.fillDescription(getRandomString());
+
+			await editCategoryPage.clickSave();
+
+			await categoriesPage.assertBreadcrumbItemText(1, vocabularyName);
+
+			await expect(categoriesPage.getItem('1')).toBeVisible();
+
+			await categoriesPage.getItem('1').click();
+
+			await categoriesPage.assertBreadcrumbItemText(2, categoryName);
+
+			await expect(categoriesPage.getItem(subcategoryName)).toBeVisible();
 		}
 	);
 });

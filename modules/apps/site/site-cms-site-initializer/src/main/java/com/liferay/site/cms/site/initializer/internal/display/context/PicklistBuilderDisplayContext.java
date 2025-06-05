@@ -18,9 +18,9 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 /**
  * @author Verónica González
@@ -39,7 +39,7 @@ public class PicklistBuilderDisplayContext {
 			WebKeys.THEME_DISPLAY);
 	}
 
-	public Map<String, Object> getProps() throws Exception {
+	public Map<String, Object> getProps() {
 		return HashMapBuilder.<String, Object>put(
 			"learnResources",
 			LearnMessageUtil.getReactDataJSONObject("site-cms-site-initializer")

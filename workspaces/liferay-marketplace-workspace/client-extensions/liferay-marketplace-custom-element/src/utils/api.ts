@@ -105,32 +105,6 @@ export async function createContactSales(formData: ContactSales) {
 	return response.json();
 }
 
-export async function createAttachmentAxios({
-	body,
-	callback,
-	externalReferenceCode,
-}: {
-	body: Object;
-	callback: (progress: number) => void;
-	externalReferenceCode: string;
-}) {
-	const response = await axios.post(
-		`/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/${externalReferenceCode}/attachments`,
-		body,
-		{
-			onUploadProgress: (event: any) => {
-				const progress = Math.round(
-					(event.loaded * 100) / Number(event.total)
-				);
-
-				callback(progress);
-			},
-		}
-	);
-
-	return response.data;
-}
-
 export async function createProductVirtualEntry({
 	body,
 	callback,
@@ -452,7 +426,7 @@ export async function getPriceListByCatalogName(catalogName: string) {
 
 export async function getPriceListIdPriceEntries(priceListId: number) {
 	const response = await fetch(
-		`${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${priceListId}/price-entries?nestedFields=sku`,
+		`${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${priceListId}/price-entries?pageSize=-1&nestedFields=sku,product`,
 		{
 			headers,
 			method: 'GET',
@@ -533,7 +507,7 @@ export async function postCartByChannelId({
 		}
 	);
 
-	return (await cartResponse.json()) as PostCartResponse;
+	return (await cartResponse.json()) as Cart;
 }
 
 export async function postCheckoutCart({
@@ -552,7 +526,7 @@ export async function postCheckoutCart({
 		}
 	);
 
-	return (await response.json()) as PostCheckoutCartResponse;
+	return (await response.json()) as Cart;
 }
 
 export async function postOptionValue(optionBody: any, optionId: number) {
@@ -579,6 +553,32 @@ export async function patchPriceEntry(priceEntry: any, priceEntryId: number) {
 			body: JSON.stringify(priceEntry),
 			headers,
 			method: 'PATCH',
+		}
+	);
+
+	return await response.json();
+}
+
+export async function postPriceList(priceList: PriceList) {
+	const response = await fetch(
+		`/o/headless-commerce-admin-pricing/v2.0/price-lists`,
+		{
+			body: JSON.stringify(priceList),
+			headers,
+			method: 'POST',
+		}
+	);
+
+	return await response.json();
+}
+
+export async function postPriceListEntry(priceListId: number, priceEntry: any) {
+	const response = await fetch(
+		`/o/headless-commerce-admin-pricing/v1.0/priceLists/${priceListId}/priceEntries`,
+		{
+			body: JSON.stringify(priceEntry),
+			headers,
+			method: 'POST',
 		}
 	);
 

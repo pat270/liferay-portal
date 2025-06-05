@@ -64,8 +64,6 @@ test('LPD-30855 Can map order item information', async ({
 		type: 'person',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
 		['test@liferay.com']
@@ -302,8 +300,6 @@ test('LPD-41395 Can map display page and schedule fields to fragments', async ({
 		type: 'person',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
 		['demo.unprivileged@liferay.com']
@@ -395,7 +391,7 @@ test('LPD-41395 Can map display page and schedule fields to fragments', async ({
 
 	await performLogout(page);
 
-	await performLoginViaApi(page, 'demo.unprivileged');
+	await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 	await page.goto(
 		`/web${site.friendlyUrlPath}/e/${displayPageTemplateName}/${className.classNameId}/${product.id}`
@@ -438,8 +434,6 @@ test('LPD-41395 Can map detailed information fields to fragments', async ({
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 			account.id,
@@ -596,7 +590,7 @@ test('LPD-41395 Can map detailed information fields to fragments', async ({
 
 		await performLogout(page);
 
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		await page.goto(
 			`/web${site.friendlyUrlPath}/e/${displayPageTemplateName}/${className.classNameId}/${product.id}`
@@ -635,7 +629,7 @@ test('LPD-41395 Can map detailed information fields to fragments', async ({
 	finally {
 		await performLogout(page);
 
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		page.on('dialog', (dialog) => {
 			dialog.accept();

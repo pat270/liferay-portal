@@ -8,54 +8,64 @@ import {expect, mergeTests} from '@playwright/test';
 import {loginTest} from '../../../fixtures/loginTest';
 import {ViewClientExtensionPage} from './pages/ViewClientExtensionPage';
 
-export const test = mergeTests(loginTest());
+const testSample = mergeTests(loginTest());
 
-const SAMPLES = [
-	{
-		bareSpecifier: 'jquery',
-		erc: 'LXC:liferay-sample-js-import-maps-entry',
-		name: 'Liferay Sample JS Import Maps Entry',
-		url: '',
-	},
-	{
-		bareSpecifier: 'my-utils',
-		erc: 'LXC:liferay-sample-etc-frontend-js-import-maps-entry',
-		name: 'Liferay Sample Etc Frontend JS Import Maps Entry',
-		url: '',
-	},
-];
+testSample.describe('Samples', () => {
+	const SAMPLES = [
+		{
+			bareSpecifier: 'jquery',
+			erc: 'LXC:liferay-sample-js-import-maps-entry',
+			name: 'Liferay Sample JS Import Maps Entry',
+			url: '',
+		},
+		{
+			bareSpecifier: 'my-utils',
+			erc: 'LXC:liferay-sample-etc-frontend-js-import-maps-entry',
+			name: 'Liferay Sample Etc Frontend JS Import Maps Entry',
+			url: '',
+		},
+	];
 
-for (const sample of SAMPLES) {
-	test(`${sample.name} is registered`, async ({page}) => {
-		const viewClientExtensionPage = new ViewClientExtensionPage(
-			page,
-			sample.erc
+	for (const sample of SAMPLES) {
+		testSample(`${sample.name} is registered`, async ({page}) => {
+			const viewClientExtensionPage = new ViewClientExtensionPage(
+				page,
+				sample.erc
+			);
+
+			await viewClientExtensionPage.goto();
+
+			sample.url = await viewClientExtensionPage
+				.getInputByLabel('URL')
+				.inputValue();
+
+			await expect(viewClientExtensionPage.nameInput).toHaveValue(
+				sample.name
+			);
+		});
+
+		testSample(
+			`${sample.name}'s .js file can be downloaded`,
+			async ({page}) => {
+				const response = await page.goto(sample.url);
+
+				expect(response.status()).toBe(200);
+				expect(await response.headerValue('Content-Type')).toBe(
+					'application/javascript'
+				);
+			}
 		);
 
-		await viewClientExtensionPage.goto();
+		testSample(`${sample.name} appears in import maps`, async ({page}) => {
+			await page.goto('/');
 
-		sample.url = await viewClientExtensionPage
-			.fieldLocator('URL')
-			.inputValue();
+			const importMap = await page
+				.locator('script[type="importmap"]')
+				.evaluate((node: HTMLScriptElement) => node.innerText);
 
-		expect(viewClientExtensionPage.nameLocator).toHaveValue(sample.name);
-	});
-
-	test(`${sample.name}'s .js file can be downloaded`, async ({page}) => {
-		const response = await page.goto(sample.url);
-
-		expect(response.status()).toBe(200);
-	});
-
-	test(`${sample.name} appears in import maps`, async ({page}) => {
-		await page.goto('/');
-
-		const importMap = await page
-			.locator('script[type="importmap"]')
-			.evaluate((node: HTMLScriptElement) => node.innerText);
-
-		expect(importMap).toContain(
-			`"${sample.bareSpecifier}":"${sample.url}"`
-		);
-	});
-}
+			expect(importMap).toContain(
+				`"${sample.bareSpecifier}":"${sample.url}"`
+			);
+		});
+	}
+});

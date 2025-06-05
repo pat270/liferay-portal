@@ -39,13 +39,13 @@ import com.liferay.trash.model.TrashVersion;
 import com.liferay.trash.service.TrashEntryLocalService;
 import com.liferay.trash.service.TrashVersionLocalService;
 
+import jakarta.portlet.PortletURL;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.text.Format;
 
 import java.util.Date;
-
-import javax.portlet.PortletURL;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -390,11 +390,7 @@ public class TrashHelperImpl implements TrashHelper {
 	}
 
 	private boolean _isValidTrashTitle(String title, String prefix) {
-		if (title.startsWith(prefix)) {
-			return true;
-		}
-
-		return false;
+		return title.startsWith(prefix);
 	}
 
 	private static final String _TRASH_PREFIX = StringPool.SLASH;

@@ -47,11 +47,6 @@ public class OptionsRestController extends BaseRestController {
 		return post(jwt, json, _log);
 	}
 
-	@Override
-	protected String getWebClientBaseURL() {
-		return "";
-	}
-
 	protected ResponseEntity<String> post(Jwt jwt, String json, Log log)
 		throws Exception {
 
@@ -117,7 +112,7 @@ public class OptionsRestController extends BaseRestController {
 	}
 
 	private JSONObject _get(String authorization, String path) {
-		return new JSONObject(get(authorization, path));
+		return new JSONObject(get(authorization, createURI(path)));
 	}
 
 	private String _getAccessToken(
@@ -141,7 +136,8 @@ public class OptionsRestController extends BaseRestController {
 						HttpHeaders.CONTENT_TYPE,
 						MediaType.APPLICATION_FORM_URLENCODED_VALUE
 					).build(),
-					"https://wwwcie.ups.com/security/v1/oauth/token"));
+					createURI(
+						"https://wwwcie.ups.com/security/v1/oauth/token")));
 
 			return jsonObject.getString("access_token");
 		}
@@ -293,7 +289,8 @@ public class OptionsRestController extends BaseRestController {
 			return new JSONObject(
 				post(
 					"Bearer " + _getAccessToken(clientId, clientSecret, log),
-					body, "https://wwwcie.ups.com/api/rating/v2403/Rate"));
+					body,
+					createURI("https://wwwcie.ups.com/api/rating/v2403/Rate")));
 		}
 		catch (Exception exception) {
 			if (log.isDebugEnabled()) {

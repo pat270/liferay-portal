@@ -35,8 +35,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		userData[user.alternateName] = {
@@ -130,7 +128,7 @@ test(
 		}
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}/p/abs-sensor`);
 

@@ -70,7 +70,7 @@ export const FIELD_TYPE_TO_DB_TYPE: Record<FieldType, string> = {
 	'boolean': 'Boolean',
 	'date': 'Date',
 	'datetime': 'DateTime',
-	'decimal': 'BigDecimal',
+	'decimal': 'Double',
 	'integer': 'Integer',
 	'long-text': 'Clob',
 	'multiselect': 'String',
@@ -185,7 +185,15 @@ export type FieldBusinessType =
 
 // Functions
 
-export function getDefaultField(type: FieldType): Field {
+export function getDefaultField({
+	label,
+	name,
+	type,
+}: {
+	label?: string;
+	name?: string;
+	type: FieldType;
+}): Field {
 	const base = {
 		erc: getRandomId(),
 		indexableConfig: {
@@ -195,10 +203,10 @@ export function getDefaultField(type: FieldType): Field {
 		},
 		label: {
 			[Liferay.ThemeDisplay.getDefaultLanguageId()]:
-				FIELD_TYPE_LABEL[type],
+				label ?? FIELD_TYPE_LABEL[type],
 		},
 		localized: Liferay.FeatureFlags['LPD-32050'],
-		name: normalizeName(type),
+		name: name ?? normalizeName(type),
 		required: false,
 		settings: {},
 		uuid: getUuid(),

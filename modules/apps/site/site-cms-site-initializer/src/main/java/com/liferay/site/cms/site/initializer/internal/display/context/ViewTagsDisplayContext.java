@@ -14,17 +14,12 @@ import com.liferay.site.cms.site.initializer.internal.constants.CMSSiteInitializ
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * @author Noor Najjar
  */
 public class ViewTagsDisplayContext {
 
-	public ViewTagsDisplayContext(
-		HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay) {
-
-		_httpServletRequest = httpServletRequest;
+	public ViewTagsDisplayContext(ThemeDisplay themeDisplay) {
 		_themeDisplay = themeDisplay;
 	}
 
@@ -39,6 +34,13 @@ public class ViewTagsDisplayContext {
 					"/categorization/view_tags"),
 				_themeDisplay)
 		).put(
+			"tagUsagesURL",
+			PortalUtil.getLayoutFullURL(
+				LayoutLocalServiceUtil.getLayoutByFriendlyURL(
+					_themeDisplay.getScopeGroupId(), false,
+					"/categorization/view_tag_usages"),
+				_themeDisplay)
+		).put(
 			"vocabulariesURL",
 			PortalUtil.getLayoutFullURL(
 				LayoutLocalServiceUtil.getLayoutByFriendlyURL(
@@ -48,7 +50,6 @@ public class ViewTagsDisplayContext {
 		).build();
 	}
 
-	private final HttpServletRequest _httpServletRequest;
 	private final ThemeDisplay _themeDisplay;
 
 }

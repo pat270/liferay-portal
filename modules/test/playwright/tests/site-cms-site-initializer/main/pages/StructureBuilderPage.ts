@@ -7,6 +7,7 @@ import {ObjectDefinitionAPI} from '@liferay/object-admin-rest-client-js';
 import {Locator, Page, expect} from '@playwright/test';
 
 import {ApiHelpers} from '../../../../helpers/ApiHelpers';
+import {clickAndExpectToBeHidden} from '../../../../utils/clickAndExpectToBeHidden';
 import {clickAndExpectToBeVisible} from '../../../../utils/clickAndExpectToBeVisible';
 import {PORTLET_URLS} from '../../../../utils/portletUrls';
 import {waitForAlert} from '../../../../utils/waitForAlert';
@@ -32,6 +33,7 @@ type Field = {label: string; nth?: number};
 export class StructureBuilderPage {
 	readonly page: Page;
 
+	private readonly customizeExperienceButton: Locator;
 	private readonly labelInput: Locator;
 	private readonly nameInput: Locator;
 	private readonly spaceCheckbox: Locator;
@@ -43,6 +45,9 @@ export class StructureBuilderPage {
 	constructor(page: Page) {
 		this.page = page;
 
+		this.customizeExperienceButton = this.page.getByRole('button', {
+			name: 'Customize Experience',
+		});
 		this.labelInput = this.page.getByLabel('Structure Label');
 		this.nameInput = this.page.getByLabel('Structure Name');
 		this.publishButton = this.page.getByRole('button', {name: 'Publish'});
@@ -53,8 +58,18 @@ export class StructureBuilderPage {
 		this.spaceSelector = this.page.getByLabel('Space Selector');
 	}
 
-	async goto() {
-		await this.page.goto(PORTLET_URLS.cmsStructureBuilder);
+	async goto(
+		{type = 'content'}: {type?: 'content' | 'file'} = {type: 'content'}
+	) {
+		const folderERC =
+			type === 'content'
+				? 'L_CMS_CONTENT_STRUCTURES'
+				: 'L_CMS_FILE_TYPES';
+
+		await this.page.goto(
+			PORTLET_URLS.cmsStructureBuilder +
+				`?objectFolderExternalReferenceCode=${folderERC}`
+		);
 
 		await this.page.getByText('New Structure').waitFor();
 	}
@@ -170,6 +185,20 @@ export class StructureBuilderPage {
 		}
 	}
 
+	async customizeExperience() {
+		await expect(async () => {
+			await this.customizeExperienceButton.click();
+
+			await expect(
+				this.page.getByText('Select a Page Element', {exact: true})
+			).toBeVisible({
+				timeout: 3500,
+			});
+
+			await this.waitForExperienceCustomizerModal();
+		}).toPass();
+	}
+
 	async deleteFields(fields: Field[]) {
 
 		// Deleting one field
@@ -177,31 +206,25 @@ export class StructureBuilderPage {
 		if (fields.length === 1) {
 			const [field] = fields;
 
-			const count = await this.page
+			const treeItems = this.page
 				.locator('.treeview-item')
-				.getByLabel(field.label, {exact: true})
-				.count();
+				.getByLabel(field.label, {exact: true});
 
-			const treeItem = this.page
-				.locator('.treeview-item')
-				.getByLabel(field.label, {exact: true})
-				.nth(field.nth || 0);
+			await treeItems.waitFor({state: 'visible'});
 
-			if (treeItem) {
-				await this.selectFields([field]);
+			const count = await treeItems.count();
 
-				await clickAndExpectToBeVisible({
-					autoClick: true,
-					target: this.page.getByRole('menuitem', {name: 'Delete'}),
-					trigger: treeItem.getByLabel('Field Options'),
-				});
+			const treeItem = treeItems.nth(field.nth || 0);
 
-				await expect(
-					this.page
-						.locator('.treeview-item')
-						.getByLabel(field.label, {exact: true})
-				).toHaveCount(count - 1);
-			}
+			await this.selectFields([field]);
+
+			await clickAndExpectToBeVisible({
+				autoClick: true,
+				target: this.page.getByRole('menuitem', {name: 'Delete'}),
+				trigger: treeItem.getByLabel('Field Options'),
+			});
+
+			await expect(treeItems).toHaveCount(count - 1);
 		}
 
 		// Deleting multiple fields
@@ -315,6 +338,35 @@ export class StructureBuilderPage {
 			await expect(
 				this.page.getByText(`${fields.length} Items Selected`)
 			).toBeVisible();
+		}
+	}
+
+	async selectSpaces(spaces: string[]) {
+		for (const space of spaces) {
+			await expect(async () => {
+				await this.spaceSelector.click({timeout: 1000});
+
+				await this.page
+					.getByRole('option', {name: space})
+					.click({timeout: 1000});
+
+				await expect(
+					this.page.locator('.label-secondary', {hasText: space})
+				).toBeVisible();
+			}).toPass();
+		}
+	}
+
+	async waitForExperienceCustomizerModal() {
+		await this.page.waitForTimeout(4000);
+
+		const gotItButton = this.page.getByText('Got It');
+
+		if (await gotItButton.isVisible()) {
+			await clickAndExpectToBeHidden({
+				target: gotItButton,
+				trigger: gotItButton,
+			});
 		}
 	}
 }

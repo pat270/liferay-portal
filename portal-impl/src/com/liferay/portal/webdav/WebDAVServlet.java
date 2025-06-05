@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -32,10 +33,10 @@ import com.liferay.portal.kernel.webdav.methods.Method;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.webdav.methods.MethodFactoryUtil;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * @author Brian Wing Shun Chan
@@ -113,6 +114,10 @@ public class WebDAVServlet extends HttpServlet {
 				WebDAVRequest webDAVRequest = new WebDAVRequestImpl(
 					storage, httpServletRequest, httpServletResponse, userAgent,
 					permissionChecker);
+
+				LocaleThreadLocal.setSiteDefaultLocale(
+					PortalUtil.getSiteDefaultLocale(
+						webDAVRequest.getGroupId()));
 
 				status = method.process(webDAVRequest);
 			}

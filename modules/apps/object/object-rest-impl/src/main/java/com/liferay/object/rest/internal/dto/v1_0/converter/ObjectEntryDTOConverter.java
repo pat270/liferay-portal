@@ -8,6 +8,7 @@ package com.liferay.object.rest.internal.dto.v1_0.converter;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.batch.engine.attachment.BatchEngineAttachmentManager;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
@@ -26,7 +27,9 @@ import com.liferay.object.entry.util.ObjectEntryValuesUtil;
 import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntryFolder;
+import com.liferay.object.model.ObjectEntryModel;
 import com.liferay.object.model.ObjectEntryVersion;
+import com.liferay.object.model.ObjectEntryVersionModel;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.related.models.ObjectRelatedModelsProvider;
@@ -97,11 +100,15 @@ import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
 import com.liferay.portal.vulcan.extension.ExtensionProviderRegistry;
 import com.liferay.portal.vulcan.extension.util.ExtensionUtil;
+import com.liferay.portal.vulcan.fields.NestedFieldsContext;
+import com.liferay.portal.vulcan.fields.NestedFieldsContextThreadLocal;
 import com.liferay.portal.vulcan.fields.NestedFieldsSupplier;
 import com.liferay.portal.vulcan.jaxrs.extension.ExtendedEntity;
 import com.liferay.portal.vulcan.permission.Permission;
 import com.liferay.portal.vulcan.permission.PermissionUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+
+import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
@@ -117,8 +124,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.ws.rs.core.UriInfo;
+import java.util.function.Function;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -230,7 +236,14 @@ public class ObjectEntryDTOConverter
 		ObjectDefinition objectDefinition = _getObjectDefinition(
 			dtoConverterContext, serviceBuilderObjectEntry);
 
-		ObjectEntry objectEntry = new ObjectEntry() {
+		ObjectEntryVersion objectEntryVersion =
+			(ObjectEntryVersion)dtoConverterContext.getAttribute(
+				"objectEntryVersion");
+
+		ObjectEntry contentObjectEntry = (objectEntryVersion == null) ? null :
+			ObjectEntry.unsafeToDTO(objectEntryVersion.getContent());
+
+		return new ObjectEntry() {
 			{
 				setActions(dtoConverterContext::getActions);
 				setAuditEvents(
@@ -238,12 +251,29 @@ public class ObjectEntryDTOConverter
 						dtoConverterContext, objectDefinition,
 						serviceBuilderObjectEntry));
 				setCreator(
-					() -> CreatorUtil.toCreator(
-						_portal, dtoConverterContext.getUriInfo(),
-						_userLocalService.fetchUser(
-							serviceBuilderObjectEntry.getUserId())));
-				setDateCreated(serviceBuilderObjectEntry::getCreateDate);
-				setDateModified(serviceBuilderObjectEntry::getModifiedDate);
+					() -> _getAttribute(
+						objectEntryVersion,
+						objectEntryVersion -> CreatorUtil.toCreator(
+							_portal, dtoConverterContext.getUriInfo(),
+							_userLocalService.fetchUser(
+								objectEntryVersion.getUserId())),
+						serviceBuilderObjectEntry,
+						serviceBuilderObjectEntry -> CreatorUtil.toCreator(
+							_portal, dtoConverterContext.getUriInfo(),
+							_userLocalService.fetchUser(
+								serviceBuilderObjectEntry.getUserId()))));
+				setDateCreated(
+					() -> _getAttribute(
+						objectEntryVersion,
+						ObjectEntryVersionModel::getCreateDate,
+						serviceBuilderObjectEntry,
+						ObjectEntryModel::getCreateDate));
+				setDateModified(
+					() -> _getAttribute(
+						objectEntryVersion,
+						ObjectEntryVersionModel::getModifiedDate,
+						serviceBuilderObjectEntry,
+						ObjectEntryModel::getModifiedDate));
 				setDefaultLanguageId(
 					() -> {
 						if (FeatureFlagManagerUtil.isEnabled(
@@ -255,8 +285,28 @@ public class ObjectEntryDTOConverter
 
 						return null;
 					});
+				setDisplayDate(
+					() -> _getAttribute(
+						objectEntryVersion,
+						ObjectEntryVersionModel::getDisplayDate,
+						serviceBuilderObjectEntry,
+						ObjectEntryModel::getDisplayDate));
+				setExpirationDate(
+					() -> _getAttribute(
+						objectEntryVersion,
+						ObjectEntryVersionModel::getExpirationDate,
+						serviceBuilderObjectEntry,
+						ObjectEntryModel::getExpirationDate));
 				setExternalReferenceCode(
-					serviceBuilderObjectEntry::getExternalReferenceCode);
+					() -> {
+						if (objectEntryVersion != null) {
+							return contentObjectEntry.
+								getExternalReferenceCode();
+						}
+
+						return serviceBuilderObjectEntry.
+							getExternalReferenceCode();
+					});
 				setFriendlyUrlPath(
 					() -> serviceBuilderObjectEntry.getURLTitle(
 						dtoConverterContext.getLocale()));
@@ -265,7 +315,10 @@ public class ObjectEntryDTOConverter
 				setId(serviceBuilderObjectEntry::getObjectEntryId);
 				setKeywords(
 					() -> {
-						if (!objectDefinition.isEnableCategorization()) {
+						if (objectEntryVersion != null) {
+							return contentObjectEntry.getKeywords();
+						}
+						else if (!objectDefinition.isEnableCategorization()) {
 							return null;
 						}
 
@@ -295,23 +348,67 @@ public class ObjectEntryDTOConverter
 					() -> _toPermissions(
 						objectDefinition, serviceBuilderObjectEntry));
 				setProperties(
-					() -> _toProperties(
-						dtoConverterContext, objectDefinition,
-						serviceBuilderObjectEntry));
+					() -> {
+						if (objectEntryVersion == null) {
+							return _toProperties(
+								dtoConverterContext, objectDefinition,
+								serviceBuilderObjectEntry);
+						}
+
+						Map<String, Object> properties =
+							contentObjectEntry.getProperties();
+
+						com.liferay.object.model.ObjectEntry
+							clonedServiceBuilderObjectEntry =
+								(com.liferay.object.model.ObjectEntry)
+									serviceBuilderObjectEntry.clone();
+
+						clonedServiceBuilderObjectEntry.setValues(
+							(Map<String, Serializable>)properties.get(
+								"properties"));
+
+						return _toProperties(
+							dtoConverterContext,
+							_objectDefinitionLocalService.getObjectDefinition(
+								clonedServiceBuilderObjectEntry.
+									getObjectDefinitionId()),
+							clonedServiceBuilderObjectEntry);
+					});
+				setReviewDate(
+					() -> _getAttribute(
+						objectEntryVersion,
+						ObjectEntryVersionModel::getReviewDate,
+						serviceBuilderObjectEntry,
+						ObjectEntryModel::getReviewDate));
 				setScopeKey(
 					() -> _getScopeKey(
 						objectDefinition, serviceBuilderObjectEntry));
 				setStatus(
-					() -> _toStatus(
-						dtoConverterContext.getLocale(),
-						serviceBuilderObjectEntry.getStatus()));
+					() -> _getAttribute(
+						objectEntryVersion,
+						objectEntryVersion -> _toStatus(
+							dtoConverterContext.getLocale(),
+							objectEntryVersion.getStatus()),
+						serviceBuilderObjectEntry,
+						serviceBuilderObjectEntry -> _toStatus(
+							dtoConverterContext.getLocale(),
+							serviceBuilderObjectEntry.getStatus())));
 				setSystemProperties(
-					() -> _toSystemProperties(
-						objectDefinition,
-						serviceBuilderObjectEntry.getVersion()));
+					() -> _getAttribute(
+						objectEntryVersion,
+						objectEntryVersion -> _toSystemProperties(
+							objectDefinition, objectEntryVersion.getVersion()),
+						serviceBuilderObjectEntry,
+						serviceBuilderObjectEntry -> _toSystemProperties(
+							objectDefinition,
+							serviceBuilderObjectEntry.getVersion())));
 				setTaxonomyCategoryBriefs(
 					() -> {
-						if (!objectDefinition.isEnableCategorization()) {
+						if (objectEntryVersion != null) {
+							return contentObjectEntry.
+								getTaxonomyCategoryBriefs();
+						}
+						else if (!objectDefinition.isEnableCategorization()) {
 							return null;
 						}
 
@@ -327,59 +424,6 @@ public class ObjectEntryDTOConverter
 					});
 			}
 		};
-
-		ObjectEntryVersion objectEntryVersion =
-			(ObjectEntryVersion)dtoConverterContext.getAttribute(
-				"objectEntryVersion");
-
-		if (objectEntryVersion == null) {
-			return objectEntry;
-		}
-
-		objectEntry.setCreator(
-			() -> CreatorUtil.toCreator(
-				_portal, dtoConverterContext.getUriInfo(),
-				_userLocalService.fetchUser(objectEntryVersion.getUserId())));
-		objectEntry.setDateCreated(objectEntryVersion::getCreateDate);
-		objectEntry.setDateModified(objectEntryVersion::getModifiedDate);
-
-		ObjectEntry contentObjectEntry = ObjectEntry.unsafeToDTO(
-			objectEntryVersion.getContent());
-
-		objectEntry.setExternalReferenceCode(
-			contentObjectEntry::getExternalReferenceCode);
-		objectEntry.setKeywords(contentObjectEntry::getKeywords);
-		objectEntry.setProperties(
-			() -> {
-				Map<String, Object> properties =
-					contentObjectEntry.getProperties();
-
-				com.liferay.object.model.ObjectEntry
-					serviceBuilderObjectEntryClone =
-						(com.liferay.object.model.ObjectEntry)
-							serviceBuilderObjectEntry.clone();
-
-				serviceBuilderObjectEntryClone.setValues(
-					(Map<String, Serializable>)properties.get("properties"));
-
-				return _toProperties(
-					dtoConverterContext,
-					_objectDefinitionLocalService.getObjectDefinition(
-						serviceBuilderObjectEntryClone.getObjectDefinitionId()),
-					serviceBuilderObjectEntryClone);
-			});
-
-		objectEntry.setStatus(
-			() -> _toStatus(
-				dtoConverterContext.getLocale(),
-				objectEntryVersion.getStatus()));
-		objectEntry.setSystemProperties(
-			() -> _toSystemProperties(
-				objectDefinition, objectEntryVersion.getVersion()));
-		objectEntry.setTaxonomyCategoryBriefs(
-			contentObjectEntry::getTaxonomyCategoryBriefs);
-
-		return objectEntry;
 	}
 
 	private void _addManyToOneObjectRelationshipNames(
@@ -548,6 +592,21 @@ public class ObjectEntryDTOConverter
 		}
 	}
 
+	private <T> T _getAttribute(
+		ObjectEntryVersion objectEntryVersion,
+		Function<ObjectEntryVersion, T> objectEntryVersionGetterFunction,
+		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry,
+		Function<com.liferay.object.model.ObjectEntry, T>
+			serviceBuilderObjectEntryGetterFunction) {
+
+		if (objectEntryVersion != null) {
+			return objectEntryVersionGetterFunction.apply(objectEntryVersion);
+		}
+
+		return serviceBuilderObjectEntryGetterFunction.apply(
+			serviceBuilderObjectEntry);
+	}
+
 	private String _getDateString(
 		ObjectField objectField, Timestamp timestamp) {
 
@@ -604,6 +663,19 @@ public class ObjectEntryDTOConverter
 				objectFieldName + ".fileBase64",
 				fieldName -> Base64.encode(
 					_file.getBytes(dlFileEntry.getContentStream()))));
+		fileEntry.setFileURL(
+			() -> {
+				if (!Objects.equals(
+						ObjectFieldSettingConstants.VALUE_USER_COMPUTER,
+						ObjectFieldSettingUtil.getValue(
+							ObjectFieldSettingConstants.NAME_FILE_SOURCE,
+							objectField))) {
+
+					return null;
+				}
+
+				return _batchEngineAttachmentManager.getFileURL(dlFileEntry);
+			});
 		fileEntry.setFolder(
 			() -> (Folder)NestedFieldsSupplier.supply(
 				objectFieldName + ".folder",
@@ -641,6 +713,23 @@ public class ObjectEntryDTOConverter
 				objectDefinition.getExternalReferenceCode(),
 				objectEntry.getExternalReferenceCode(), _portal));
 		fileEntry.setName(dlFileEntry::getFileName);
+		fileEntry.setPreviewURL(
+			() -> NestedFieldsSupplier.supply(
+				objectFieldName + ".previewURL",
+				fieldName -> {
+					LiferayFileEntry liferayFileEntry = new LiferayFileEntry(
+						dlFileEntry);
+
+					String previewURL = _dlURLHelper.getPreviewURL(
+						liferayFileEntry, liferayFileEntry.getFileVersion(),
+						null, StringPool.BLANK, false, false);
+
+					if (Validator.isNull(previewURL)) {
+						return null;
+					}
+
+					return previewURL;
+				}));
 		fileEntry.setScope(
 			() -> {
 				if ((objectEntry.getGroupId() == dlFileEntry.getGroupId()) &&
@@ -669,16 +758,18 @@ public class ObjectEntryDTOConverter
 				return scope;
 			});
 		fileEntry.setThumbnailURL(
-			() -> {
-				String thumbnailURL = _dlURLHelper.getThumbnailSrc(
-					new LiferayFileEntry(dlFileEntry), null);
+			() -> NestedFieldsSupplier.supply(
+				objectFieldName + ".thumbnailURL",
+				fieldName -> {
+					String thumbnailURL = _dlURLHelper.getThumbnailSrc(
+						new LiferayFileEntry(dlFileEntry), null);
 
-				if (Validator.isNull(thumbnailURL)) {
-					return null;
-				}
+					if (Validator.isNull(thumbnailURL)) {
+						return null;
+					}
 
-				return thumbnailURL;
-			});
+					return thumbnailURL;
+				}));
 
 		return fileEntry;
 	}
@@ -780,9 +871,19 @@ public class ObjectEntryDTOConverter
 							relatedObjectDefinition.getCompanyId(),
 							objectRelationship.getType());
 
+				long relatedObjectDefinitionGroupId = groupId;
+
+				if (Objects.equals(
+						relatedObjectDefinition.getScope(),
+						ObjectDefinitionConstants.SCOPE_COMPANY)) {
+
+					relatedObjectDefinitionGroupId = 0;
+				}
+
 				List<?> relatedModels =
 					objectRelatedModelsProvider.getRelatedModels(
-						groupId, objectRelationship.getObjectRelationshipId(),
+						relatedObjectDefinitionGroupId,
+						objectRelationship.getObjectRelationshipId(),
 						primaryKey, null, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 				if (relatedObjectDefinition.isUnmodifiableSystemObject()) {
@@ -943,6 +1044,22 @@ public class ObjectEntryDTOConverter
 		}
 
 		return serializable;
+	}
+
+	private boolean _hasRootModelHierarchyNestedField() {
+		NestedFieldsContext nestedFieldsContext =
+			NestedFieldsContextThreadLocal.getNestedFieldsContext();
+
+		if ((nestedFieldsContext != null) &&
+			ListUtil.exists(
+				nestedFieldsContext.getNestedFields(),
+				nestedFieldName -> StringUtil.equals(
+					nestedFieldName, "rootModelHierarchy"))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private AuditEvent[] _toAuditEvents(
@@ -1164,7 +1281,10 @@ public class ObjectEntryDTOConverter
 						fetchObjectRelationshipByObjectFieldId2(
 							objectField.getObjectFieldId());
 
-				if (primaryKey > 0) {
+				if ((primaryKey > 0) &&
+					(!_hasRootModelHierarchyNestedField() ||
+					 !objectRelationship.isEdge())) {
+
 					_addManyToOneRelatedObjectEntries(
 						dtoConverterContext, objectFieldName,
 						objectRelationship, primaryKey, unsafeSuppliers);
@@ -1242,6 +1362,9 @@ public class ObjectEntryDTOConverter
 
 	@Reference
 	private AuditEventLocalService _auditEventLocalService;
+
+	@Reference
+	private BatchEngineAttachmentManager _batchEngineAttachmentManager;
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;

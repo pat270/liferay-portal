@@ -12,8 +12,8 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.BaseBodyTagSupport;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.tagext.BodyTag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.tagext.BodyTag;
 
 /**
  * @author Eduardo Lundgren
@@ -27,21 +27,13 @@ public class PositionTagSupport extends BaseBodyTagSupport implements BodyTag {
 	public boolean isPositionAuto() {
 		String position = getPosition();
 
-		if (position.equals(_POSITION_AUTO)) {
-			return true;
-		}
-
-		return false;
+		return position.equals(_POSITION_AUTO);
 	}
 
 	public boolean isPositionInLine() {
 		String position = getPosition();
 
-		if (position.equals(_POSITION_INLINE)) {
-			return true;
-		}
-
-		return false;
+		return position.equals(_POSITION_INLINE);
 	}
 
 	public void setPosition(String position) {

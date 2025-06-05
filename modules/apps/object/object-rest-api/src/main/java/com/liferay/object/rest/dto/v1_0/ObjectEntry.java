@@ -19,6 +19,12 @@ import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
+import jakarta.annotation.Generated;
+
+import jakarta.validation.Valid;
+
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 import java.io.Serializable;
 
 import java.text.DateFormat;
@@ -32,12 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import javax.annotation.Generated;
-
-import javax.validation.Valid;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * @author Javier Gamarra
@@ -310,6 +310,88 @@ public class ObjectEntry implements Serializable {
 
 	@JsonIgnore
 	private Supplier<String> _defaultLanguageIdSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Date getDisplayDate() {
+		if (_displayDateSupplier != null) {
+			displayDate = _displayDateSupplier.get();
+
+			_displayDateSupplier = null;
+		}
+
+		return displayDate;
+	}
+
+	public void setDisplayDate(Date displayDate) {
+		this.displayDate = displayDate;
+
+		_displayDateSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setDisplayDate(
+		UnsafeSupplier<Date, Exception> displayDateUnsafeSupplier) {
+
+		_displayDateSupplier = () -> {
+			try {
+				return displayDateUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Date displayDate;
+
+	@JsonIgnore
+	private Supplier<Date> _displayDateSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Date getExpirationDate() {
+		if (_expirationDateSupplier != null) {
+			expirationDate = _expirationDateSupplier.get();
+
+			_expirationDateSupplier = null;
+		}
+
+		return expirationDate;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
+
+		_expirationDateSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setExpirationDate(
+		UnsafeSupplier<Date, Exception> expirationDateUnsafeSupplier) {
+
+		_expirationDateSupplier = () -> {
+			try {
+				return expirationDateUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Date expirationDate;
+
+	@JsonIgnore
+	private Supplier<Date> _expirationDateSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	public String getExternalReferenceCode() {
@@ -743,6 +825,47 @@ public class ObjectEntry implements Serializable {
 		new LinkedHashMap<>());
 
 	@io.swagger.v3.oas.annotations.media.Schema
+	public Date getReviewDate() {
+		if (_reviewDateSupplier != null) {
+			reviewDate = _reviewDateSupplier.get();
+
+			_reviewDateSupplier = null;
+		}
+
+		return reviewDate;
+	}
+
+	public void setReviewDate(Date reviewDate) {
+		this.reviewDate = reviewDate;
+
+		_reviewDateSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setReviewDate(
+		UnsafeSupplier<Date, Exception> reviewDateUnsafeSupplier) {
+
+		_reviewDateSupplier = () -> {
+			try {
+				return reviewDateUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Date reviewDate;
+
+	@JsonIgnore
+	private Supplier<Date> _reviewDateSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
 	public String getScopeKey() {
 		if (_scopeKeySupplier != null) {
 			scopeKey = _scopeKeySupplier.get();
@@ -911,7 +1034,7 @@ public class ObjectEntry implements Serializable {
 	@GraphQLField(
 		description = "The categories associated with this object entry."
 	)
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected TaxonomyCategoryBrief[] taxonomyCategoryBriefs;
 
 	@JsonIgnore
@@ -996,6 +1119,12 @@ public class ObjectEntry implements Serializable {
 		else if (Objects.equals(propertyName, "defaultLanguageId")) {
 			return getDefaultLanguageId();
 		}
+		else if (Objects.equals(propertyName, "displayDate")) {
+			return getDisplayDate();
+		}
+		else if (Objects.equals(propertyName, "expirationDate")) {
+			return getExpirationDate();
+		}
 		else if (Objects.equals(propertyName, "externalReferenceCode")) {
 			return getExternalReferenceCode();
 		}
@@ -1021,6 +1150,9 @@ public class ObjectEntry implements Serializable {
 		}
 		else if (Objects.equals(propertyName, "permissions")) {
 			return getPermissions();
+		}
+		else if (Objects.equals(propertyName, "reviewDate")) {
+			return getReviewDate();
 		}
 		else if (Objects.equals(propertyName, "scopeKey")) {
 			return getScopeKey();
@@ -1196,6 +1328,38 @@ public class ObjectEntry implements Serializable {
 			sb.append("\"");
 		}
 
+		Date displayDate = getDisplayDate();
+
+		if (displayDate != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"displayDate\": ");
+
+			sb.append("\"");
+
+			sb.append(liferayToJSONDateFormat.format(displayDate));
+
+			sb.append("\"");
+		}
+
+		Date expirationDate = getExpirationDate();
+
+		if (expirationDate != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"expirationDate\": ");
+
+			sb.append("\"");
+
+			sb.append(liferayToJSONDateFormat.format(expirationDate));
+
+			sb.append("\"");
+		}
+
 		String externalReferenceCode = getExternalReferenceCode();
 
 		if (externalReferenceCode != null) {
@@ -1340,6 +1504,22 @@ public class ObjectEntry implements Serializable {
 			sb.append("\"properties\": ");
 
 			sb.append(_toJSON(properties));
+		}
+
+		Date reviewDate = getReviewDate();
+
+		if (reviewDate != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"reviewDate\": ");
+
+			sb.append("\"");
+
+			sb.append(liferayToJSONDateFormat.format(reviewDate));
+
+			sb.append("\"");
 		}
 
 		String scopeKey = getScopeKey();

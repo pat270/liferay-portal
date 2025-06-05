@@ -9,8 +9,13 @@ import com.liferay.headless.admin.site.dto.v1_0.ClassSubtypeReference;
 import com.liferay.headless.admin.site.dto.v1_0.ContentPageSpecification;
 import com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplate;
 import com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplateFolder;
+import com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplateOpenGraphSettings;
+import com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplateSEOSettings;
+import com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplateSettings;
 import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageSpecification;
+import com.liferay.headless.admin.site.dto.v1_0.SitemapSettings;
+import com.liferay.headless.admin.site.internal.resource.v1_0.util.FileEntryUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.GroupUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.LayoutUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.ServiceContextUtil;
@@ -19,6 +24,7 @@ import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
+import com.liferay.layout.admin.kernel.model.LayoutTypePortletConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateCollectionTypeConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
@@ -30,8 +36,7 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
-import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
@@ -39,13 +44,19 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.aggregation.Aggregation;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
@@ -322,6 +333,9 @@ public class DisplayPageTemplateResourceImpl
 			throw new UnsupportedOperationException();
 		}
 
+		DisplayPageTemplateSettings displayPageTemplateSettings =
+			displayPageTemplate.getDisplayPageTemplateSettings();
+
 		long classTypeId = _getClassTypeId(contentTypeReference, groupId);
 
 		if (!className.equals(layoutPageTemplateEntry.getClassName()) ||
@@ -343,7 +357,7 @@ public class DisplayPageTemplateResourceImpl
 						displayPageTemplate.getMarkedAsDefault()));
 		}
 
-		long previewFileEntryId = _getPreviewFileEntryId(
+		long previewFileEntryId = FileEntryUtil.getPreviewFileEntryId(
 			groupId, displayPageTemplate.getThumbnail());
 
 		if (previewFileEntryId !=
@@ -354,6 +368,18 @@ public class DisplayPageTemplateResourceImpl
 					layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
 					previewFileEntryId);
 		}
+
+		Layout layout = _layoutLocalService.getLayout(
+			layoutPageTemplateEntry.getPlid());
+
+		LayoutUtil.updateContentLayout(
+			layout, _getUnicodeProperties(displayPageTemplateSettings),
+			layout.getNameMap(), layout.getTitleMap(),
+			layout.getDescriptionMap(),
+			_getRobotsMap(displayPageTemplateSettings),
+			LocalizedMapUtil.getLocalizedMap(
+				displayPageTemplate.getFriendlyUrlPath_i18n()),
+			null, _getServiceContext(displayPageTemplate, groupId));
 
 		return _displayPageTemplateDTOConverter.toDTO(
 			_layoutPageTemplateEntryService.updateLayoutPageTemplateEntry(
@@ -369,6 +395,16 @@ public class DisplayPageTemplateResourceImpl
 		if (displayPageTemplate.getContentTypeReference() != null) {
 			existingDisplayPageTemplate.setContentTypeReference(
 				displayPageTemplate::getContentTypeReference);
+		}
+
+		if (displayPageTemplate.getDisplayPageTemplateSettings() != null) {
+			existingDisplayPageTemplate.setDisplayPageTemplateSettings(
+				displayPageTemplate::getDisplayPageTemplateSettings);
+		}
+
+		if (displayPageTemplate.getFriendlyUrlPath_i18n() != null) {
+			existingDisplayPageTemplate.setFriendlyUrlPath_i18n(
+				displayPageTemplate::getFriendlyUrlPath_i18n);
 		}
 
 		if (displayPageTemplate.getParentFolder() != null) {
@@ -394,29 +430,43 @@ public class DisplayPageTemplateResourceImpl
 			throw new UnsupportedOperationException();
 		}
 
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
+		Map<Locale, String> nameMap = Collections.singletonMap(
+			_portal.getSiteDefaultLocale(groupId),
+			displayPageTemplate.getName());
+
+		DisplayPageTemplateSettings displayPageTemplateSettings =
+			displayPageTemplate.getDisplayPageTemplateSettings();
+
+		ServiceContext serviceContext = _getServiceContext(
+			displayPageTemplate, groupId);
+
+		serviceContext.setAttribute(
+			"layout.instanceable.allowed", Boolean.TRUE);
+		serviceContext.setAttribute(
+			"layout.page.template.entry.type",
+			LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE);
+
+		Layout layout = LayoutUtil.addContentLayout(
+			groupId, displayPageTemplate.getPageSpecifications(), false,
+			nameMap, nameMap, null, _getRobotsMap(displayPageTemplateSettings),
+			LayoutConstants.TYPE_ASSET_DISPLAY,
+			_getUnicodeProperties(displayPageTemplateSettings), true, true,
+			LocalizedMapUtil.getLocalizedMap(
+				displayPageTemplate.getFriendlyUrlPath_i18n()),
+			WorkflowConstants.STATUS_APPROVED, serviceContext);
+
+		return _displayPageTemplateDTOConverter.toDTO(
 			_layoutPageTemplateEntryService.addLayoutPageTemplateEntry(
 				displayPageTemplate.getExternalReferenceCode(), groupId,
 				layoutPageTemplateCollectionId, displayPageTemplate.getKey(),
 				_portal.getClassNameId(contentTypeReference.getClassName()),
 				_getClassTypeId(contentTypeReference, groupId),
-				displayPageTemplate.getName(), 0L,
-				WorkflowConstants.STATUS_DRAFT,
-				_getServiceContext(displayPageTemplate, groupId));
-
-		long previewFileEntryId = _getPreviewFileEntryId(
-			groupId, displayPageTemplate.getThumbnail());
-
-		if (previewFileEntryId !=
-				layoutPageTemplateEntry.getPreviewFileEntryId()) {
-
-			layoutPageTemplateEntry =
-				_layoutPageTemplateEntryService.updateLayoutPageTemplateEntry(
-					layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
-					previewFileEntryId);
-		}
-
-		return _displayPageTemplateDTOConverter.toDTO(layoutPageTemplateEntry);
+				displayPageTemplate.getName(),
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
+				FileEntryUtil.getPreviewFileEntryId(
+					groupId, displayPageTemplate.getThumbnail()),
+				false, 0L, layout.getPlid(), 0L, WorkflowConstants.STATUS_DRAFT,
+				serviceContext));
 	}
 
 	private long _getClassTypeId(
@@ -483,22 +533,23 @@ public class DisplayPageTemplateResourceImpl
 		return layoutPageTemplateCollection.getLayoutPageTemplateCollectionId();
 	}
 
-	private long _getPreviewFileEntryId(
-			long groupId, ItemExternalReference itemExternalReference)
-		throws Exception {
+	private Map<Locale, String> _getRobotsMap(
+		DisplayPageTemplateSettings displayPageTemplateSettings) {
 
-		if ((itemExternalReference == null) ||
-			Validator.isNull(
-				itemExternalReference.getExternalReferenceCode())) {
+		Map<Locale, String> robotsMap = new HashMap<>();
 
-			return 0;
+		if ((displayPageTemplateSettings != null) &&
+			(displayPageTemplateSettings.getSeoSettings() != null)) {
+
+			DisplayPageTemplateSEOSettings displayPageTemplateSEOSettings =
+				displayPageTemplateSettings.getSeoSettings();
+
+			robotsMap = LocalizedMapUtil.getLocalizedMap(
+				contextAcceptLanguage.getPreferredLocale(), null,
+				displayPageTemplateSEOSettings.getRobots_i18n());
 		}
 
-		FileEntry fileEntry =
-			_portletFileRepository.getPortletFileEntryByExternalReferenceCode(
-				itemExternalReference.getExternalReferenceCode(), groupId);
-
-		return fileEntry.getFileEntryId();
+		return robotsMap;
 	}
 
 	private ServiceContext _getServiceContext(
@@ -510,9 +561,87 @@ public class DisplayPageTemplateResourceImpl
 
 		serviceContext.setCreateDate(displayPageTemplate.getDateCreated());
 		serviceContext.setModifiedDate(displayPageTemplate.getDateModified());
+		serviceContext.setUserId(contextUser.getUserId());
 		serviceContext.setUuid(displayPageTemplate.getUuid());
 
 		return serviceContext;
+	}
+
+	private UnicodeProperties _getUnicodeProperties(
+		DisplayPageTemplateSettings displayPageTemplateSettings) {
+
+		UnicodeProperties unicodeProperties = new UnicodeProperties();
+
+		if (displayPageTemplateSettings == null) {
+			return unicodeProperties;
+		}
+
+		DisplayPageTemplateOpenGraphSettings
+			displayPageTemplateOpenGraphSettings =
+				displayPageTemplateSettings.getOpenGraphSettings();
+
+		if (displayPageTemplateOpenGraphSettings != null) {
+			unicodeProperties.setProperty(
+				"mapped-openGraphDescription",
+				displayPageTemplateOpenGraphSettings.getDescriptionTemplate());
+			unicodeProperties.setProperty(
+				"mapped-openGraphImageAlt",
+				displayPageTemplateOpenGraphSettings.getImageAltTemplate());
+			unicodeProperties.setProperty(
+				"mapped-openGraphImage",
+				displayPageTemplateOpenGraphSettings.getImageTemplate());
+			unicodeProperties.setProperty(
+				"mapped-openGraphTitle",
+				displayPageTemplateOpenGraphSettings.getTitleTemplate());
+		}
+
+		SitemapSettings sitemapSettings = null;
+
+		DisplayPageTemplateSEOSettings displayPageTemplateSEOSettings =
+			displayPageTemplateSettings.getSeoSettings();
+
+		if (displayPageTemplateSEOSettings != null) {
+			sitemapSettings =
+				displayPageTemplateSEOSettings.getSitemapSettings();
+
+			unicodeProperties.setProperty(
+				"mapped-description",
+				displayPageTemplateSEOSettings.getDescriptionTemplate());
+			unicodeProperties.setProperty(
+				"mapped-title",
+				displayPageTemplateSEOSettings.getHtmlTitleTemplate());
+		}
+
+		if (sitemapSettings != null) {
+			SitemapSettings.ChangeFrequency changeFrequency =
+				sitemapSettings.getChangeFrequency();
+
+			if (changeFrequency != null) {
+				unicodeProperties.setProperty(
+					LayoutTypePortletConstants.SITEMAP_CHANGEFREQ,
+					StringUtil.lowerCaseFirstLetter(
+						changeFrequency.toString()));
+			}
+
+			Boolean include = sitemapSettings.getInclude();
+
+			if (include != null) {
+				String sitemapInclude = "0";
+
+				if (include) {
+					sitemapInclude = "1";
+				}
+
+				unicodeProperties.setProperty(
+					LayoutTypePortletConstants.SITEMAP_INCLUDE, sitemapInclude);
+			}
+
+			unicodeProperties.setProperty(
+				LayoutTypePortletConstants.SITEMAP_PRIORITY,
+				String.valueOf(sitemapSettings.getPagePriority()));
+		}
+
+		return unicodeProperties;
 	}
 
 	@Reference
@@ -545,8 +674,5 @@ public class DisplayPageTemplateResourceImpl
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortletFileRepository _portletFileRepository;
 
 }

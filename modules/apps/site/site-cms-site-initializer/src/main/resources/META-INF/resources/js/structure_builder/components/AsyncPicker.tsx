@@ -4,9 +4,9 @@
  */
 
 import {Option, Picker} from '@clayui/core';
-import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import React, {useState} from 'react';
+import classNames from 'classnames';
+import React, {useEffect, useState} from 'react';
 
 import {CacheStatus} from '../contexts/CacheContext';
 
@@ -27,31 +27,37 @@ type Props = {
 const Trigger = React.forwardRef(
 	(
 		{
+			open,
 			status,
 			value,
 			...otherProps
 		}: {
+			open: boolean;
 			status: CacheStatus;
 			value: string;
 		},
 		ref: React.Ref<HTMLButtonElement>
 	) => {
+		useEffect(() => {
+			if (open && status === 'saved') {
+				(ref as React.RefObject<HTMLButtonElement>).current?.focus();
+			}
+		});
+
 		return (
 			<button
 				{...otherProps}
-				className="align-items-center d-flex form-control form-control-select-secondary justify-content-between"
+				className={classNames(
+					'align-items-center d-flex form-control form-control-select-secondary justify-content-between',
+					{'form-control-select': status !== 'saving'}
+				)}
 				ref={ref}
 			>
 				{value}
 
 				{status === 'saving' ? (
 					<ClayLoadingIndicator className="m-0" />
-				) : (
-					<ClayIcon
-						className="text-secondary"
-						symbol="caret-double"
-					/>
-				)}
+				) : null}
 			</button>
 		);
 	}
@@ -101,6 +107,7 @@ export default function AsyncPicker({
 					onSelectionChange(selectedKey);
 				}
 			}}
+			open={active}
 			placeholder={placeholder}
 			selectedKey={selectedKey ? String(selectedKey) : ''}
 			status={status}

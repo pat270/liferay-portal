@@ -37,7 +37,7 @@
 									"fragmentFields": [
 									],
 									"fragmentStyle": {
-										"marginBottom": "3"
+										"marginBottom": "5"
 									},
 									"indexed": true
 								},
@@ -81,17 +81,20 @@
 									{
 										"definition": {
 											"fragment": {
-												"key": "INPUTS-text-input"
+												"key": "INPUTS-inline-text-input"
 											},
 											"fragmentConfig": {
 												"inputFieldId": "ObjectField_title",
-												"placeholder": "",
+												"placeholder": {
+													"en_US": "New Basic Document"
+												},
 												"showCharactersCount": false
 											},
 											"fragmentFields": [
 											],
 											"fragmentStyle": {
-												"marginBottom": "3"
+												"marginBottom": "5",
+												"marginLeft": "-16px"
 											},
 											"indexed": true
 										},
@@ -101,7 +104,7 @@
 									{
 										"definition": {
 											"fragment": {
-												"key": "INPUTS-friendly-url-input"
+												"key": "com.liferay.site.cms.site.initializer.internal.fragment.renderer.SpaceListFragmentRenderer"
 											},
 											"fragmentConfig": {
 											},
@@ -109,6 +112,24 @@
 											],
 											"fragmentStyle": {
 												"marginBottom": "3"
+											},
+											"indexed": true
+										},
+										"id": "a1c3f2b7-4d29-65db-89a1-9e3f8c02e4dd",
+										"type": "Fragment"
+									},
+									{
+										"definition": {
+											"fragment": {
+												"key": "INPUTS-friendly-url-input"
+											},
+											"fragmentConfig": {
+												"inputFieldId": "ObjectEntry_objectEntryFriendlyURL"
+											},
+											"fragmentFields": [
+											],
+											"fragmentStyle": {
+												"marginBottom": "5"
 											},
 											"indexed": true
 										},
@@ -134,45 +155,6 @@
 										},
 										"id": "10d0dbce-201e-8abd-f178-79504fdf4004",
 										"type": "Fragment"
-									},
-									{
-										"definition": {
-											"fragment": {
-												"key": "INPUTS-submit-button"
-											},
-											"fragmentConfig": {
-												"buttonSize": "nm",
-												"buttonType": "primary",
-												"submittedEntryStatus": "approved",
-												"type": "submit"
-											},
-											"fragmentFields": [
-												{
-													"id": "next-button-text",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												},
-												{
-													"id": "previous-button-text",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												},
-												{
-													"id": "submit-button-text",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												}
-											],
-											"indexed": true
-										},
-										"id": "53b75d97-a3de-f776-fe75-2a8bcb035962",
-										"type": "Fragment"
 									}
 								],
 								"type": "Form"
@@ -185,6 +167,11 @@
 			}
 		],
 		"type": "Root"
+	},
+	"settings": {
+		"masterPage": {
+			"key": "content-editor-master"
+		}
 	},
 	"version": 1.1
 }

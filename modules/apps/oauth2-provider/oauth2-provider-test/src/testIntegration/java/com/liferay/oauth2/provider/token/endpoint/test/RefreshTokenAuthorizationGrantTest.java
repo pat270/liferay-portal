@@ -13,22 +13,22 @@ import com.liferay.oauth2.provider.internal.test.RefreshTokenAuthorizationGrant;
 import com.liferay.oauth2.provider.internal.test.TestAnnotatedApplication;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.util.PropsValues;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+
 import java.util.Arrays;
 import java.util.Collections;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class RefreshTokenAuthorizationGrantTest
 		JSONObject jsonObject = getToken(
 			"oauthTestApplication", null,
 			getResourceOwnerPasswordBiFunction(
-				"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD),
+				_user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD),
 			this::parseJSONObject);
 
 		WebTarget webTarget = getWebTarget("/annotated");
@@ -93,14 +93,31 @@ public class RefreshTokenAuthorizationGrantTest
 		}
 	}
 
-	public static class TokenExpeditionTestPreparatorBundleActivator
+	@Override
+	protected AuthorizationGrant getAuthorizationGrant(String clientId) {
+		return new RefreshTokenAuthorizationGrant(
+			getRefreshToken(
+				new PasswordAuthorizationGrant(
+					_user.getEmailAddress(),
+					PropsValues.DEFAULT_ADMIN_PASSWORD),
+				clientAuthentications.get(clientId)));
+	}
+
+	@Override
+	protected BundleActivator getBundleActivator() {
+		return new TokenExpeditionTestPreparatorBundleActivator();
+	}
+
+	private User _user;
+
+	private class TokenExpeditionTestPreparatorBundleActivator
 		extends BaseTokenEndpointTestCase.TestPreparatorBundleActivator {
 
 		@Override
 		protected void prepareTest() throws Exception {
-			long defaultCompanyId = PortalUtil.getDefaultCompanyId();
+			long companyId = TestPropsValues.getCompanyId();
 
-			User user = UserTestUtil.getAdminUser(defaultCompanyId);
+			_user = UserTestUtil.getAdminUser(companyId);
 
 			registerJaxRsApplication(
 				new TestAnnotatedApplication(), "annotated",
@@ -111,7 +128,7 @@ public class RefreshTokenAuthorizationGrantTest
 				).build());
 
 			createOAuth2Application(
-				defaultCompanyId, user, "oauthTestApplication",
+				companyId, _user, "oauthTestApplication",
 				Arrays.asList(
 					GrantType.RESOURCE_OWNER_PASSWORD, GrantType.REFRESH_TOKEN),
 				Collections.singletonList("everything"));
@@ -119,20 +136,6 @@ public class RefreshTokenAuthorizationGrantTest
 			super.prepareTest();
 		}
 
-	}
-
-	@Override
-	protected AuthorizationGrant getAuthorizationGrant(String clientId) {
-		return new RefreshTokenAuthorizationGrant(
-			getRefreshToken(
-				new PasswordAuthorizationGrant(
-					"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD),
-				clientAuthentications.get(clientId)));
-	}
-
-	@Override
-	protected BundleActivator getBundleActivator() {
-		return new TokenExpeditionTestPreparatorBundleActivator();
 	}
 
 }

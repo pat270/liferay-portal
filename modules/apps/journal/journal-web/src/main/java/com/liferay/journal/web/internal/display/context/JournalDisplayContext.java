@@ -125,6 +125,12 @@ import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
 import com.liferay.trash.TrashHelper;
 
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.PortletResponse;
+import jakarta.portlet.PortletURL;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 
 import java.text.Format;
@@ -136,12 +142,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-import javax.portlet.PortletURL;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eudaldo Alonso
@@ -1559,20 +1559,46 @@ public class JournalDisplayContext {
 			return _articleSearchContainer;
 		}
 
+		List<Document> documents = new ArrayList<>();
+
 		SearchContainer<Object> articleAndFolderSearchContainer =
 			_getArticleAndFolderSearchContainer();
 
-		SearchResponse searchResponse =
-			JournalSearcherUtil.searchJournalArticleAndFolders(
+		int end = articleAndFolderSearchContainer.getEnd();
+		int start = articleAndFolderSearchContainer.getStart();
+
+		SearchResponse journalFolderSearchResponse =
+			JournalSearcherUtil.searchJournalFolders(
 				searchContext -> _populateSearchContext(
-					articleAndFolderSearchContainer.getStart(),
-					articleAndFolderSearchContainer.getEnd(), searchContext,
-					false));
+					start, end, searchContext, false));
+
+		int foldersCount = journalFolderSearchResponse.getTotalHits();
+
+		int journalArticlesStart = start - foldersCount;
+
+		int delta = end - start;
+
+		int journalArticlesEnd = delta + journalArticlesStart;
+
+		if (start < foldersCount) {
+			documents.addAll(journalFolderSearchResponse.getDocuments71());
+
+			journalArticlesEnd = Math.max(1, delta - documents.size());
+
+			journalArticlesStart = 0;
+		}
+
+		SearchResponse articleSearchResponse = _getJournalArticleSearchResponse(
+			journalArticlesStart, journalArticlesEnd);
+
+		if (documents.size() < delta) {
+			documents.addAll(articleSearchResponse.getDocuments71());
+		}
 
 		articleAndFolderSearchContainer.setResultsAndTotal(
 			() -> JournalSearcherUtil.transformJournalArticleAndFolders(
-				searchResponse.getDocuments71()),
-			searchResponse.getTotalHits());
+				documents),
+			articleSearchResponse.getTotalHits() + foldersCount);
 
 		_articleSearchContainer = articleAndFolderSearchContainer;
 
@@ -1852,6 +1878,14 @@ public class JournalDisplayContext {
 		}
 
 		return jsonArray;
+	}
+
+	private SearchResponse _getJournalArticleSearchResponse(
+		int start, int end) {
+
+		return JournalSearcherUtil.searchJournalArticles(
+			searchContext -> _populateSearchContext(
+				start, end, searchContext, false));
 	}
 
 	private String _getSearchIn() {

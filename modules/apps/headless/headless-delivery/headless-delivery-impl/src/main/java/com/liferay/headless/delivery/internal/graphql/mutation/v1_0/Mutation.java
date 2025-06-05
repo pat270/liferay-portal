@@ -66,17 +66,17 @@ import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.portal.vulcan.pagination.Page;
 
+import jakarta.annotation.Generated;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import jakarta.validation.constraints.NotEmpty;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+
 import java.util.function.BiFunction;
-
-import javax.annotation.Generated;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import javax.validation.constraints.NotEmpty;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.ComponentServiceObjects;
 
@@ -4658,6 +4658,9 @@ public class Mutation {
 	@GraphQLField
 	public Response createSiteNavigationMenusPageExportBatch(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("search") String search,
+			@GraphQLName("filter") String filterString,
+			@GraphQLName("sort") String sortsString,
 			@GraphQLName("callbackURL") String callbackURL,
 			@GraphQLName("contentType") String contentType,
 			@GraphQLName("fieldNames") String fieldNames)
@@ -4668,8 +4671,11 @@ public class Mutation {
 			this::_populateResourceContext,
 			navigationMenuResource ->
 				navigationMenuResource.postSiteNavigationMenusPageExportBatch(
-					Long.valueOf(siteKey), callbackURL, contentType,
-					fieldNames));
+					Long.valueOf(siteKey), search,
+					_filterBiFunction.apply(
+						navigationMenuResource, filterString),
+					_sortsBiFunction.apply(navigationMenuResource, sortsString),
+					callbackURL, contentType, fieldNames));
 	}
 
 	@GraphQLField(

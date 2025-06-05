@@ -99,6 +99,13 @@ public class ObjectEntryVersionLocalServiceUtil {
 		return getService().deleteObjectEntryVersion(objectEntryVersionId);
 	}
 
+	public static ObjectEntryVersion deleteObjectEntryVersion(
+			long objectEntryId, int version)
+		throws PortalException {
+
+		return getService().deleteObjectEntryVersion(objectEntryId, version);
+	}
+
 	/**
 	 * Deletes the object entry version from the database. Also notifies the appropriate model listeners.
 	 *
@@ -219,6 +226,14 @@ public class ObjectEntryVersionLocalServiceUtil {
 		com.liferay.portal.kernel.dao.orm.Projection projection) {
 
 		return getService().dynamicQueryCount(dynamicQuery, projection);
+	}
+
+	public static ObjectEntryVersion expireObjectEntryVersion(
+			long userId, long objectEntryId, int version)
+		throws PortalException {
+
+		return getService().expireObjectEntryVersion(
+			userId, objectEntryId, version);
 	}
 
 	public static ObjectEntryVersion fetchObjectEntryVersion(

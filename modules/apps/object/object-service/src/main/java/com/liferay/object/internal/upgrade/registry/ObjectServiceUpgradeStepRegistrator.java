@@ -5,6 +5,7 @@
 
 package com.liferay.object.internal.upgrade.registry;
 
+import com.liferay.friendly.url.configuration.manager.FriendlyURLSeparatorConfigurationManager;
 import com.liferay.notification.service.NotificationTemplateLocalService;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
@@ -39,6 +40,7 @@ import com.liferay.object.internal.upgrade.v6_0_0.util.ObjectValidationRuleSetti
 import com.liferay.object.internal.upgrade.v8_8_2.SchemaUpgradeProcess;
 import com.liferay.object.internal.upgrade.v9_0_1.ObjectFolderUpgradeProcess;
 import com.liferay.object.model.impl.ObjectFieldSettingModelImpl;
+import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -558,7 +560,8 @@ public class ObjectServiceUpgradeStepRegistrator
 		registry.register(
 			"10.8.0", "10.8.1",
 			new ObjectEntryAssetEntryTitleUpgradeProcess(
-				_classNameLocalService, _localization));
+				_classNameLocalService, _localization,
+				_systemObjectDefinitionManagerRegistry));
 
 		registry.register(
 			"10.8.1", "10.9.0", ObjectEntryVersionTable.create(),
@@ -575,6 +578,51 @@ public class ObjectServiceUpgradeStepRegistrator
 			"10.10.0", "10.11.0",
 			UpgradeProcessFactory.addColumns(
 				"ObjectEntryVersion", "objectDefinitionId LONG"));
+
+		registry.register(
+			"10.11.0", "10.12.0",
+			UpgradeProcessFactory.addColumns(
+				"ObjectEntry", "expirationDate DATE null"));
+
+		registry.register(
+			"10.12.0", "10.13.0",
+			UpgradeProcessFactory.addColumns(
+				"ObjectEntryVersion", "expirationDate DATE null",
+				"statusByUserId LONG", "statusByUserName VARCHAR(75) null",
+				"statusDate DATE null"));
+
+		registry.register(
+			"10.13.0", "10.14.0",
+			UpgradeProcessFactory.addColumns(
+				"ObjectEntryFolder", "description STRING null"));
+
+		registry.register(
+			"10.14.0", "10.14.1",
+			UpgradeProcessFactory.alterColumnType(
+				"ObjectAction", "description", "STRING null"));
+
+		registry.register(
+			"10.14.1", "10.15.0",
+			new com.liferay.object.internal.upgrade.v10_15_0.
+				ObjectDefinitionUpgradeProcess(
+					_friendlyURLSeparatorConfigurationManager));
+
+		registry.register(
+			"10.15.0", "10.16.0",
+			UpgradeProcessFactory.addColumns(
+				"ObjectEntry", "displayDate DATE null",
+				"reviewDate DATE null"));
+
+		registry.register(
+			"10.16.0", "10.17.0",
+			UpgradeProcessFactory.addColumns(
+				"ObjectEntryVersion", "displayDate DATE null",
+				"reviewDate DATE null"));
+
+		registry.register(
+			"10.17.0", "10.18.0",
+			new com.liferay.object.internal.upgrade.v10_18_0.
+				ObjectFieldUpgradeProcess());
 	}
 
 	@Reference
@@ -582,6 +630,10 @@ public class ObjectServiceUpgradeStepRegistrator
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private FriendlyURLSeparatorConfigurationManager
+		_friendlyURLSeparatorConfigurationManager;
 
 	@Reference
 	private GroupLocalService _groupLocalService;
@@ -600,6 +652,10 @@ public class ObjectServiceUpgradeStepRegistrator
 
 	@Reference
 	private RoleLocalService _roleLocalService;
+
+	@Reference
+	private SystemObjectDefinitionManagerRegistry
+		_systemObjectDefinitionManagerRegistry;
 
 	@Reference
 	private UserLocalService _userLocalService;

@@ -5,6 +5,7 @@
 
 package com.liferay.wiki.web.internal.trash;
 
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.TrashedModel;
@@ -32,11 +33,10 @@ import com.liferay.wiki.service.WikiNodeLocalService;
 import com.liferay.wiki.service.WikiPageLocalService;
 import com.liferay.wiki.web.internal.asset.WikiNodeTrashRenderer;
 
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.PortletURL;
 
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -153,17 +153,11 @@ public class WikiNodeTrashHandler extends BaseWikiTrashHandler {
 		long classPK, int start, int end,
 		OrderByComparator<?> orderByComparator) {
 
-		List<WikiPage> pages = _wikiPageLocalService.getPages(
-			classPK, true, WorkflowConstants.STATUS_IN_TRASH, start, end,
-			(OrderByComparator<WikiPage>)orderByComparator);
-
-		List<TrashedModel> trashedModels = new ArrayList<>(pages.size());
-
-		for (WikiPage page : pages) {
-			trashedModels.add(page);
-		}
-
-		return trashedModels;
+		return TransformUtil.transform(
+			_wikiPageLocalService.getPages(
+				classPK, true, WorkflowConstants.STATUS_IN_TRASH, start, end,
+				(OrderByComparator<WikiPage>)orderByComparator),
+			page -> page);
 	}
 
 	@Override

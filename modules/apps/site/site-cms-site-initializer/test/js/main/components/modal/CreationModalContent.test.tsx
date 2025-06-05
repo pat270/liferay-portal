@@ -16,15 +16,15 @@ const mockOnSubmit = jest.fn();
 const mockNavigate = jest.fn();
 
 jest.mock('frontend-js-web', () => ({
-	...(jest.requireActual('frontend-js-web') ?? {}),
+	...((jest.requireActual('frontend-js-web') ?? {}) as any),
 	navigate: (url: string) => mockNavigate(url),
 }));
 
 const defaultProps = {
 	action: 'createFolder' as const,
 	assetLibraries: [
-		{groupId: '123', name: 'Space 1'},
-		{groupId: '456', name: 'Space 2'},
+		{groupId: 123, name: 'Space 1'},
+		{groupId: 456, name: 'Space 2'},
 	],
 	closeModal: () => {},
 	onSubmit: mockOnSubmit,
@@ -58,7 +58,7 @@ describe('CreationModalContent', () => {
 		rerender(
 			<CreationModalContent
 				{...defaultProps}
-				assetLibraries={[{groupId: '123', name: 'Only One Space'}]}
+				assetLibraries={[{groupId: 123, name: 'Only One Space'}]}
 			/>
 		);
 		expect(screen.queryByLabelText(/space/i)).not.toBeInTheDocument();

@@ -34,6 +34,10 @@ function getDocumentPayload({dataset}: AnalyticsType.HTMLElement) {
 		});
 	}
 
+	if (dataset.analyticsAssetErc) {
+		Object.assign(payload, {erc: dataset.analyticsAssetErc.trim()});
+	}
+
 	return payload;
 }
 
@@ -42,12 +46,15 @@ function getDocumentPayload({dataset}: AnalyticsType.HTMLElement) {
  */
 function trackDocumentDownloaded(analytics: Analytics) {
 	const onClick = (event: MouseEvent) => {
-		const target = event.target as AnalyticsType.HTMLElement;
+		const element = event.target as AnalyticsType.HTMLElement;
+		const parentElement =
+			element.parentElement as AnalyticsType.HTMLElement | null;
 
-		if (
-			isTrackable(target) &&
-			target.dataset.analyticsAssetAction === 'download'
-		) {
+		const target = [element, parentElement].find(
+			(element) => element?.dataset.analyticsAssetAction === 'download'
+		);
+
+		if (target && isTrackable(target)) {
 			analytics.send(
 				AnalyticsType.EventId.DocumentDownloaded,
 				AnalyticsType.ApplicationId.Document,

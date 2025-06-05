@@ -5,23 +5,21 @@
 
 package com.liferay.site.cms.site.initializer.internal.struts;
 
-import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
-import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
-import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.GroupConstants;
-import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
+import com.liferay.fragment.renderer.FragmentRendererRegistry;
+import com.liferay.fragment.service.FragmentEntryLinkService;
+import com.liferay.layout.manager.FormManager;
+import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.service.ObjectDefinitionService;
+import com.liferay.object.service.ObjectEntryService;
 import com.liferay.portal.kernel.struts.StrutsAction;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.cms.site.initializer.internal.util.ActionUtil;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -40,29 +38,17 @@ public class EditContentItemStrutsAction implements StrutsAction {
 			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		String className = ParamUtil.getString(httpServletRequest, "className");
-		long objectEntryId = ParamUtil.getLong(
-			httpServletRequest, "objectEntryId");
 		String redirect = ParamUtil.getString(httpServletRequest, "redirect");
 
-		Group group = _groupLocalService.getGroup(
-			themeDisplay.getCompanyId(), GroupConstants.CMS);
-
-		long classNameId = _portal.getClassNameId(className);
-
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.
-				fetchDefaultLayoutPageTemplateEntry(
-					group.getGroupId(), classNameId, 0);
+		ObjectEntry objectEntry = _objectEntryService.getObjectEntry(
+			ParamUtil.getLong(httpServletRequest, "objectEntryId"));
 
 		String editURL = ActionUtil.getEditURL(
-			String.valueOf(classNameId), String.valueOf(objectEntryId),
-			_layoutLocalService.fetchLayout(layoutPageTemplateEntry.getPlid()),
-			themeDisplay);
+			_formManager, _fragmentEntryLinkListenerRegistry,
+			_fragmentEntryLinkService, _fragmentRendererRegistry,
+			httpServletRequest, String.valueOf(objectEntry.getObjectEntryId()),
+			_objectDefinitionService.getObjectDefinition(
+				objectEntry.getObjectDefinitionId()));
 
 		if (Validator.isNotNull(redirect)) {
 			editURL = HttpComponentsUtil.addParameter(
@@ -75,16 +61,22 @@ public class EditContentItemStrutsAction implements StrutsAction {
 	}
 
 	@Reference
-	private GroupLocalService _groupLocalService;
+	private FormManager _formManager;
 
 	@Reference
-	private LayoutLocalService _layoutLocalService;
+	private FragmentEntryLinkListenerRegistry
+		_fragmentEntryLinkListenerRegistry;
 
 	@Reference
-	private LayoutPageTemplateEntryLocalService
-		_layoutPageTemplateEntryLocalService;
+	private FragmentEntryLinkService _fragmentEntryLinkService;
 
 	@Reference
-	private Portal _portal;
+	private FragmentRendererRegistry _fragmentRendererRegistry;
+
+	@Reference
+	private ObjectDefinitionService _objectDefinitionService;
+
+	@Reference
+	private ObjectEntryService _objectEntryService;
 
 }

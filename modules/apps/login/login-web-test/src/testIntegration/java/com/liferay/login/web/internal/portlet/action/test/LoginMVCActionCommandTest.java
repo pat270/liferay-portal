@@ -37,11 +37,11 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -56,7 +56,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Istvan Sajtos
  */
-@FeatureFlags("LPD-6378")
+@FeatureFlag("LPD-6378")
 @RunWith(Arquillian.class)
 public class LoginMVCActionCommandTest {
 

@@ -19,20 +19,21 @@ import com.liferay.portal.tools.rest.builder.test.dto.v1_0.TestEntity;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResource;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
+import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.portal.vulcan.pagination.Page;
+
+import jakarta.annotation.Generated;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.annotation.Generated;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -48,6 +49,13 @@ import org.osgi.annotation.versioning.ProviderType;
 @Generated("")
 @ProviderType
 public interface TestEntityResource {
+
+	public Response deleteTestEntity(Long testEntityId, Boolean permanent)
+		throws Exception;
+
+	public Response deleteTestEntityBatch(
+			Boolean permanent, String callbackURL, Object object)
+		throws Exception;
 
 	public Page<TestEntity> getTestEntitiesPage() throws Exception;
 
@@ -68,6 +76,9 @@ public interface TestEntityResource {
 	public TestEntity postTestEntity(TestEntity testEntity) throws Exception;
 
 	public Response postTestEntityBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public Response postTestEntityMultipartBulk(MultipartBody multipartBody)
 		throws Exception;
 
 	public TestEntity putTestEntity(

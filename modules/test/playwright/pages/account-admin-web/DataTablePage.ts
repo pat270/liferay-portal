@@ -45,6 +45,10 @@ export class DataTablePage {
 	readonly firstRow: () => Promise<Locator>;
 	readonly lastRow: () => Promise<Locator>;
 	readonly newButton: Locator;
+	readonly optionalColumnRow: (
+		columnIndex: number,
+		rowIndex: number
+	) => Locator;
 	readonly orderButton: Locator;
 	readonly orderMenuItem: (option: string) => Locator;
 	readonly page: Page | FrameLocator;
@@ -67,10 +71,12 @@ export class DataTablePage {
 	readonly searchInput: Locator;
 	readonly selectAllItemsCheckbox: Locator;
 	readonly selectViewButton: Locator;
+	readonly selectViewCardButton: Locator;
 	readonly selectViewListButton: Locator;
 	readonly selectViewTableButton: Locator;
 	readonly table: Locator;
 	readonly valueLink: (value: string, exact?: boolean) => Locator;
+	readonly viewStatus: (status: string) => Locator;
 
 	constructor(page: Page | FrameLocator, table: Locator) {
 		this.page = page;
@@ -98,10 +104,7 @@ export class DataTablePage {
 			return null;
 		};
 		this.clearButton = page.getByRole('button', {name: 'Clear'});
-		this.filterButton = page.getByRole('button', {
-			exact: true,
-			name: 'Filter',
-		});
+		this.filterButton = page.getByLabel('Filter', {exact: true});
 		this.filterMenuItem = (option: string) => {
 			return page.getByRole('menuitem', {
 				exact: true,
@@ -122,6 +125,11 @@ export class DataTablePage {
 			.getByTestId('creationMenuNewButton')
 			.or(page.locator('.management-bar'))
 			.getByText('New');
+		this.optionalColumnRow = (columnIndex: number, rowIndex: number) => {
+			const row = this.table.getByRole('row').nth(rowIndex);
+
+			return row.getByRole('cell').nth(columnIndex);
+		};
 		this.orderButton = page.getByLabel('Order');
 		this.orderMenuItem = (option: string) => {
 			return page.getByRole('menuitem', {
@@ -144,7 +152,7 @@ export class DataTablePage {
 		this.rowActions = async (value, colIndex = 1, strictEqual = true) => {
 			const row = await this.row(colIndex, value, strictEqual);
 
-			if (row && row.column) {
+			if (row && row.row) {
 				return row.row.getByRole('button');
 			}
 
@@ -165,12 +173,17 @@ export class DataTablePage {
 			'Select All Items on the Page'
 		);
 		this.selectViewButton = page.getByLabel('Select View');
+		this.selectViewCardButton = page.getByRole('menuitem', {
+			name: 'Cards',
+		});
 		this.selectViewListButton = page.getByRole('menuitem', {name: 'List'});
 		this.selectViewTableButton = page.getByRole('menuitem', {
 			name: 'Table',
 		});
 		this.valueLink = (value, exact = true) =>
 			page.getByRole('link', {exact, name: value});
+		this.viewStatus = (status) =>
+			page.getByTitle(`Select View, Currently Selected: ${status}`);
 	}
 
 	async changeView(view: string) {
@@ -184,6 +197,21 @@ export class DataTablePage {
 			}).toPass();
 
 			await this.selectViewListButton.click();
+			await expect(this.viewStatus(view)).toBeVisible();
+
+			return;
+		}
+		else if (view === 'Cards') {
+			await expect(async () => {
+				await this.selectViewButton.click();
+
+				await expect(this.selectViewCardButton).toBeVisible({
+					timeout: 100,
+				});
+			}).toPass();
+
+			await this.selectViewCardButton.click();
+			await expect(this.viewStatus(view)).toBeVisible();
 
 			return;
 		}
@@ -197,6 +225,7 @@ export class DataTablePage {
 		}).toPass();
 
 		await this.selectViewTableButton.click();
+		await expect(this.viewStatus(view)).toBeVisible();
 	}
 
 	async search(value: string) {

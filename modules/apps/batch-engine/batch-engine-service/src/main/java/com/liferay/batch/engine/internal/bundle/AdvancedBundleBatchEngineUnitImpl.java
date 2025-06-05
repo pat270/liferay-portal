@@ -9,6 +9,7 @@ import com.liferay.batch.engine.internal.json.AdvancedJSONReader;
 import com.liferay.batch.engine.unit.BatchEngineUnitConfiguration;
 import com.liferay.batch.engine.unit.BatchEngineUnitMetaInfo;
 import com.liferay.batch.engine.unit.BundleBatchEngineUnit;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -41,8 +42,27 @@ public class AdvancedBundleBatchEngineUnitImpl
 			AdvancedJSONReader<BatchEngineUnitConfiguration>
 				advancedJSONReader = new AdvancedJSONReader<>(inputStream);
 
-			return advancedJSONReader.getObject(
-				"configuration", BatchEngineUnitConfiguration.class);
+			BatchEngineUnitConfiguration batchEngineUnitConfiguration =
+				advancedJSONReader.getObject(
+					"configuration", BatchEngineUnitConfiguration.class);
+
+			if (_batchEngineUnitMetaInfo != null) {
+				long companyId = _batchEngineUnitMetaInfo.getCompanyId();
+
+				if (companyId > 0) {
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							StringBundler.concat(
+								"Overriding company ID ",
+								batchEngineUnitConfiguration.getCompanyId(),
+								" with company ID ", companyId));
+					}
+
+					batchEngineUnitConfiguration.setCompanyId(companyId);
+				}
+			}
+
+			return batchEngineUnitConfiguration;
 		}
 	}
 

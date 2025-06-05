@@ -87,6 +87,12 @@ public class CompanyLocalServiceUtil {
 			companyId, name, virtualHostname, webId);
 	}
 
+	public static Company checkCompany(Company company, boolean newCompany)
+		throws PortalException {
+
+		return getService().checkCompany(company, newCompany);
+	}
+
 	/**
 	 * Returns the company with the web domain.
 	 *
@@ -276,10 +282,8 @@ public class CompanyLocalServiceUtil {
 		return getService().dynamicQueryCount(dynamicQuery, projection);
 	}
 
-	public static Company extractCompany(long companyId)
-		throws PortalException {
-
-		return getService().extractCompany(companyId);
+	public static Company exportCompany(long companyId) throws PortalException {
+		return getService().exportCompany(companyId);
 	}
 
 	public static Company fetchCompany(long companyId) {

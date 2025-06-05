@@ -7,7 +7,7 @@ package com.liferay.commerce.channel.web.internal.display.context;
 
 import com.liferay.account.service.AccountEntryService;
 import com.liferay.commerce.currency.service.CommerceCurrencyLocalService;
-import com.liferay.commerce.item.selector.criterion.SimpleSiteItemSelectorCriterion;
+import com.liferay.commerce.item.selector.SimpleSiteItemSelectorCriterion;
 import com.liferay.commerce.product.channel.CommerceChannelHealthStatusRegistry;
 import com.liferay.commerce.product.channel.CommerceChannelTypeRegistry;
 import com.liferay.commerce.product.model.CommerceChannel;
@@ -28,9 +28,9 @@ import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
-import java.util.Collections;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 
 /**
  * @author Alec Sloan

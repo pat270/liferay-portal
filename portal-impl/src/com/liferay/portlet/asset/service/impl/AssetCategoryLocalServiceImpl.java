@@ -9,14 +9,18 @@ import com.liferay.asset.kernel.exception.AssetCategoryNameException;
 import com.liferay.asset.kernel.exception.DuplicateCategoryException;
 import com.liferay.asset.kernel.exception.DuplicateCategoryExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.InvalidAssetCategoryException;
+import com.liferay.asset.kernel.exception.NoSuchCategoryException;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
+import com.liferay.asset.kernel.model.AssetVocabularyConstants;
 import com.liferay.asset.kernel.service.persistence.AssetVocabularyPersistence;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.lazy.referencing.LazyReferencingThreadLocal;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -46,9 +50,11 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portlet.asset.service.base.AssetCategoryLocalServiceBaseImpl;
 import com.liferay.portlet.asset.service.permission.AssetCategoryPermission;
 
@@ -125,7 +131,9 @@ public class AssetCategoryLocalServiceImpl
 				parentCategoryId);
 		}
 
-		_assetVocabularyPersistence.findByPrimaryKey(vocabularyId);
+		if (vocabularyId != AssetVocabularyConstants.INCOMPLETE_VOCABULARY_ID) {
+			_assetVocabularyPersistence.findByPrimaryKey(vocabularyId);
+		}
 
 		long categoryId = counterLocalService.increment();
 
@@ -153,6 +161,13 @@ public class AssetCategoryLocalServiceImpl
 		category.setTitleMap(trimmedTitleMap);
 		category.setDescriptionMap(descriptionMap);
 		category.setVocabularyId(vocabularyId);
+
+		if (LazyReferencingThreadLocal.isIncompleteModel()) {
+			category.setStatus(WorkflowConstants.STATUS_INCOMPLETE);
+		}
+		else {
+			category.setStatus(WorkflowConstants.STATUS_APPROVED);
+		}
 
 		category = assetCategoryPersistence.update(category);
 
@@ -416,6 +431,39 @@ public class AssetCategoryLocalServiceImpl
 	}
 
 	@Override
+	public AssetCategory getOrAddIncompleteCategory(
+			String externalReferenceCode, long userId, long groupId)
+		throws PortalException {
+
+		AssetCategory assetCategory = fetchAssetCategoryByExternalReferenceCode(
+			externalReferenceCode, groupId);
+
+		if (assetCategory != null) {
+			return assetCategory;
+		}
+
+		if (!LazyReferencingThreadLocal.isEnabled()) {
+			throw new NoSuchCategoryException(
+				StringBundler.concat(
+					"Unable to find asset category with external reference ",
+					"code ", externalReferenceCode, " and group ", groupId));
+		}
+
+		try (SafeCloseable safeCloseable =
+				LazyReferencingThreadLocal.setIncompleteModelWithSafeCloseable(
+					true)) {
+
+			return assetCategoryLocalService.addCategory(
+				externalReferenceCode, userId, groupId,
+				AssetCategoryConstants.INCOMPLETE_PARENT_CATEGORY_ID,
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), externalReferenceCode),
+				null, AssetVocabularyConstants.INCOMPLETE_VOCABULARY_ID,
+				new String[0], new ServiceContext());
+		}
+	}
+
+	@Override
 	public List<Long> getSubcategoryIds(long parentCategoryId) {
 		AssetCategory parentAssetCategory =
 			assetCategoryPersistence.fetchByPrimaryKey(parentCategoryId);
@@ -671,6 +719,10 @@ public class AssetCategoryLocalServiceImpl
 		category.setName(name);
 		category.setTitleMap(trimmedTitleMap);
 		category.setDescriptionMap(descriptionMap);
+
+		if (category.getStatus() == WorkflowConstants.STATUS_INCOMPLETE) {
+			category.setStatus(WorkflowConstants.STATUS_APPROVED);
+		}
 
 		return assetCategoryPersistence.update(category);
 	}

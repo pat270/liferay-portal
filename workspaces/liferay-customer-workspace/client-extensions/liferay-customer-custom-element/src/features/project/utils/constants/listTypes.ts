@@ -5,13 +5,13 @@
 
 export const LIST_TYPES = {
 	businessEventTypes: 'Business Event Types',
+	developerKeyDXPVersion: 'Developer Key DXP Version',
 	developerKeyPortalVersion: 'Developer Key Portal Version',
 	dxpMajorVersion: 'DXP Major Version',
 	dxpMinorVersion: 'DXP Minor Version',
 	dxpMinorVersionAndPortalMajorVersion:
 		'DXP Minor Version and Portal Major Version',
 	lxcPrimaryRegion: 'LXC Primary Region',
-	portalMajorVersion: 'Portal Major Version',
 	utcTimeZones: 'UTC Time Zones',
 	versionOfLiferaySoftware: 'Version of Liferay Software',
 };

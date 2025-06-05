@@ -7,6 +7,7 @@ package com.liferay.headless.admin.user.resource.v1_0.test;
 
 import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.model.AccountEntry;
+import com.liferay.account.model.AccountEntryOrganizationRel;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryOrganizationRelLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
@@ -15,8 +16,10 @@ import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
 import com.liferay.asset.test.util.AssetTestUtil;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.expando.kernel.model.ExpandoColumn;
@@ -26,14 +29,26 @@ import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.custom.field.CustomValue;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Creator;
+import com.liferay.headless.admin.user.client.dto.v1_0.EmailAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
+import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationContactInformation;
+import com.liferay.headless.admin.user.client.dto.v1_0.Phone;
+import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.TaxonomyCategoryBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.TaxonomyCategoryReference;
+import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
 import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
+import com.liferay.headless.admin.user.client.permission.Permission;
 import com.liferay.headless.admin.user.client.resource.v1_0.OrganizationResource;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ResourceConstants;
@@ -46,12 +61,15 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
+import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.DataGuard;
+import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
@@ -59,18 +77,23 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portal.vulcan.permission.PermissionUtil;
 
 import java.io.InputStream;
 
@@ -333,6 +356,7 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 		super.testPatchOrganization();
 
 		_testPatchOrganizationWithImageExternalReferenceCode();
+		_testPatchOrganizationWithKeywords();
 	}
 
 	@Override
@@ -384,11 +408,13 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 				_accountEntry.getAccountEntryId(), "-"));
 	}
 
+	@FeatureFlag("LPD-47858")
 	@Override
 	@Test
 	public void testPostOrganization() throws Exception {
 		super.testPostOrganization();
 
+		_testPostOrganizationBatch();
 		_testPostOrganizationWithCustomFields();
 		_testPostOrganizationWithNameOverMaximumLength();
 		_testPostOrganizationWithImageExternalReferenceCode();
@@ -505,6 +531,7 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 	public void testPutOrganizationByExternalReferenceCode() throws Exception {
 		super.testPutOrganizationByExternalReferenceCode();
 
+		_testPutOrganizationByExternalReferenceCodeKeepsExternalReferenceCode();
 		_testPutOrganizationByExternalReferenceCodeWithImageExternalReferenceCode();
 	}
 
@@ -517,6 +544,7 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 	protected Organization randomOrganization() throws Exception {
 		Organization organization = super.randomOrganization();
 
+		organization.setImageBase64(StringPool.BLANK);
 		organization.setImageId(0L);
 
 		return organization;
@@ -845,6 +873,64 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 		return organizationResource.postOrganization(organization);
 	}
 
+	private OrganizationContactInformation
+		_getRandomOrganizationContactInformation() {
+
+		return new OrganizationContactInformation() {
+			{
+				setEmailAddresses(
+					() -> new EmailAddress[] {
+						new EmailAddress() {
+							{
+								emailAddress =
+									RandomTestUtil.randomString() +
+										"@liferay.com";
+							}
+						}
+					});
+				setPostalAddresses(
+					() -> new PostalAddress[] {
+						new PostalAddress() {
+							{
+								addressCountry = "United States";
+								addressLocality = RandomTestUtil.randomString();
+								addressRegion = "California";
+								addressType = "other";
+								postalCode = String.valueOf(
+									RandomTestUtil.randomInt());
+								streetAddressLine1 =
+									RandomTestUtil.randomString();
+							}
+						}
+					});
+				setTelephones(
+					() -> new Phone[] {
+						new Phone() {
+							{
+								extension = String.valueOf(
+									RandomTestUtil.randomInt());
+								phoneNumber = String.valueOf(
+									RandomTestUtil.randomInt());
+								phoneType = "fax";
+							}
+						}
+					});
+				setWebUrls(
+					() -> new WebUrl[] {
+						new WebUrl() {
+							{
+								primary = true;
+								url =
+									"https://" + RandomTestUtil.randomString() +
+										".com";
+								urlType = "personal";
+							}
+						}
+					});
+			}
+		};
+	}
+
 	private void _testGetOrganizationsPageWithFilter() throws Exception {
 		Page<Organization> page = organizationResource.getOrganizationsPage(
 			null, null, null, Pagination.of(1, 10), null);
@@ -903,7 +989,17 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 	}
 
 	private void _testGetOrganizationWithNestedFields() throws Exception {
-		Organization postOrganization = testGetOrganization_addOrganization();
+		Organization postOrganization = randomOrganization();
+
+		postOrganization.setImageBase64(
+			Base64.encode(
+				FileUtil.getBytes(getClass(), "/images/liferay.png")));
+		postOrganization.setKeywords(
+			new String[] {RandomTestUtil.randomString()});
+		postOrganization.setOrganizationContactInformation(
+			_getRandomOrganizationContactInformation());
+
+		postOrganization = _addOrganization(postOrganization, "0");
 
 		AccountEntry accountEntry1 = _accountEntryLocalService.addAccountEntry(
 			StringPool.BLANK, TestPropsValues.getUserId(),
@@ -976,7 +1072,7 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 				LocaleUtil.getDefault()
 			).parameters(
 				"nestedFields",
-				"accountBriefs,creator,permissions,roleBriefs," +
+				"accountBriefs,creator,imageBase64,permissions,roleBriefs," +
 					"taxonomyCategoryBriefs,userAccountBriefs"
 			).build();
 
@@ -999,6 +1095,18 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 
 		Assert.assertTrue(creator.getId() == TestPropsValues.getUserId());
 
+		Assert.assertNotNull(getOrganization.getImageBase64());
+		Assert.assertNotEquals(
+			0, GetterUtil.getLong(getOrganization.getImageId()));
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				postOrganization.getKeywords(),
+				keyword -> Objects.equals(
+					keyword, getOrganization.getKeywords()[0])));
+		Assert.assertTrue(
+			Objects.equals(
+				getOrganization.getOrganizationContactInformation(),
+				postOrganization.getOrganizationContactInformation()));
 		Assert.assertTrue(
 			ArrayUtil.exists(
 				getOrganization.getPermissions(),
@@ -1069,6 +1177,334 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 			postOrganization.getId(), randomPatchOrganization);
 
 		Assert.assertTrue(patchOrganization.getImageId() > 0);
+	}
+
+	private void _testPatchOrganizationWithKeywords() throws Exception {
+		Organization postOrganization = testPatchOrganization_addOrganization();
+
+		Organization randomPatchOrganization = randomPatchOrganization();
+
+		String[] keywords = {
+			RandomTestUtil.randomString(), RandomTestUtil.randomString()
+		};
+
+		randomPatchOrganization.setKeywords(keywords);
+
+		Organization patchOrganization = organizationResource.patchOrganization(
+			postOrganization.getId(), randomPatchOrganization);
+
+		Assert.assertTrue(
+			ArrayUtil.containsAll(patchOrganization.getKeywords(), keywords));
+	}
+
+	private void _testPostOrganizationBatch() throws Exception {
+		Organization organization = randomOrganization();
+
+		AccountEntry accountEntry1 = _accountEntryLocalService.addAccountEntry(
+			StringPool.BLANK, _user.getUserId(),
+			AccountConstants.PARENT_ACCOUNT_ENTRY_ID_DEFAULT,
+			RandomTestUtil.randomString(), null, null,
+			RandomTestUtil.randomString() + "@liferay.com", null, null,
+			AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS,
+			WorkflowConstants.STATUS_APPROVED,
+			ServiceContextTestUtil.getServiceContext());
+
+		AccountBrief accountBrief1 = new AccountBrief() {
+			{
+				externalReferenceCode =
+					accountEntry1.getExternalReferenceCode();
+				name = accountEntry1.getName();
+				type = accountEntry1.getType();
+			}
+		};
+		AccountBrief accountBrief2 = new AccountBrief() {
+			{
+				externalReferenceCode = RandomTestUtil.randomString();
+				type = AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS;
+			}
+		};
+
+		organization.setAccountBriefs(
+			new AccountBrief[] {accountBrief1, accountBrief2});
+
+		organization.setImageBase64(
+			Base64.encode(
+				FileUtil.getBytes(getClass(), "/images/liferay.png")));
+
+		Organization parentOrganization = randomOrganization();
+
+		organization.setParentOrganization(parentOrganization);
+
+		Role role1 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		Permission permission1 = new Permission() {
+			{
+				actionIds = new String[] {ActionKeys.VIEW};
+				roleExternalReferenceCode = role1.getExternalReferenceCode();
+				roleName = role1.getName();
+				roleType = RoleConstants.getTypeLabel(role1.getType());
+			}
+		};
+		Permission permission2 = new Permission() {
+			{
+				actionIds = new String[] {ActionKeys.UPDATE};
+				roleExternalReferenceCode = RandomTestUtil.randomString();
+				roleName = RandomTestUtil.randomString();
+				roleType = RoleConstants.getTypeLabel(
+					RoleConstants.TYPE_REGULAR);
+			}
+		};
+
+		organization.setPermissions(
+			new Permission[] {permission1, permission2});
+
+		Role role2 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		RoleBrief roleBrief1 = new RoleBrief() {
+			{
+				externalReferenceCode = role2.getExternalReferenceCode();
+				name = role2.getName();
+				roleType = role2.getType();
+			}
+		};
+		RoleBrief roleBrief2 = new RoleBrief() {
+			{
+				externalReferenceCode = RandomTestUtil.randomString();
+				name = RandomTestUtil.randomString();
+				roleType = RoleConstants.TYPE_ORGANIZATION;
+			}
+		};
+
+		organization.setRoleBriefs(new RoleBrief[] {roleBrief1, roleBrief2});
+
+		AssetVocabulary assetVocabulary = AssetTestUtil.addVocabulary(
+			TestPropsValues.getGroupId());
+
+		AssetCategory assetCategory1 = AssetTestUtil.addCategory(
+			TestPropsValues.getGroupId(), assetVocabulary.getVocabularyId());
+
+		Group group = _groupLocalService.getGroup(assetCategory1.getGroupId());
+
+		TaxonomyCategoryReference taxonomyCategoryReference1 =
+			new TaxonomyCategoryReference() {
+				{
+					externalReferenceCode =
+						assetCategory1.getExternalReferenceCode();
+					siteKey = group.getGroupKey();
+				}
+			};
+		TaxonomyCategoryReference taxonomyCategoryReference2 =
+			new TaxonomyCategoryReference() {
+				{
+					externalReferenceCode = RandomTestUtil.randomString();
+					siteKey = group.getGroupKey();
+				}
+			};
+
+		organization.setTaxonomyCategoryBriefs(
+			new TaxonomyCategoryBrief[] {
+				new TaxonomyCategoryBrief() {
+					{
+						taxonomyCategoryReference = taxonomyCategoryReference1;
+					}
+				},
+				new TaxonomyCategoryBrief() {
+					{
+						taxonomyCategoryReference = taxonomyCategoryReference2;
+					}
+				}
+			});
+
+		waitForFinish(
+			"COMPLETED",
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					"items",
+					JSONUtil.put(
+						_jsonFactory.createJSONObject(organization.toString()))
+				).toString(),
+				"headless-admin-user/v1.0/organizations/batch",
+				Http.Method.POST));
+
+		AccountEntry accountEntry2 =
+			_accountEntryLocalService.fetchAccountEntryByExternalReferenceCode(
+				accountBrief1.getExternalReferenceCode(),
+				TestPropsValues.getCompanyId());
+
+		Assert.assertEquals(
+			accountEntry1.getAccountEntryId(),
+			accountEntry2.getAccountEntryId());
+
+		com.liferay.portal.kernel.model.Organization
+			serviceBuilderOrganization =
+				_organizationLocalService.
+					fetchOrganizationByExternalReferenceCode(
+						organization.getExternalReferenceCode(),
+						TestPropsValues.getCompanyId());
+
+		List<AccountEntryOrganizationRel> accountEntryOrganizationRels =
+			_accountEntryOrganizationRelLocalService.
+				getAccountEntryOrganizationRelsByOrganizationId(
+					Long.valueOf(
+						serviceBuilderOrganization.getOrganizationId()));
+
+		Assert.assertTrue(
+			ListUtil.exists(
+				accountEntryOrganizationRels,
+				accountEntryOrganizationRel ->
+					accountEntryOrganizationRel.getAccountEntryId() ==
+						accountEntry2.getAccountEntryId()));
+
+		AccountEntry accountEntry3 =
+			_accountEntryLocalService.fetchAccountEntryByExternalReferenceCode(
+				accountBrief2.getExternalReferenceCode(),
+				TestPropsValues.getCompanyId());
+
+		Assert.assertTrue(
+			ListUtil.exists(
+				accountEntryOrganizationRels,
+				accountEntryOrganizationRel ->
+					accountEntryOrganizationRel.getAccountEntryId() ==
+						accountEntry3.getAccountEntryId()));
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_INCOMPLETE, accountEntry3.getStatus());
+
+		Assert.assertNotEquals(0, serviceBuilderOrganization.getLogoId());
+
+		com.liferay.portal.kernel.model.Organization
+			serviceBuilderParentOrganization =
+				_organizationLocalService.
+					fetchOrganizationByExternalReferenceCode(
+						parentOrganization.getExternalReferenceCode(),
+						TestPropsValues.getCompanyId());
+
+		long parentOrganizationId = GetterUtil.getLong(
+			serviceBuilderParentOrganization.getOrganizationId());
+
+		Assert.assertTrue(
+			parentOrganizationId ==
+				serviceBuilderOrganization.getParentOrganizationId());
+
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_INCOMPLETE,
+			serviceBuilderParentOrganization.getStatus());
+
+		Role role3 = _roleLocalService.fetchRoleByExternalReferenceCode(
+			permission1.getRoleExternalReferenceCode(),
+			TestPropsValues.getCompanyId());
+
+		Assert.assertEquals(role1.getRoleId(), role3.getRoleId());
+
+		List<com.liferay.portal.vulcan.permission.Permission> permissions =
+			ListUtil.fromCollection(
+				PermissionUtil.getPermissions(
+					TestPropsValues.getCompanyId(),
+					_resourceActionLocalService.getResourceActions(
+						com.liferay.portal.kernel.model.Organization.class.
+							getName()),
+					serviceBuilderOrganization.getOrganizationId(),
+					com.liferay.portal.kernel.model.Organization.class.
+						getName(),
+					null));
+
+		Assert.assertTrue(
+			ListUtil.exists(
+				permissions,
+				permission -> {
+					String[] actionIds = permission.getActionIds();
+
+					return (actionIds.length == 1) &&
+						   Objects.equals(ActionKeys.VIEW, actionIds[0]) &&
+						   Objects.equals(
+							   role3.getExternalReferenceCode(),
+							   permission.getRoleExternalReferenceCode());
+				}));
+
+		Role role4 = _roleLocalService.fetchRoleByExternalReferenceCode(
+			permission2.getRoleExternalReferenceCode(),
+			TestPropsValues.getCompanyId());
+
+		Assert.assertTrue(
+			ListUtil.exists(
+				permissions,
+				permission -> {
+					String[] actionIds = permission.getActionIds();
+
+					return (actionIds.length == 1) &&
+						   Objects.equals(ActionKeys.UPDATE, actionIds[0]) &&
+						   Objects.equals(
+							   role4.getExternalReferenceCode(),
+							   permission.getRoleExternalReferenceCode());
+				}));
+
+		Assert.assertEquals(permission2.getRoleName(), role4.getName());
+		Assert.assertEquals(
+			RoleConstants.getLabelType(permission2.getRoleType()),
+			role4.getType());
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_INCOMPLETE, role4.getStatus());
+
+		Role role5 = _roleLocalService.fetchRoleByExternalReferenceCode(
+			roleBrief1.getExternalReferenceCode(),
+			TestPropsValues.getCompanyId());
+
+		Assert.assertEquals(role2.getRoleId(), role5.getRoleId());
+
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				organization.getRoleBriefs(),
+				roleBrief -> Objects.equals(
+					roleBrief.getExternalReferenceCode(),
+					role5.getExternalReferenceCode())));
+
+		Role role6 = _roleLocalService.fetchRoleByExternalReferenceCode(
+			roleBrief2.getExternalReferenceCode(),
+			TestPropsValues.getCompanyId());
+
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				organization.getRoleBriefs(),
+				roleBrief -> Objects.equals(
+					roleBrief.getExternalReferenceCode(),
+					role6.getExternalReferenceCode())));
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_INCOMPLETE, role6.getStatus());
+
+		AssetCategory assetCategory2 =
+			_assetCategoryLocalService.
+				fetchAssetCategoryByExternalReferenceCode(
+					taxonomyCategoryReference1.getExternalReferenceCode(),
+					group.getGroupId());
+
+		Assert.assertEquals(
+			assetCategory1.getCategoryId(), assetCategory2.getCategoryId());
+
+		List<AssetCategory> assetCategories =
+			_assetCategoryLocalService.getCategories(
+				com.liferay.portal.kernel.model.Organization.class.getName(),
+				serviceBuilderOrganization.getOrganizationId());
+
+		Assert.assertTrue(
+			ListUtil.exists(
+				assetCategories,
+				assetCategory ->
+					assetCategory.getCategoryId() ==
+						assetCategory2.getCategoryId()));
+
+		AssetCategory assetCategory3 =
+			_assetCategoryLocalService.
+				fetchAssetCategoryByExternalReferenceCode(
+					taxonomyCategoryReference2.getExternalReferenceCode(),
+					group.getGroupId());
+
+		Assert.assertTrue(
+			ListUtil.exists(
+				assetCategories,
+				assetCategory ->
+					assetCategory.getCategoryId() ==
+						assetCategory3.getCategoryId()));
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_INCOMPLETE, assetCategory3.getStatus());
 	}
 
 	private void _testPostOrganizationWithCustomFields() throws Exception {
@@ -1157,6 +1593,24 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 			organizationResource.postOrganizationHttpResponse(organization));
 	}
 
+	private void _testPutOrganizationByExternalReferenceCodeKeepsExternalReferenceCode()
+		throws Exception {
+
+		String externalReferenceCode = RandomTestUtil.randomString();
+
+		Organization putOrganization =
+			organizationResource.putOrganizationByExternalReferenceCode(
+				externalReferenceCode,
+				new Organization() {
+					{
+						setName(RandomTestUtil.randomString());
+					}
+				});
+
+		Assert.assertEquals(
+			externalReferenceCode, putOrganization.getExternalReferenceCode());
+	}
+
 	private void _testPutOrganizationByExternalReferenceCodeWithImageExternalReferenceCode()
 		throws Exception {
 
@@ -1215,6 +1669,9 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 		_accountEntryOrganizationRelLocalService;
 
 	@Inject
+	private AssetCategoryLocalService _assetCategoryLocalService;
+
+	@Inject
 	private AssetEntryAssetCategoryRelLocalService
 		_assetEntryAssetCategoryRelLocalService;
 
@@ -1223,6 +1680,9 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 
 	@Inject
 	private AssetTagLocalService _assetTagLocalService;
+
+	@Inject
+	private AssetVocabularyLocalService _assetVocabularyLocalService;
 
 	@Inject
 	private ClassNameLocalService _classNameLocalService;
@@ -1237,7 +1697,16 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 	private ExpandoTableLocalService _expandoTableLocalService;
 
 	@Inject
+	private GroupLocalService _groupLocalService;
+
+	@Inject
+	private JSONFactory _jsonFactory;
+
+	@Inject
 	private OrganizationLocalService _organizationLocalService;
+
+	@Inject
+	private ResourceActionLocalService _resourceActionLocalService;
 
 	@Inject
 	private ResourcePermissionLocalService _resourcePermissionLocalService;

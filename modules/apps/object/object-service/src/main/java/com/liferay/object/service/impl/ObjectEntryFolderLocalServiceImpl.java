@@ -11,6 +11,7 @@ import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.entry.folder.util.ObjectEntryFolderThreadLocal;
 import com.liferay.object.exception.DuplicateObjectEntryFolderExternalReferenceCodeException;
 import com.liferay.object.exception.ObjectEntryFolderNameException;
+import com.liferay.object.exception.ObjectEntryFolderParentObjectEntryFolderIdException;
 import com.liferay.object.exception.ObjectEntryFolderScopeException;
 import com.liferay.object.exception.RequiredObjectEntryFolderException;
 import com.liferay.object.model.ObjectEntry;
@@ -61,8 +62,9 @@ public class ObjectEntryFolderLocalServiceImpl
 	@Override
 	public ObjectEntryFolder addObjectEntryFolder(
 			String externalReferenceCode, long userId, long groupId,
-			long parentObjectEntryFolderId, Map<Locale, String> labelMap,
-			String name, ServiceContext serviceContext)
+			long parentObjectEntryFolderId, String description,
+			Map<Locale, String> labelMap, String name,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		User user = _userLocalService.getUser(userId);
@@ -70,7 +72,8 @@ public class ObjectEntryFolderLocalServiceImpl
 		_validateExternalReferenceCode(
 			externalReferenceCode, groupId, user.getCompanyId());
 
-		_validateParentObjectEntryFolderId(groupId, parentObjectEntryFolderId);
+		_validateParentObjectEntryFolderId(
+			groupId, null, parentObjectEntryFolderId);
 		_validateName(
 			groupId, user.getCompanyId(), 0, parentObjectEntryFolderId, name);
 
@@ -86,6 +89,7 @@ public class ObjectEntryFolderLocalServiceImpl
 		objectEntryFolder.setUserName(user.getFullName());
 		objectEntryFolder.setParentObjectEntryFolderId(
 			parentObjectEntryFolderId);
+		objectEntryFolder.setDescription(description);
 		objectEntryFolder.setLabelMap(_getLabelMap(labelMap, name));
 		objectEntryFolder.setName(name);
 		objectEntryFolder.setTreePath(objectEntryFolder.buildTreePath());
@@ -264,21 +268,24 @@ public class ObjectEntryFolderLocalServiceImpl
 	@Override
 	public ObjectEntryFolder updateObjectEntryFolder(
 			long userId, long objectEntryFolderId,
-			long parentObjectEntryFolderId, Map<Locale, String> labelMap,
-			String name, ServiceContext serviceContext)
+			long parentObjectEntryFolderId, String description,
+			Map<Locale, String> labelMap, String name,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		ObjectEntryFolder objectEntryFolder =
 			objectEntryFolderPersistence.findByPrimaryKey(objectEntryFolderId);
 
 		_validateParentObjectEntryFolderId(
-			objectEntryFolder.getGroupId(), parentObjectEntryFolderId);
+			objectEntryFolder.getGroupId(), objectEntryFolder,
+			parentObjectEntryFolderId);
 		_validateName(
 			objectEntryFolder.getGroupId(), objectEntryFolder.getCompanyId(),
 			objectEntryFolderId, parentObjectEntryFolderId, name);
 
 		objectEntryFolder.setParentObjectEntryFolderId(
 			parentObjectEntryFolderId);
+		objectEntryFolder.setDescription(description);
 		objectEntryFolder.setLabelMap(_getLabelMap(labelMap, name));
 		objectEntryFolder.setName(name);
 		objectEntryFolder.setTreePath(objectEntryFolder.buildTreePath());
@@ -388,7 +395,8 @@ public class ObjectEntryFolderLocalServiceImpl
 	}
 
 	private void _validateParentObjectEntryFolderId(
-			long groupId, long parentObjectEntryFolderId)
+			long groupId, ObjectEntryFolder objectEntryFolder,
+			long parentObjectEntryFolderId)
 		throws PortalException {
 
 		if (parentObjectEntryFolderId ==
@@ -398,16 +406,28 @@ public class ObjectEntryFolderLocalServiceImpl
 			return;
 		}
 
-		ObjectEntryFolder objectEntryFolder =
+		ObjectEntryFolder parentObjectEntryFolder =
 			objectEntryFolderPersistence.findByPrimaryKey(
 				parentObjectEntryFolderId);
 
-		if (objectEntryFolder.getGroupId() != groupId) {
+		if (parentObjectEntryFolder.getGroupId() != groupId) {
 			throw new ObjectEntryFolderScopeException(
 				StringBundler.concat(
 					"Group ID ", groupId,
 					" does not match parent object entry folder group ID ",
-					objectEntryFolder.getGroupId()));
+					parentObjectEntryFolder.getGroupId()));
+		}
+
+		if ((objectEntryFolder != null) &&
+			StringUtil.startsWith(
+				parentObjectEntryFolder.getTreePath(),
+				objectEntryFolder.getTreePath())) {
+
+			throw new ObjectEntryFolderParentObjectEntryFolderIdException(
+				StringBundler.concat(
+					"Object entry folder ",
+					objectEntryFolder.getObjectEntryFolderId(),
+					" cannot have one of its children or itself as a parent"));
 		}
 	}
 

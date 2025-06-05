@@ -42,9 +42,9 @@ BrandNameCheck | [Naming Conventions](naming_conventions_checks.md#naming-conven
 CDNCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | | Checks the URL in `artifact.properties` files. |
 CIMergeAndGitRepoFileCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .gitrepo or ci-merge | Checks that `ci-merge` and `.gitrepo` files can not be added or modified. |
 CQLKeywordCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .cql | Checks that Cassandra keywords are upper case. |
-CSPIllegalTagsCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ftl, .jsp, .jspf, .jspx, or .vm | Finds cases of incorrect use of certain tags. |
-CSPTagIllegalAttributesCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ftl, .jsp, .jspf, .jspx, or .vm | Finds cases of incorrect use of tag attributes. |
-CSPTagMissingAttributesCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ftl, .jsp, .jspf, .jspx, or .vm | Checks for missing tag attributes. |
+CSPIllegalTagsCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ftl, .html, .jsp, .jspf, .jspx, or .vm | Finds cases of incorrect use of certain tags. |
+CSPTagIllegalAttributesCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ftl, .html, .jsp, .jspf, .jspx, or .vm | Finds cases of incorrect use of tag attributes. |
+CSPTagMissingAttributesCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ftl, .html, .jsp, .jspf, .jspx, or .vm | Checks for missing tag attributes. |
 CSSCommentsCheck | [Styling](styling_checks.md#styling-checks) | .css or .scss | Validates comments in `.css` files. |
 CSSImportsCheck | [Styling](styling_checks.md#styling-checks) | .css or .scss | Sorts and groups imports in `.css` files. |
 CSSPropertiesOrderCheck | [Styling](styling_checks.md#styling-checks) | .css or .scss | Sorts properties in `.css` files. |
@@ -68,6 +68,7 @@ ConstructorGlobalVariableDeclarationCheck | [Performance](performance_checks.md#
 ConsumerTypeAnnotationCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Performs several checks on classes with @ConsumerType annotation. |
 ContractionsCheck | [Styling](styling_checks.md#styling-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Finds contractions in Strings (such as `can't` or `you're`). |
 [CopyrightCheck](check/copyright_check.md#copyrightcheck) | [Styling](styling_checks.md#styling-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Validates `copyright` header. |
+[CreatingThreadsForDBAccessCheck](check/creating_threads_for_db_access_check.md#creatingthreadsfordbaccesscheck) | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Finds cases where `CompanyInheritableThreadLocalCallable` should be used when creating threads for DB access. |
 [CreationMenuBuilderCheck](check/builder_check.md#buildercheck) | [Miscellaneous](miscellaneous_checks.md#miscellaneous-checks) | .java | Checks that `CreationMenuBuilder` is used when possible. |
 DTOEnumCreationCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Checks the creation of DTO enum. |
 DatabaseMetaDataCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Checks usages of `java.sql.DatabaseMetaData`. |
@@ -242,6 +243,7 @@ JavaInjectAnnotationsCheck | [Bug Prevention](bug_prevention_checks.md#bug-preve
 JavaInnerClassImportsCheck | [Styling](styling_checks.md#styling-checks) | .java | Finds cases where inner classes are imported. |
 JavaInterfaceCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Checks that `interface` is not `static`. |
 JavaInternalPackageCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Performs several checks on class in `internal` package. |
+JavaJSImportMapsContributorCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Performs several checks on `*JSImportMapsContributor` class. |
 JavaJSPDynamicIncludeCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Performs several checks on `*JSPDynamicInclude` class. |
 [JavaLocalSensitiveComparisonCheck](check/java_local_sensitive_comparison_check.md#javalocalsensitivecomparisoncheck) | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Checks that `java.text.Collator` is used when comparing localized values. |
 JavaLocalServiceImplErcUsageCheck | [Productivity](productivity_checks.md#productivity-checks) | .java | Automatically generates and ensures that `externalReferenceCode` is properly used in local `*ServiceImpl` add method. |
@@ -478,7 +480,8 @@ TFBlockOrderCheck | [Styling](styling_checks.md#styling-checks) | .tf | Checks t
 TLDElementOrderCheck | [Styling](styling_checks.md#styling-checks) | .tld | Checks the order of attributes in `.tld` file. |
 TLDStylingCheck | [Styling](styling_checks.md#styling-checks) | .tld | Applies rules to enforce consistency in code style. |
 TLDTypeCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .tld | Ensures the fully qualified name is used for types in `.tld` file. |
-TSConfigFileCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ts or .tsx | Finds missing `test.properties` files. |
+TSConfigFileCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ts or .tsx | Performs several checks on `ts.config` file. |
+TSSpecFileLocationCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .ts or .tsx | Checks that `*.spec.ts` file should be inside a folder that contains a `config.ts`. |
 TXTEmptyLinesCheck | [Styling](styling_checks.md#styling-checks) | .txt | Finds missing and unnecessary empty lines. |
 TXTStylingCheck | [Styling](styling_checks.md#styling-checks) | .txt | Applies rules to enforce consistency in code style. |
 TernaryOperatorCheck | [Styling](styling_checks.md#styling-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Finds use of ternary operator in `java` files (use if statement instead). |
@@ -617,5 +620,6 @@ YMLDefinitionOrderCheck | [Styling](styling_checks.md#styling-checks) | .tpl, .y
 YMLEmptyLinesCheck | [Styling](styling_checks.md#styling-checks) | .tpl, .yaml, or .yml | Finds missing and unnecessary empty lines. |
 YMLIndentationCheck | [Styling](styling_checks.md#styling-checks) | .tpl, .yaml, or .yml | Finds incorrect indentation in YAML files. |
 YMLLongLinesCheck | [Styling](styling_checks.md#styling-checks) | .tpl, .yaml, or .yml | Finds lines that are longer than the specified maximum line length. |
+YMLRESTConfigFileBreakingChangeCommitMessageCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .tpl, .yaml, or .yml | Checks that commit message should contain the schematized breaking changes. |
 YMLStylingCheck | [Styling](styling_checks.md#styling-checks) | .tpl, .yaml, or .yml | Applies rules to enforce consistency in code style. |
 YMLWhitespaceCheck | [Styling](styling_checks.md#styling-checks) | .tpl, .yaml, or .yml | Finds missing and unnecessary whitespace in `.yml` files. |

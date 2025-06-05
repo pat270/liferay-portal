@@ -167,6 +167,7 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -183,6 +184,9 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.test.util.SegmentsTestUtil;
 
+import jakarta.portlet.ActionRequest;
+import jakarta.portlet.ActionResponse;
+
 import java.io.Serializable;
 
 import java.util.ArrayList;
@@ -194,9 +198,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -243,7 +244,7 @@ public class RenderLayoutStructureTagTest {
 		ServiceContextThreadLocal.popServiceContext();
 	}
 
-	@FeatureFlags("LPD-21926")
+	@FeatureFlag("LPD-21926")
 	@Test
 	@TestInfo({"LPD-50584", "LPD-52416"})
 	public void testDisplayPageTemplateWithMappedFriendlyURLInfoField()
@@ -252,7 +253,7 @@ public class RenderLayoutStructureTagTest {
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(), 0, null, false, true, true, true,
-				false, false, RandomTestUtil.randomLocaleStringMap(),
+				false, false, null, RandomTestUtil.randomLocaleStringMap(),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				RandomTestUtil.randomLocaleStringMap(), true,
 				ObjectDefinitionConstants.SCOPE_COMPANY,
@@ -273,7 +274,7 @@ public class RenderLayoutStructureTagTest {
 		ObjectDefinition relationshipObjectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(), 0, null, false, true, true, true,
-				false, false, RandomTestUtil.randomLocaleStringMap(),
+				false, false, null, RandomTestUtil.randomLocaleStringMap(),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				RandomTestUtil.randomLocaleStringMap(), true,
 				ObjectDefinitionConstants.SCOPE_COMPANY,
@@ -554,9 +555,14 @@ public class RenderLayoutStructureTagTest {
 			Assert.assertTrue(
 				content, StringUtil.contains(content, value, StringPool.BLANK));
 		}
+
+		_objectDefinitionLocalService.deleteObjectDefinition(objectDefinition);
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			relationshipObjectDefinition);
 	}
 
 	@Test
+	@TestInfo({"LPD-33573", "LPD-55091"})
 	public void testEnsureFileURLWhenChangingGroupFriendlyURL()
 		throws Exception {
 
@@ -577,6 +583,11 @@ public class RenderLayoutStructureTagTest {
 		long segmentExperienceId =
 			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
 				draftLayout.getPlid());
+
+		ContentLayoutTestUtil.addItemToLayout(
+			"{}", LayoutDataItemTypeConstants.TYPE_CONTAINER,
+			layout.fetchDraftLayout(), _layoutStructureProvider,
+			segmentExperienceId);
 
 		ContentLayoutTestUtil.addItemToLayout(
 			JSONUtil.put(
@@ -603,6 +614,12 @@ public class RenderLayoutStructureTagTest {
 
 		Assert.assertTrue(
 			content, StringUtil.contains(content, url, StringPool.BLANK));
+		Assert.assertFalse(
+			content,
+			StringUtil.contains(content, "style=\"\"", StringPool.BLANK));
+		Assert.assertTrue(
+			content,
+			StringUtil.contains(content, "style=\"", StringPool.BLANK));
 
 		_groupLocalService.updateFriendlyURL(
 			_group.getGroupId(), "/new-friendly-url");
@@ -1164,7 +1181,11 @@ public class RenderLayoutStructureTagTest {
 			actualJournalArticle.getArticleId());
 	}
 
-	@FeatureFlags({"LPD-32050", "LPD-37927"})
+	@FeatureFlags(
+		featureFlags = {
+			@FeatureFlag(value = "LPD-32050"), @FeatureFlag(value = "LPD-37927")
+		}
+	)
 	@Test
 	@TestInfo("LPD-48715")
 	public void testRenderCollectionStyledLayoutStructureItemWithLocalizedObjectField()

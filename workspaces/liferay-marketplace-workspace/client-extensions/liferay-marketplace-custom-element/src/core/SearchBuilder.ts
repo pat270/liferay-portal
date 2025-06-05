@@ -53,7 +53,11 @@ export default class SearchBuilder {
 			return operator
 				.replace(
 					'{values}',
-					values.map((value) => `'${value}'`).join(',')
+					values
+						.map((value) =>
+							typeof value === 'number' ? value : `'${value}'`
+						)
+						.join(',')
 				)
 				.trim();
 		}
@@ -63,6 +67,10 @@ export default class SearchBuilder {
 
 	static lambda(key: Key, value: Value) {
 		return `(${key}/any(x:(x eq '${value}')))`;
+	}
+
+	static lambdaContains(key: Key, value: Value) {
+		return `(${key}/any(x:contains(x, '${value}')))`;
 	}
 
 	static ne(key: Key, value: Value) {
@@ -136,6 +144,16 @@ export default class SearchBuilder {
 			: (fn: any) => fn;
 
 		return this.setContext(parseFn(SearchBuilder.lambda(key, value)));
+	}
+
+	public lambdaContains(key: Key, value: Value, options = {unquote: false}) {
+		const parseFn = options.unquote
+			? SearchBuilder.unquote
+			: (fn: any) => fn;
+
+		return this.setContext(
+			parseFn(SearchBuilder.lambdaContains(key, value))
+		);
 	}
 
 	public gt(key: Key, values: Value) {

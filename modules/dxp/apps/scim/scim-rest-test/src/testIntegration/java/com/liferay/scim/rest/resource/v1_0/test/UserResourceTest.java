@@ -603,8 +603,6 @@ public class UserResourceTest extends BaseUserResourceTestCase {
 			com.liferay.portal.kernel.model.User.class.getName(), userId);
 	}
 
-	private static String _pid;
-
 	@Inject
 	private ClassNameLocalService _classNameLocalService;
 
@@ -619,6 +617,8 @@ public class UserResourceTest extends BaseUserResourceTestCase {
 
 	@Inject
 	private JSONFactory _jsonFactory;
+
+	private String _pid;
 
 	@Inject
 	private UserLocalService _userLocalService;

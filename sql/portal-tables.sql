@@ -28,6 +28,7 @@ create table Address (
 	validationDate DATE null,
 	validationStatus INTEGER,
 	zip VARCHAR(75) null,
+	status INTEGER,
 	primary key (addressId, ctCollectionId)
 );
 
@@ -98,6 +99,7 @@ create table AssetCategory (
 	description TEXT null,
 	vocabularyId LONG,
 	lastPublishDate DATE null,
+	status INTEGER,
 	primary key (categoryId, ctCollectionId)
 );
 
@@ -189,6 +191,7 @@ create table AssetVocabulary (
 	settings_ STRING null,
 	visibilityType INTEGER,
 	lastPublishDate DATE null,
+	status INTEGER,
 	primary key (vocabularyId, ctCollectionId)
 );
 
@@ -913,6 +916,7 @@ create table Organization_ (
 	statusListTypeId LONG,
 	comments STRING null,
 	logoId LONG,
+	status INTEGER,
 	primary key (organizationId, ctCollectionId)
 );
 

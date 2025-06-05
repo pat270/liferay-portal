@@ -620,6 +620,26 @@ public class PortalUpgradeProcessRegistryImpl
 				"activitySettingId asc"),
 			new DeleteDuplicateUniqueFinderRowsUpgradeProcess(
 				"Ticket", new String[] {"key_"}, "ticketId asc"));
+
+		upgradeVersionTreeMap.put(
+			new Version(32, 2, 0),
+			UpgradeProcessFactory.addColumns("AssetCategory", "status INTEGER"),
+			UpgradeProcessFactory.runSQL("update AssetCategory set status = 0"),
+			UpgradeProcessFactory.addColumns(
+				"AssetVocabulary", "status INTEGER"),
+			UpgradeProcessFactory.runSQL(
+				"update AssetVocabulary set status = 0"));
+
+		upgradeVersionTreeMap.put(
+			new Version(32, 3, 0),
+			UpgradeProcessFactory.addColumns("Organization_", "status INTEGER"),
+			UpgradeProcessFactory.runSQL(
+				"update Organization_ set status = 0"));
+
+		upgradeVersionTreeMap.put(
+			new Version(32, 4, 0),
+			UpgradeProcessFactory.addColumns("Address", "status INTEGER"),
+			UpgradeProcessFactory.runSQL("update Address set status = 0"));
 	}
 
 }

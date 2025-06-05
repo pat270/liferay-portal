@@ -8,13 +8,13 @@ package com.liferay.headless.admin.user.client.dto.v1_0;
 import com.liferay.headless.admin.user.client.function.UnsafeSupplier;
 import com.liferay.headless.admin.user.client.serdes.v1_0.AccountSerDes;
 
+import jakarta.annotation.Generated;
+
 import java.io.Serializable;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.Generated;
 
 /**
  * @author Javier Gamarra
@@ -430,6 +430,27 @@ public class Account implements Cloneable, Serializable {
 	}
 
 	protected String[] keywords;
+
+	public String getLogoBase64() {
+		return logoBase64;
+	}
+
+	public void setLogoBase64(String logoBase64) {
+		this.logoBase64 = logoBase64;
+	}
+
+	public void setLogoBase64(
+		UnsafeSupplier<String, Exception> logoBase64UnsafeSupplier) {
+
+		try {
+			logoBase64 = logoBase64UnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String logoBase64;
 
 	public String getLogoExternalReferenceCode() {
 		return logoExternalReferenceCode;

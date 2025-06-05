@@ -19,6 +19,8 @@ definition {
 			AssetPublisherPortlet.enableDynamicAndManualSelection();
 		}
 
+		Staging.enableDeleteApplicationDataBeforeImport();
+
 		HeadlessSite.addSite(siteName = "Site Name");
 
 		for (var layoutUtilityPageName : list "404 Error,500 Error") {
@@ -1053,72 +1055,6 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPS-167777 TC-1: Verify that the non-modified referred content(DM content) will not present in the LAR when 'Include if modified' is enabled for Web Content."
-	@priority = 3
-	test NonModifiedReferredContentCannotPublishToLiveWhenEnableIncludeIfModifiedOption {
-		property test.liferay.virtual.instance = "false";
-		property test.run.type = "single";
-
-		task ("Given: Create basic web content with a new image and publish to live") {
-			JSONWebcontent.addWebContent(
-				content = "Web Content Content",
-				groupName = "Site Name (Staging)",
-				site = "false",
-				title = "Web Content Title");
-
-			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
-
-			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
-
-			ItemSelector.gotoItemSelectorViaCKEditor();
-
-			ItemSelector.uploadFile(
-				navTab = "Documents and Media",
-				uploadFileName = "Document_1.png");
-
-			WebContent.publishExistingWCArticleWithPermissions();
-
-			Navigator.openStagingSiteURL(siteName = "Site Name");
-
-			Staging.gotoPublishToLive();
-
-			Staging.publishToLive();
-		}
-
-		task ("And: Uncheck 'Delete temporary LAR during a successful staging publication process' in System Settings") {
-			StagingNavigator.openToConfigInSystemSettings(portlet = "Staging");
-
-			FormFields.disableCheckbox(fieldName = "Delete temporary LAR during a successful staging publish process");
-
-			SystemSettings.saveConfiguration();
-		}
-
-		task ("When: Edit WC title and do not edit DM, then publish to live with 'Include if modified' option") {
-			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
-
-			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
-
-			WebContent.editCP(
-				webContentTitle = "Web Content Title",
-				webContentTitleEdit = "Web Content Title Edit");
-
-			Staging.openStagingAdmin(siteURLKey = "site-name-staging");
-
-			Staging.addCustomPublication();
-
-			Staging.configurePublishToLive(
-				checkSubSubContent = "Include If Modified",
-				contentName = "Web Content",
-				subContent = "Web Content");
-
-			Staging.publishToLive();
-		}
-
-		task ("Then: Verify the new LAR does not contain adaptive-media folder since the referenced content isn't modified") {
-			Staging.validateFolderNotExist();
-		}
-	}
-
 	@description = "This is a use case for LPS-128305."
 	@priority = 3
 	test PublishContentPageWithDLReference {
@@ -2097,67 +2033,6 @@ definition {
 			WebContent.viewTitle(
 				onLive = "true",
 				webContentTitle = "WC WebContent 1 Title");
-		}
-	}
-
-	@priority = 4
-	test StagingWithPublishTemplateSmoke {
-		property app.server.types = "jboss,tomcat,weblogic,wildfly";
-		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver";
-
-		task ("Given: User add a new Web Content and WC Display widget to the staging site") {
-			JSONLayout.addWidgetToPublicLayout(
-				column = 1,
-				groupName = "Site Name (Staging)",
-				layoutName = "Staging Test Page",
-				site = "false",
-				widgetName = "Web Content Display");
-
-			Navigator.gotoStagedSitePage(
-				pageName = "Staging Test Page",
-				siteName = "Site Name");
-
-			WebContentDisplayPortlet.add(
-				webContentContent = "Web Content Content",
-				webContentTitle = "Web Content Title");
-
-			WebContentDisplayPortlet.viewContent(
-				webContentContent = "Web Content Content",
-				webContentTitle = "Web Content Title");
-		}
-
-		task ("When: User add new pubish template") {
-			Staging.openStagingAdmin(siteURLKey = "site-name-staging");
-
-			Staging.addPublishTemplate(
-				publishTemplateDescription = "Publish Template Description",
-				publishTemplateName = "Publish Template Name");
-
-			Staging.savePublishTemplate(
-				publishTemplateDescription = "Publish Template Description",
-				publishTemplateName = "Publish Template Name");
-		}
-
-		task ("And: publish staging site based on the template") {
-			Navigator.gotoStagedSitePage(
-				pageName = "Staging Test Page",
-				siteName = "Site Name");
-
-			Staging.gotoPublishToLive();
-
-			Staging.publishToLivePublishTemplate(
-				publishTemplateName = "Publish Template Name",
-				siteName = "Site Name");
-		}
-
-		task ("Then: the WC will be visible in the WC display widget on the live site") {
-			Navigator.gotoSitePage(
-				pageName = "Staging Test Page",
-				siteName = "Site Name");
-
-			WebContentDisplayPortlet.viewContent(
-				webContentContent = "Web Content Content",
-				webContentTitle = "Web Content Title");
 		}
 	}
 

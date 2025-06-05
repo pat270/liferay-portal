@@ -19,11 +19,25 @@ export interface IFrontendDataSetContext {
 		tableCell?: Array<TRenderer>;
 		views?: Array<TRenderer>;
 	};
-	executeAsyncItemAction: Function;
+	executeAsyncItemAction: ({
+		errorMessage,
+		method,
+		requestBody,
+		setActionItemLoading,
+		successMessage,
+		url,
+	}: {
+		errorMessage: string;
+		method: string;
+		requestBody?: string;
+		setActionItemLoading?: (loading: boolean) => void;
+		successMessage?: string;
+		url: string;
+	}) => Promise<void>;
 	formId?: string;
 	formName?: string;
 	highlightItems: Function;
-	highlightedItemsValue?: string;
+	highlightedItemsValue?: Array<string>;
 	id?: string;
 	inlineAddingSettings?: {
 		apiURL?: string;
@@ -31,7 +45,7 @@ export interface IFrontendDataSetContext {
 	};
 	inlineEditingSettings?: IInlineEditingSettings;
 	itemsActions?: Array<IItemsActions>;
-	itemsChanges?: Array<any>;
+	itemsChanges?: {[key: string]: any};
 	loadData: Function;
 	modalId?: string;
 	namespace?: string;
@@ -39,15 +53,9 @@ export interface IFrontendDataSetContext {
 	nestedItemsReferenceKey?: string;
 	onActionDropdownItemClick: Function;
 	onBulkActionItemClick: Function;
-	onItemsChange: ({
-		itemKey,
-		items,
-	}: {
-		itemKey?: string;
-		items: Array<any>;
-	}) => void;
+	onItemsChange: ({itemKey, items}: {itemKey: string; items: any}) => void;
 	onSearch: ({query}: {query: string}) => void;
-	onSelect: Function;
+	onSelect?: ({selectedItems}: {selectedItems: Array<any>}) => void;
 	openModal: Function;
 	openSidePanel: Function;
 	portletId?: string;
@@ -57,13 +65,29 @@ export interface IFrontendDataSetContext {
 	selectedItemsKey?: string;
 	selectedItemsValue?: Array<any>;
 	selectionType?: string;
+	showBulkActionsManagementBar: boolean;
+	showBulkActionsManagementBarActions: boolean;
 	sidePanelId?: string;
 	sorts?: Array<TRenderer>;
 	style?: string;
 	toggleItemInlineEdit: Function;
 	uniformActionsDisplay?: boolean;
-	updateDataSetItems: Function;
+	updateDataSetItems: ({
+		items,
+		lastPage,
+		page,
+		pageSize,
+		totalCount,
+	}: IDataSetData) => void;
 	updateItem: Function;
+}
+
+export interface IDataSetData {
+	items: Array<any>;
+	lastPage: number;
+	page: number;
+	pageSize?: number;
+	totalCount: number;
 }
 
 export interface IHTMLElementBuilder {
@@ -111,6 +135,6 @@ const FrontendDataSetContext = React.createContext({
 	toggleItemInlineEdit: () => {},
 	updateDataSetItems: () => {},
 	updateItem: () => {},
-} as IFrontendDataSetContext);
+} as unknown as IFrontendDataSetContext);
 
 export default FrontendDataSetContext;

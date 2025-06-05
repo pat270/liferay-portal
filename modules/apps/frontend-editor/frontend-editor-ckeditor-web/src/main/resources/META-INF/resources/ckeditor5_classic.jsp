@@ -9,13 +9,13 @@
 
 <%
 String contents = (String)request.getAttribute(CKEditorConstants.ATTRIBUTE_NAMESPACE + ":contents");
-Map<String, Object> editorData = (Map<String, Object>)request.getAttribute(CKEditorConstants.ATTRIBUTE_NAMESPACE + ":data");
-String name = namespace + GetterUtil.getString((String)request.getAttribute(CKEditorConstants.ATTRIBUTE_NAMESPACE + ":name"));
+Map<String, Object> data = (Map<String, Object>)request.getAttribute(CKEditorConstants.ATTRIBUTE_NAMESPACE + ":data");
+boolean disabled = GetterUtil.getBoolean((String)request.getAttribute(CKEditorConstants.ATTRIBUTE_NAMESPACE + ":disabled"));
 
 JSONObject editorConfigJSONObject = null;
 
-if (editorData != null) {
-	editorConfigJSONObject = (JSONObject)editorData.get("editorConfig");
+if (data != null) {
+	editorConfigJSONObject = (JSONObject)data.get("editorConfig");
 }
 
 if (contents != null) {
@@ -30,7 +30,7 @@ if (contents != null) {
 			HashMapBuilder.<String, Object>put(
 				"config", editorConfigJSONObject
 			).put(
-				"id", HtmlUtil.escapeAttribute(name)
+				"disabled", disabled
 			).build()
 		%>'
 	/>

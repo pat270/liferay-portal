@@ -73,7 +73,8 @@ public interface ListTypeEntryLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public ListTypeEntry addListTypeEntry(
 			String externalReferenceCode, long userId,
-			long listTypeDefinitionId, String key, Map<Locale, String> nameMap)
+			long listTypeDefinitionId, String key, Map<Locale, String> nameMap,
+			boolean system)
 		throws PortalException;
 
 	/**
@@ -309,6 +310,11 @@ public interface ListTypeEntryLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ListTypeEntry getListTypeEntryByUuidAndCompanyId(
 			String uuid, long companyId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public ListTypeEntry getOrAddIncompleteListTypeEntry(
+			long userId, long listTypeDefinitionId, String key)
 		throws PortalException;
 
 	/**

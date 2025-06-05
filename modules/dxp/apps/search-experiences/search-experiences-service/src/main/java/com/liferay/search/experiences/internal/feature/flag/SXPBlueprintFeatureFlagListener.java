@@ -6,15 +6,24 @@
 package com.liferay.search.experiences.internal.feature.flag;
 
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.blogs.service.BlogsEntryLocalService;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureService;
 import com.liferay.journal.service.JournalArticleService;
+import com.liferay.knowledge.base.service.KBArticleLocalService;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagListener;
 import com.liferay.portal.kernel.model.ModelListener;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.GroupService;
+import com.liferay.portal.search.asset.AssetSubtypeIdentifierBuilder;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.Searcher;
-import com.liferay.search.experiences.internal.model.listener.AssetEntrySXPBlueprintInfoCollectionProviderSXPBlueprintModelListener;
 import com.liferay.search.experiences.internal.model.listener.InfoCollectionProviderSXPBlueprintModelListener;
-import com.liferay.search.experiences.internal.model.listener.JournalArticleSXPBlueprintInfoCollectionProviderSXPBlueprintModelListener;
+import com.liferay.search.experiences.internal.model.listener.SXPBlueprintInfoCollectionProviderSXPBlueprintModelListener;
 import com.liferay.search.experiences.service.SXPBlueprintLocalService;
 
 import java.util.AbstractMap;
@@ -32,8 +41,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Shuyang Zhou
  */
 @Component(
-	enabled = false,
-	property = {"featureFlagKey=LPS-129412", "featureFlagKey=LPS-193551"},
+	enabled = false, property = "featureFlagKey=LPS-129412",
 	service = FeatureFlagListener.class
 )
 public class SXPBlueprintFeatureFlagListener implements FeatureFlagListener {
@@ -46,25 +54,19 @@ public class SXPBlueprintFeatureFlagListener implements FeatureFlagListener {
 			<InfoCollectionProviderSXPBlueprintModelListener,
 			 ServiceRegistration<?>> entry = null;
 
-		if (enabled) {
+		if (enabled && Objects.equals(featureFlagKey, "LPS-129412")) {
 			InfoCollectionProviderSXPBlueprintModelListener
-				infoCollectionProviderSXPBlueprintModelListener = null;
-
-			if (Objects.equals(featureFlagKey, "LPS-193551")) {
 				infoCollectionProviderSXPBlueprintModelListener =
-					new JournalArticleSXPBlueprintInfoCollectionProviderSXPBlueprintModelListener(
-						_bundleContext, _companyLocalService,
-						_sxpBlueprintLocalService, _assetHelper,
-						_journalArticleService, _searcher,
-						_searchRequestBuilderFactory);
-			}
-			else if (Objects.equals(featureFlagKey, "LPS-129412")) {
-				infoCollectionProviderSXPBlueprintModelListener =
-					new AssetEntrySXPBlueprintInfoCollectionProviderSXPBlueprintModelListener(
-						_bundleContext, _companyLocalService,
-						_sxpBlueprintLocalService, _assetHelper, _searcher,
-						_searchRequestBuilderFactory);
-			}
+					new SXPBlueprintInfoCollectionProviderSXPBlueprintModelListener(
+						_assetHelper, _assetSubtypeIdentifierBuilder,
+						_blogsEntryLocalService, _bundleContext,
+						_classNameLocalService, _companyLocalService,
+						_ddmStructureService, _dlFileEntryTypeLocalService,
+						_dlAppLocalService, _groupService,
+						_journalArticleService, _kbArticleLocalService,
+						_objectDefinitionLocalService, _objectEntryLocalService,
+						_searcher, _searchRequestBuilderFactory,
+						_sxpBlueprintLocalService);
 
 			infoCollectionProviderSXPBlueprintModelListener.start();
 
@@ -102,13 +104,43 @@ public class SXPBlueprintFeatureFlagListener implements FeatureFlagListener {
 	@Reference
 	private AssetHelper _assetHelper;
 
+	@Reference
+	private AssetSubtypeIdentifierBuilder _assetSubtypeIdentifierBuilder;
+
+	@Reference
+	private BlogsEntryLocalService _blogsEntryLocalService;
+
 	private BundleContext _bundleContext;
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
 	@Reference
+	private DDMStructureService _ddmStructureService;
+
+	@Reference
+	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
+
+	@Reference
+	private GroupService _groupService;
+
+	@Reference
 	private JournalArticleService _journalArticleService;
+
+	@Reference
+	private KBArticleLocalService _kbArticleLocalService;
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	@Reference
+	private ObjectEntryLocalService _objectEntryLocalService;
 
 	@Reference
 	private Searcher _searcher;

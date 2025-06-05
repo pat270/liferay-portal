@@ -136,15 +136,15 @@ import java.util.Set;
 	import java.util.function.Supplier;
 </#if>
 
-import javax.annotation.Generated;
+import ${configYAML.javaEEPackage}.annotation.Generated;
 
-import javax.servlet.http.HttpServletRequest;
+import ${configYAML.javaEEPackage}.servlet.http.HttpServletRequest;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import ${configYAML.javaEEPackage}.ws.rs.core.MultivaluedHashMap;
+import ${configYAML.javaEEPackage}.ws.rs.core.MultivaluedMap;
+import ${configYAML.javaEEPackage}.ws.rs.core.PathSegment;
+import ${configYAML.javaEEPackage}.ws.rs.core.UriBuilder;
+import ${configYAML.javaEEPackage}.ws.rs.core.UriInfo;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -429,6 +429,12 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 			protected void test${javaMethodSignature.methodName?cap_first}_delete${schemaName}(String expectedExecuteStatus, String externalReferenceCode, ${properties[idParameterName]} id) throws Exception {
 				HttpInvoker.HttpResponse httpResponse = ${schemaVarName}Resource.${javaMethodSignature.methodName}HttpResponse(
+					<#list deleteJavaMethodSignature.javaMethodParameters as javaMethodParameter>
+						<#if freeMarkerTool.isQueryParameter(javaMethodParameter, javaMethodSignature.operation)>
+							null,
+						</#if>
+					</#list>
+
 					null,
 					JSONUtil.putAll(
 						JSONUtil.put(
@@ -606,21 +612,20 @@ public abstract class Base${schemaName}ResourceTestCase {
 				}
 
 				protected ${schemaName} test${javaMethodSignature.methodName?cap_first}_add${schemaName}() throws Exception {
-					<#if freeMarkerTool.hasPostSchemaJavaMethodSignature(javaMethodSignatures, javaMethodSignature.javaMethodParameters[0].parameterName, schemaName)>
-						<#assign postSchemaJavaMethodSignature = freeMarkerTool.getPostSchemaJavaMethodSignature(javaMethodSignatures, javaMethodSignature.javaMethodParameters[0].parameterName, schemaName) />
+					<#assign
+						firstParameterName = javaMethodSignature.javaMethodParameters[0].parameterName
+						postSchemaJavaMethodSignature = ""
+					/>
 
-						return test${postSchemaJavaMethodSignature.methodName?cap_first}_add${schemaName}(random${schemaName}()
-
-						<#if freeMarkerTool.hasRequestBodyMediaType(postSchemaJavaMethodSignature, "multipart/form-data")>
-							<#assign generateGetMultipartFilesMethod = true />
-
-							, getMultipartFiles()
-						</#if>
-
-						);
+					<#if freeMarkerTool.hasPostSchemaJavaMethodSignature(javaMethodSignatures, firstParameterName, schemaName)>
+						<#assign postSchemaJavaMethodSignature = freeMarkerTool.getPostSchemaJavaMethodSignature(javaMethodSignatures, firstParameterName, schemaName) />
+					<#elseif (firstParameterName?? && firstParameterName?has_content) && freeMarkerTool.hasPostSchemaJavaMethodSignature(javaMethodSignatures, "parent" + firstParameterName?cap_first, schemaName)>
+						<#assign postSchemaJavaMethodSignature = freeMarkerTool.getPostSchemaJavaMethodSignature(javaMethodSignatures, "parent" + firstParameterName?cap_first, schemaName) />
 					<#elseif freeMarkerTool.hasPostSchemaJavaMethodSignature(javaMethodSignatures, "siteId", schemaName)>
 						<#assign postSchemaJavaMethodSignature = freeMarkerTool.getPostSchemaJavaMethodSignature(javaMethodSignatures, "siteId", schemaName) />
+					</#if>
 
+					<#if postSchemaJavaMethodSignature?has_content>
 						return test${postSchemaJavaMethodSignature.methodName?cap_first}_add${schemaName}(random${schemaName}()
 
 						<#if freeMarkerTool.hasRequestBodyMediaType(postSchemaJavaMethodSignature, "multipart/form-data")>
@@ -2135,51 +2140,51 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						Assert.assertNotNull(put${schemaName}.getPermissions());
 					</#if>
-				</#if>
 
-				<#if javaMethodSignature.methodName?ends_with("ByExternalReferenceCode")>
-					${schemaName} new${schemaName} = test${javaMethodSignature.methodName?cap_first}_create${schemaName}();
+					<#if javaMethodSignature.methodName?ends_with("ByExternalReferenceCode")>
+						${schemaName} new${schemaName} = test${javaMethodSignature.methodName?cap_first}_create${schemaName}();
 
-					put${schemaName} = ${schemaVarName}Resource.${javaMethodSignature.methodName}(
-						<@getPutParameters
-							hasMultipartFiles = false
-							javaMethodSignature = javaMethodSignature
-							newSchemaVarNamePrefix = "new"
-							schemaName = schemaName
-							schemaVarName = schemaVarName
-							schemaVarNamePrefix = "new"
-						/>
-					);
-
-					assertEquals(new${schemaName}, put${schemaName});
-					assertValid(put${schemaName});
-
-					get${schemaName} =
-
-					<#assign getJavaMethodSignatureMethodName = javaMethodSignature.methodName?replace("put", "get", "f") />
-
-					<#if freeMarkerTool.containsJavaMethodSignature(javaMethodSignatures, getJavaMethodSignatureMethodName)>
-						${schemaVarName}Resource.${getJavaMethodSignatureMethodName}(
-							<@getGetParameters
-								javaMethodSignature = freeMarkerTool.getJavaMethodSignature(javaMethodSignatures, getJavaMethodSignatureMethodName)
-								testJavaMethodSignature = javaMethodSignature
-								varName = "put" + schemaName
-							/>);
-					<#else>
-						<#assign addResourceGetterMethod = true />
-
-						test${javaMethodSignature.methodName?cap_first}_get${schemaName}(
-							<@getGetParameters
-								allowQueryParameter = false
+						put${schemaName} = ${schemaVarName}Resource.${javaMethodSignature.methodName}(
+							<@getPutParameters
+								hasMultipartFiles = false
 								javaMethodSignature = javaMethodSignature
-								testJavaMethodSignature = javaMethodSignature
-								varName = "put" + schemaName
-							/>);
+								newSchemaVarNamePrefix = "new"
+								schemaName = schemaName
+								schemaVarName = schemaVarName
+								schemaVarNamePrefix = "new"
+							/>
+						);
+
+						assertEquals(new${schemaName}, put${schemaName});
+						assertValid(put${schemaName});
+
+						get${schemaName} =
+
+						<#assign getJavaMethodSignatureMethodName = javaMethodSignature.methodName?replace("put", "get", "f") />
+
+						<#if freeMarkerTool.containsJavaMethodSignature(javaMethodSignatures, getJavaMethodSignatureMethodName)>
+							${schemaVarName}Resource.${getJavaMethodSignatureMethodName}(
+								<@getGetParameters
+									javaMethodSignature = freeMarkerTool.getJavaMethodSignature(javaMethodSignatures, getJavaMethodSignatureMethodName)
+									testJavaMethodSignature = javaMethodSignature
+									varName = "put" + schemaName
+								/>);
+						<#else>
+							<#assign addResourceGetterMethod = true />
+
+							test${javaMethodSignature.methodName?cap_first}_get${schemaName}(
+								<@getGetParameters
+									allowQueryParameter = false
+									javaMethodSignature = javaMethodSignature
+									testJavaMethodSignature = javaMethodSignature
+									varName = "put" + schemaName
+								/>);
+						</#if>
+
+						assertEquals(new${schemaName}, get${schemaName});
+
+						Assert.assertEquals(new${schemaName}.getExternalReferenceCode(), put${schemaName}.getExternalReferenceCode());
 					</#if>
-
-					assertEquals(new${schemaName}, get${schemaName});
-
-					Assert.assertEquals(new${schemaName}.getExternalReferenceCode(), put${schemaName}.getExternalReferenceCode());
 				</#if>
 			}
 
@@ -2819,11 +2824,15 @@ public abstract class Base${schemaName}ResourceTestCase {
 		<#elseif configYAML.generateGraphQL && freeMarkerTool.hasHTTPMethod(javaMethodSignature, "post") && stringUtil.equals(javaMethodSignature.methodName, "postSite" + schemaName) && javaMethodSignature.returnType?ends_with(schemaName) && !freeMarkerTool.hasRequestBodyMediaType(javaMethodSignature, "multipart/form-data")>
 			@Test
 			public void testGraphQL${javaMethodSignature.methodName?cap_first}() throws Exception {
-				${schemaName} random${schemaName} = random${schemaName}();
+				<#if !properties?keys?seq_contains("id")>
+					Assert.assertTrue(false);
+				<#else>
+					${schemaName} random${schemaName} = random${schemaName}();
 
-				${schemaName} ${schemaVarName} = testGraphQL${schemaName}_add${schemaName}(random${schemaName});
+					${schemaName} ${schemaVarName} = testGraphQL${schemaName}_add${schemaName}(random${schemaName});
 
-				Assert.assertTrue(equals(random${schemaName}, ${schemaVarName}));
+					Assert.assertTrue(equals(random${schemaName}, ${schemaVarName}));
+				</#if>
 			}
 		</#if>
 

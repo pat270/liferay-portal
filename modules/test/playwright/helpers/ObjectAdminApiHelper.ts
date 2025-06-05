@@ -16,6 +16,7 @@ import {ApiHelpers} from './ApiHelpers';
 
 export interface CreateObjectField {
 	attachmentSource?: string;
+	formulaFieldOutput?: 'Decimal' | 'Integer';
 	listTypeDefinitionName?: string;
 	mandatory?: boolean;
 	objectDefinitionLabel?: string;
@@ -32,6 +33,18 @@ export class ObjectAdminApiHelper {
 	constructor(apiHelpers: ApiHelpers) {
 		this.apiHelpers = apiHelpers;
 		this.basePath = 'object-admin/v1.0';
+	}
+
+	async getAllObjectDefinitions() {
+		return this.apiHelpers.get(
+			`${this.apiHelpers.baseUrl}${this.basePath}/object-definitions`
+		);
+	}
+
+	async getAllObjectDefinitionsFields(objectDefinitionId: number) {
+		return this.apiHelpers.get(
+			`${this.apiHelpers.baseUrl}${this.basePath}/object-definitions/${objectDefinitionId}/object-fields`
+		);
 	}
 
 	async postObjectDefinitionObjectFieldBatch(

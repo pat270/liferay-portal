@@ -5,9 +5,30 @@
 
 package com.liferay.search.experiences.rest.internal.dto.v1_0.converter;
 
+import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLFileEntryType;
+import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.search.asset.AssetSubtypeIdentifier;
+import com.liferay.portal.search.asset.AssetSubtypeIdentifierBuilder;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
@@ -64,6 +85,16 @@ public class SXPBlueprintDTOConverter
 
 		return new SXPBlueprint() {
 			{
+				setCollectionProviderSubtypeName(
+					() -> _getSubtypeName(
+						sxpBlueprint.getCompanyId(),
+						sxpBlueprint.getConfigurationJSON(),
+						dtoConverterContext.getLocale()));
+				setCollectionProviderTypeName(
+					() -> _getTypeName(
+						sxpBlueprint.getCompanyId(),
+						sxpBlueprint.getConfigurationJSON(),
+						dtoConverterContext.getLocale()));
 				setConfiguration(
 					() -> _toConfiguration(
 						sxpBlueprint.getConfigurationJSON()));
@@ -108,6 +139,18 @@ public class SXPBlueprintDTOConverter
 
 		return new SXPBlueprint() {
 			{
+				setCollectionProviderSubtypeName(
+					() -> _getSubtypeName(
+						sxpBlueprint.getCompanyId(),
+						sxpBlueprint.getConfigurationJSON(),
+						LocaleUtil.fromLanguageId(
+							sxpBlueprint.getDefaultLanguageId())));
+				setCollectionProviderTypeName(
+					() -> _getTypeName(
+						sxpBlueprint.getCompanyId(),
+						sxpBlueprint.getConfigurationJSON(),
+						LocaleUtil.fromLanguageId(
+							sxpBlueprint.getDefaultLanguageId())));
 				setConfiguration(
 					() -> _toConfiguration(
 						sxpBlueprint.getConfigurationJSON()));
@@ -132,6 +175,145 @@ public class SXPBlueprintDTOConverter
 				setVersion(sxpBlueprint::getVersion);
 			}
 		};
+	}
+
+	private AssetSubtypeIdentifier _getAssetSubtypeIdentifier(String json) {
+		try {
+			JSONObject configurationJSONObject = _jsonFactory.createJSONObject(
+				json);
+
+			if (configurationJSONObject == null) {
+				return null;
+			}
+
+			JSONObject generalConfigurationJSONObject =
+				configurationJSONObject.getJSONObject("generalConfiguration");
+
+			if ((generalConfigurationJSONObject == null) ||
+				!generalConfigurationJSONObject.getBoolean(
+					"collectionProvider")) {
+
+				return null;
+			}
+
+			return _assetSubtypeIdentifierBuilder.searchableAssetType(
+				generalConfigurationJSONObject.getString(
+					"collectionProviderType")
+			).build();
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception);
+			}
+
+			return null;
+		}
+	}
+
+	private String _getSubtypeName(long companyId, String json, Locale locale) {
+		AssetSubtypeIdentifier assetSubtypeIdentifier =
+			_getAssetSubtypeIdentifier(json);
+
+		if ((assetSubtypeIdentifier == null) ||
+			Validator.isBlank(
+				assetSubtypeIdentifier.getSubtypeExternalReferenceCode())) {
+
+			return StringPool.BLANK;
+		}
+
+		try {
+			if (StringUtil.equals(
+					assetSubtypeIdentifier.getClassName(),
+					DLFileEntry.class.getName())) {
+
+				DLFileEntryType dlFileEntryType;
+
+				if (StringUtil.equals(
+						assetSubtypeIdentifier.getGroupExternalReferenceCode(),
+						StringPool.BLANK)) {
+
+					dlFileEntryType =
+						_dlFileEntryTypeLocalService.
+							getBasicDocumentDLFileEntryType();
+				}
+				else {
+					Group group =
+						_groupLocalService.getGroupByExternalReferenceCode(
+							assetSubtypeIdentifier.
+								getGroupExternalReferenceCode(),
+							companyId);
+
+					dlFileEntryType =
+						_dlFileEntryTypeLocalService.
+							getDLFileEntryTypeByExternalReferenceCode(
+								assetSubtypeIdentifier.
+									getSubtypeExternalReferenceCode(),
+								group.getGroupId());
+				}
+
+				return dlFileEntryType.getName(locale);
+			}
+
+			if (StringUtil.equals(
+					assetSubtypeIdentifier.getClassName(),
+					JournalArticle.class.getName())) {
+
+				Group group =
+					_groupLocalService.getGroupByExternalReferenceCode(
+						assetSubtypeIdentifier.getGroupExternalReferenceCode(),
+						companyId);
+
+				DDMStructure ddmStructure =
+					_ddmStructureLocalService.
+						fetchStructureByExternalReferenceCode(
+							assetSubtypeIdentifier.
+								getSubtypeExternalReferenceCode(),
+							group.getGroupId(),
+							_classNameLocalService.getClassNameId(
+								JournalArticle.class));
+
+				return ddmStructure.getName(locale);
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
+		return StringPool.BLANK;
+	}
+
+	private String _getTypeName(long companyId, String json, Locale locale) {
+		AssetSubtypeIdentifier assetSubtypeIdentifier =
+			_getAssetSubtypeIdentifier(json);
+
+		if (assetSubtypeIdentifier == null) {
+			return StringPool.BLANK;
+		}
+
+		String className = assetSubtypeIdentifier.getClassName();
+
+		try {
+			if (className.startsWith(
+					ObjectDefinitionConstants.
+						CLASS_NAME_PREFIX_CUSTOM_OBJECT_DEFINITION)) {
+
+				ObjectDefinition objectDefinition =
+					_objectDefinitionLocalService.
+						fetchObjectDefinitionByClassName(companyId, className);
+
+				if (objectDefinition != null) {
+					return objectDefinition.getLabel(
+						LocaleUtil.toLanguageId(locale));
+				}
+			}
+
+			return ResourceActionsUtil.getModelResource(locale, className);
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
+		return StringPool.BLANK;
 	}
 
 	private void _setLocalizedDescriptionAndTitle(
@@ -216,7 +398,28 @@ public class SXPBlueprintDTOConverter
 		SXPBlueprintDTOConverter.class);
 
 	@Reference
+	private AssetSubtypeIdentifierBuilder _assetSubtypeIdentifierBuilder;
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
+
+	@Reference
+	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private JSONFactory _jsonFactory;
+
+	@Reference
 	private Language _language;
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private SXPBlueprintLocalService _sxpBlueprintLocalService;

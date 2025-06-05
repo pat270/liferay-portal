@@ -135,8 +135,8 @@ test('The user can choose which languages will be available to site via language
 		configurationIFrame.getByRole('button', {name: 'Languages'})
 	);
 
-	const leftSelector = configurationIFrame.locator('.left-selector');
-	const rightSelector = configurationIFrame.locator('.right-selector');
+	const leftSelector = configurationIFrame.locator('.listbox-left select');
+	const rightSelector = configurationIFrame.locator('.listbox-right select');
 
 	const allOptions = await leftSelector.evaluate(
 		(element: HTMLSelectElement) =>
@@ -146,13 +146,13 @@ test('The user can choose which languages will be available to site via language
 	await leftSelector.selectOption(allOptions);
 
 	await configurationIFrame
-		.getByTitle('Move selected items from Current to Available.')
+		.getByLabel('Move selected items from Current to Available.')
 		.click();
 
 	await rightSelector.selectOption(['de_DE', 'en_US', 'es_ES']);
 
 	await configurationIFrame
-		.getByTitle('Move selected items from Available to Current.')
+		.getByLabel('Move selected items from Available to Current.')
 		.click();
 
 	await configurationIFrame.getByRole('button', {name: 'Save'}).click();

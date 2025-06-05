@@ -12,6 +12,8 @@ import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.serdes.v1_0.OrderItemSerDes;
 
+import jakarta.annotation.Generated;
+
 import java.net.URL;
 
 import java.util.LinkedHashMap;
@@ -20,8 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.annotation.Generated;
 
 /**
  * @author Alessio Antonio Rendina
@@ -96,13 +96,14 @@ public interface OrderItemResource {
 			String sortString)
 		throws Exception;
 
-	public void patchOrderItem(Long id, OrderItem orderItem) throws Exception;
+	public OrderItem patchOrderItem(Long id, OrderItem orderItem)
+		throws Exception;
 
 	public HttpInvoker.HttpResponse patchOrderItemHttpResponse(
 			Long id, OrderItem orderItem)
 		throws Exception;
 
-	public void patchOrderItemByExternalReferenceCode(
+	public OrderItem patchOrderItemByExternalReferenceCode(
 			String externalReferenceCode, OrderItem orderItem)
 		throws Exception;
 
@@ -1126,7 +1127,7 @@ public interface OrderItemResource {
 			return httpInvoker.invoke();
 		}
 
-		public void patchOrderItem(Long id, OrderItem orderItem)
+		public OrderItem patchOrderItem(Long id, OrderItem orderItem)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse = patchOrderItemHttpResponse(
@@ -1178,6 +1179,17 @@ public interface OrderItemResource {
 					"HTTP response status code: " +
 						httpResponse.getStatusCode());
 			}
+
+			try {
+				return OrderItemSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse patchOrderItemHttpResponse(
@@ -1222,7 +1234,7 @@ public interface OrderItemResource {
 			return httpInvoker.invoke();
 		}
 
-		public void patchOrderItemByExternalReferenceCode(
+		public OrderItem patchOrderItemByExternalReferenceCode(
 				String externalReferenceCode, OrderItem orderItem)
 			throws Exception {
 
@@ -1275,6 +1287,17 @@ public interface OrderItemResource {
 				_logger.fine(
 					"HTTP response status code: " +
 						httpResponse.getStatusCode());
+			}
+
+			try {
+				return OrderItemSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 

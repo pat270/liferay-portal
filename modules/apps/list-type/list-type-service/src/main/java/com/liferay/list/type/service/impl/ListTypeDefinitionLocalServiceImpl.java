@@ -236,11 +236,19 @@ public class ListTypeDefinitionLocalServiceImpl
 							listTypeEntry.getCompanyId(), listTypeDefinitionId);
 			}
 
+			if ((existingListTypeEntry == null) &&
+				Validator.isNotNull(listTypeEntry.getKey())) {
+
+				existingListTypeEntry =
+					_listTypeEntryLocalService.fetchListTypeEntry(
+						listTypeDefinitionId, listTypeEntry.getKey());
+			}
+
 			if (existingListTypeEntry == null) {
 				_listTypeEntryLocalService.addListTypeEntry(
 					listTypeEntry.getExternalReferenceCode(), userId,
 					listTypeDefinitionId, listTypeEntry.getKey(),
-					listTypeEntry.getNameMap());
+					listTypeEntry.getNameMap(), listTypeEntry.isSystem());
 
 				continue;
 			}

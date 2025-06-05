@@ -7,6 +7,9 @@ import {openModal} from 'frontend-js-components-web';
 import {navigate, sub} from 'frontend-js-web';
 import React, {ReactElement, useEffect, useState} from 'react';
 
+import CategorizationPermissionService from '../../../services/CategorizationPermissionService';
+import CategoryService from '../../../services/CategoryService';
+import {IPermissionItem} from '../../components/forms/PermissionsTable';
 import {
 	displayCreateSuccessToast,
 	displayEditSuccessToast,
@@ -14,37 +17,45 @@ import {
 } from '../../util/ToastUtil';
 import CategorizationContentContainer from '../components/CategorizationContentContainer';
 import CategorizationManagementToolbar from '../components/CategorizationManagementToolbar';
-import CategoryService from '../services/CategoryService';
+import {DEFAULT_PERMISSIONS} from '../utils/CategorizationPermissionsUtil';
 import EditCategoryGeneralInfoTab from './components/EditCategoryGeneralInfoTab';
+import EditCategoryPropertiesTab from './components/EditCategoryPropertiesTab';
 
 interface Props {
 	backURL: string | URL;
-	categoryByCategoryIdApiUrl: string;
-	categoryByVocabularyIdApiUrl: string;
+	categoryByCategoryIdAPIURL: string;
+	categoryByParentCategoryIdAPIURL: string;
+	categoryByVocabularyIdAPIURL: string;
 	categoryId: number;
+	categoryPermissionsAPIURL: string;
 	defaultLanguageId: string;
 	isCreateNew: boolean;
 	locales: any[];
+	parentCategoryId: number;
 	spritemap: string;
 	vocabularyId: number;
 }
 
 const EditCategoryPage = ({
 	backURL,
-	categoryByCategoryIdApiUrl,
-	categoryByVocabularyIdApiUrl,
-	categoryId,
+	categoryByCategoryIdAPIURL,
+	categoryByParentCategoryIdAPIURL,
+	categoryByVocabularyIdAPIURL,
+	categoryPermissionsAPIURL,
 	defaultLanguageId,
 	isCreateNew,
 	locales,
+	parentCategoryId,
 	spritemap,
 }: Props) => {
 	const [category, setCategory] = useState<TaxonomyCategory>({
 		name: '',
 		name_i18n: {
-			[defaultLanguageId]: '',
+			[defaultLanguageId.replace('_', '-')]: '',
 		},
 	});
+	const [categoryPermissions, setCategoryPermissions] =
+		useState<IPermissionItem[]>(DEFAULT_PERMISSIONS);
 	const [nameInputError, setNameInputError] = useState<string>('');
 	const [title, setTitle] = useState<string>('');
 
@@ -54,18 +65,16 @@ const EditCategoryPage = ({
 				return;
 			}
 			else {
-				try {
-					const fetchedData = await CategoryService.getCategory(
-						categoryByCategoryIdApiUrl,
-						categoryId
-					);
+				const {data, error} = await CategoryService.getCategory(
+					categoryByCategoryIdAPIURL
+				);
 
-					setTitle(fetchedData.name);
-					setCategory(fetchedData);
+				if (data) {
+					setTitle(data.name);
+					setCategory(data);
 				}
-				catch (error) {
+				else if (error) {
 					console.error(error);
-
 					navigate(backURL);
 				}
 			}
@@ -106,6 +115,12 @@ const EditCategoryPage = ({
 		}
 	}
 
+	function getFormattedCategoryProperties(category: TaxonomyCategory) {
+		return category.taxonomyCategoryProperties?.filter((row) => {
+			return row.key.trim() !== '' && row.value.trim() !== '';
+		});
+	}
+
 	async function handleSave() {
 		validateForm();
 
@@ -113,56 +128,101 @@ const EditCategoryPage = ({
 			return;
 		}
 
-		try {
-			if (isCreateNew) {
-				await CategoryService.createCategory(
-					categoryByVocabularyIdApiUrl,
-					category
+		if (isCreateNew) {
+			const {data, error} = Number(parentCategoryId)
+				? await CategoryService.createCategory(
+						categoryByParentCategoryIdAPIURL,
+						{
+							...category,
+							taxonomyCategoryProperties:
+								getFormattedCategoryProperties(category),
+						}
+					)
+				: await CategoryService.createCategory(
+						categoryByVocabularyIdAPIURL,
+						{
+							...category,
+							taxonomyCategoryProperties:
+								getFormattedCategoryProperties(category),
+						}
+					);
+
+			if (error) {
+				displaySystemErrorToast();
+
+				throw new Error(
+					`POST request failed to create a new Category under 'vocabularyId = ${category.taxonomyVocabularyId}' using the following provided data: ${JSON.stringify(category)}`
+				);
+			}
+
+			const {error: putPermissionsError} =
+				await CategorizationPermissionService.putPermissions(
+					categoryPermissionsAPIURL.replace(
+						'{taxonomyCategoryId}',
+						String(data?.id)
+					),
+					categoryPermissions
 				);
 
-				navigate(backURL);
-				displayCreateSuccessToast(category.name);
-			}
-			else {
-				openModal({
-					bodyHTML: Liferay.Language.get(
-						'edit-category-confirmation'
-					),
-					buttons: [
-						{
-							autoFocus: true,
-							displayType: 'secondary',
-							label: Liferay.Language.get('cancel'),
-							type: 'cancel',
-						},
-						{
-							displayType: 'primary',
-							label: Liferay.Language.get('save'),
-							onClick: async ({processClose}) => {
-								processClose();
+			if (putPermissionsError) {
+				displaySystemErrorToast();
 
+				throw new Error(
+					`PUT request failed to update permissions at ${categoryPermissionsAPIURL} using the following provided data: ${JSON.stringify(categoryPermissions)}`
+				);
+			}
+
+			navigate(backURL);
+			displayCreateSuccessToast(category.name);
+		}
+		else {
+			openModal({
+				bodyHTML: Liferay.Language.get('edit-category-confirmation'),
+				buttons: [
+					{
+						autoFocus: true,
+						displayType: 'secondary',
+						label: Liferay.Language.get('cancel'),
+						type: 'cancel',
+					},
+					{
+						displayType: 'primary',
+						label: Liferay.Language.get('save'),
+						onClick: async ({processClose}) => {
+							processClose();
+
+							const {error} =
 								await CategoryService.updateCategory(
-									categoryByCategoryIdApiUrl,
-									category
+									categoryByCategoryIdAPIURL,
+									{
+										...category,
+										taxonomyCategoryProperties:
+											getFormattedCategoryProperties(
+												category
+											),
+									}
 								);
 
+							if (error) {
+								console.error(error);
+
+								displaySystemErrorToast();
+
+								throw new Error(error);
+							}
+							else {
 								navigate(backURL);
 								displayEditSuccessToast(category.name);
-							},
+							}
 						},
-					],
-					status: 'warning',
-					title: sub(
-						Liferay.Language.get('edit-x'),
-						'"' + category.name + '"'
-					),
-				});
-			}
-		}
-		catch (error) {
-			console.error(error);
-
-			displaySystemErrorToast();
+					},
+				],
+				status: 'warning',
+				title: sub(
+					Liferay.Language.get('edit-x'),
+					'"' + category.name + '"'
+				),
+			});
 		}
 	}
 
@@ -173,13 +233,17 @@ const EditCategoryPage = ({
 			return;
 		}
 
-		try {
-			await CategoryService.createCategory(
-				categoryByVocabularyIdApiUrl,
-				category
-			);
-		}
-		catch (error) {
+		const {error} = Number(parentCategoryId)
+			? await CategoryService.createCategory(
+					categoryByParentCategoryIdAPIURL,
+					category
+				)
+			: await CategoryService.createCategory(
+					categoryByVocabularyIdAPIURL,
+					category
+				);
+
+		if (error) {
 			console.error(error);
 
 			displaySystemErrorToast();
@@ -207,7 +271,9 @@ const EditCategoryPage = ({
 				locales={locales}
 				nameInputError={nameInputError}
 				setCategory={setCategory}
+				setCategoryPermissions={setCategoryPermissions}
 				setNameInputError={setNameInputError}
+				showPermissions={isCreateNew}
 				spritemap={spritemap}
 			/>
 		);
@@ -217,7 +283,11 @@ const EditCategoryPage = ({
 		);
 		mainContentMap.set(
 			NAVIGATION_TABS.PROPERTIES,
-			<div>Properties Tab Placeholder Content</div>
+			<EditCategoryPropertiesTab
+				category={category}
+				setCategory={setCategory}
+				spritemap={spritemap}
+			/>
 		);
 
 		return mainContentMap;
@@ -235,7 +305,9 @@ const EditCategoryPage = ({
 					showSaveAndAddAnotherButton={isCreateNew}
 					title={
 						isCreateNew
-							? Liferay.Language.get('new-category')
+							? parentCategoryId
+								? Liferay.Language.get('new-subcategory')
+								: Liferay.Language.get('new-category')
 							: sub(Liferay.Language.get('edit-x'), title)
 					}
 				/>

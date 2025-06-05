@@ -21,11 +21,11 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletRequest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,7 +65,7 @@ public class BlogsItemSelectorViewDisplayContextTest {
 	@Test
 	public void testShowDragAndDropZoneWithWorkflowEnabled() throws Exception {
 		_workflowDefinitionLinkLocalService.addWorkflowDefinitionLink(
-			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+			null, TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
 			_group.getGroupId(), BlogsEntry.class.getName(), 0, 0,
 			"Single Approver", 1);
 
@@ -76,13 +76,13 @@ public class BlogsItemSelectorViewDisplayContextTest {
 				_getThemeDisplay()));
 	}
 
-	@FeatureFlags("LPD-29516")
+	@FeatureFlag("LPD-29516")
 	@Test
 	public void testShowDragAndDropZoneWithWorkflowEnabledAndFeatureFlagEnabled()
 		throws Exception {
 
 		_workflowDefinitionLinkLocalService.addWorkflowDefinitionLink(
-			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+			null, TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
 			_group.getGroupId(), BlogsEntry.class.getName(), 0, 0,
 			"Single Approver", 1);
 

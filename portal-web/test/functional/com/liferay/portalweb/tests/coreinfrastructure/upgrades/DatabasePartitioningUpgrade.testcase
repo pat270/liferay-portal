@@ -66,6 +66,27 @@ definition {
 	}
 
 	@priority = 5
+	test CanAutoUpgradePartitionedDatabase7413U33WithExhaustedPool {
+		property custom.properties = "jdbc.default.maximumPoolSize=10${line.separator}jdbc.default.minimumIdle=5${line.separator}virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com,www.baker.com";
+		property data.archive.type = "data-archive-portal-partition";
+		property database.auto.upgrade.enabled = "true";
+		property portal.version = "7.4.13.u33";
+		property skip.upgrade-legacy-database = "true";
+		property test.assert.warning.exceptions = "false";
+
+		AssertConsoleTextPresent(value1 = "The database is close to reaching");
+
+		User.loginPG(
+			nodePort = 8080,
+			password = PropsUtil.get("default.admin.password"),
+			userEmailAddress = "test@liferay.com");
+
+		SearchAdministration.executeReindex();
+
+		ValidateDatabasePartitioningUpgrade.viewUpgradeDBPartition();
+	}
+
+	@priority = 5
 	test CanUpgradeLargePartitionedDatabase7413 {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
 		property custom.startup.timeout = "600";
@@ -131,7 +152,7 @@ definition {
 	}
 
 	@priority = 4
-	test ExtractAndAddDBPartitionWithUpgradedDB {
+	test ExportAndAddDBPartitionWithUpgradedDB {
 		property app.server.bundles.size = "1";
 		property cluster.enabled = "true";
 		property custom.properties = "feature.flag.LPD-11342=true${line.separator}virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com,www.baker.com";
@@ -155,10 +176,10 @@ definition {
 			SignOut.signOutOfSpecificURL(url = "http://www.baker.com:8080");
 		}
 
-		task ("Extract www.able.com and www.baker.com partitions and shutdown the server") {
-			DBPartition.extractDBPartition(partitionCompanyId = 42638);
+		task ("Export www.able.com and www.baker.com partitions and shutdown the server") {
+			DBPartition.exportDBPartition(partitionCompanyId = 42638);
 
-			DBPartition.extractDBPartition(partitionCompanyId = 44913);
+			DBPartition.exportDBPartition(partitionCompanyId = 44913);
 
 			Clustering.shutdownSpecificServer(nodePort = 8080);
 
@@ -192,10 +213,10 @@ definition {
 			}
 		}
 
-		task ("Add previously extracted partitions into new database") {
-			DBPartition.insertDBPartition(partitionCompanyId = 42638);
+		task ("Add previously exported partitions into new database") {
+			DBPartition.importDBPartition(partitionCompanyId = 42638);
 
-			DBPartition.insertDBPartition(partitionCompanyId = 44913);
+			DBPartition.importDBPartition(partitionCompanyId = 44913);
 		}
 
 		task ("Ensure that portal main functionalities work correctly") {

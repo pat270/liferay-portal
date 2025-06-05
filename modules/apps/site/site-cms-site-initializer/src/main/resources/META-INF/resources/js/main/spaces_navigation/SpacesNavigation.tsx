@@ -7,30 +7,40 @@ import {ClayButtonWithIcon} from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
 import ClayPanel from '@clayui/panel';
-import {sub} from 'frontend-js-web';
+import {navigate, sub} from 'frontend-js-web';
 import React from 'react';
 
-import SpaceSticker from '../components/SpaceSticker';
+import SpaceSticker, {LogoColor} from '../components/SpaceSticker';
 
 export interface AssetLibrary {
 	id: number;
 	name: string;
+	settings?: {
+		logoColor: string;
+	};
 	url: string;
 }
 
 interface SpacesNavigationProps {
+	allSpacesURL: string;
 	assetLibraries: AssetLibrary[];
 	assetLibrariesCount: number;
+	newSpaceURL: string;
 	showAddButton: boolean;
 }
 
 const SpacesNavigation: React.FC<SpacesNavigationProps> = ({
+	allSpacesURL,
 	assetLibraries,
 	assetLibrariesCount,
+	newSpaceURL,
 	showAddButton,
 }) => {
 	const onAddButtonClick = (event: any) => {
 		event.preventDefault();
+
+		navigate(newSpaceURL.toString());
+
 		event.stopPropagation();
 	};
 
@@ -48,7 +58,7 @@ const SpacesNavigation: React.FC<SpacesNavigationProps> = ({
 								aria-label={Liferay.Language.get('add-space')}
 								displayType="secondary"
 								onClick={onAddButtonClick}
-								size="sm"
+								size="xs"
 								symbol="plus"
 								title={Liferay.Language.get('add-space')}
 								type="button"
@@ -67,17 +77,21 @@ const SpacesNavigation: React.FC<SpacesNavigationProps> = ({
 								className="nav-link"
 								href={assetLibrary.url}
 							>
-								<SpaceSticker name={assetLibrary.name} />
+								<SpaceSticker
+									displayType={
+										assetLibrary.settings
+											?.logoColor as LogoColor
+									}
+									name={assetLibrary.name}
+									size="sm"
+								/>
 							</ClayLink>
 						</li>
 					))}
 
 					<li className="nav-item" role="none">
-						<ClayLink
-							className="nav-link"
-							href="/web/cms/all-spaces"
-						>
-							<span className="mr-2 sticker">
+						<ClayLink className="nav-link" href={allSpacesURL}>
+							<span className="mr-2 sticker sticker-sm">
 								<ClayIcon symbol="box-container" />
 							</span>
 

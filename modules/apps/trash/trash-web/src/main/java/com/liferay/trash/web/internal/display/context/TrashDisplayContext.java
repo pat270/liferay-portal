@@ -51,13 +51,13 @@ import com.liferay.trash.web.internal.search.EntrySearchTerms;
 import com.liferay.trash.web.internal.servlet.taglib.util.TrashEntryActionDropdownItemsProvider;
 import com.liferay.trash.web.internal.servlet.taglib.util.TrashViewContentActionDropdownItemsProvider;
 
+import jakarta.portlet.PortletURL;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import javax.portlet.PortletURL;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Provides utility methods moved from the Recycle Bin portlet's JSP files to
@@ -567,35 +567,19 @@ public class TrashDisplayContext {
 	}
 
 	public boolean isDescriptiveView() {
-		if (Objects.equals(getDisplayStyle(), "descriptive")) {
-			return true;
-		}
-
-		return false;
+		return Objects.equals(getDisplayStyle(), "descriptive");
 	}
 
 	public boolean isIconView() {
-		if (Objects.equals(getDisplayStyle(), "icon")) {
-			return true;
-		}
-
-		return false;
+		return Objects.equals(getDisplayStyle(), "icon");
 	}
 
 	public boolean isListView() {
-		if (Objects.equals(getDisplayStyle(), "list")) {
-			return true;
-		}
-
-		return false;
+		return Objects.equals(getDisplayStyle(), "list");
 	}
 
 	public boolean isSearch() {
-		if (Validator.isNotNull(getKeywords())) {
-			return true;
-		}
-
-		return false;
+		return Validator.isNotNull(getKeywords());
 	}
 
 	private List<BreadcrumbEntry> _getBreadcrumbEntries(

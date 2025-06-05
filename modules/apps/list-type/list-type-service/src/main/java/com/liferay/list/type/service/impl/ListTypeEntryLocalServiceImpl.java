@@ -9,7 +9,10 @@ import com.liferay.list.type.exception.DuplicateListTypeEntryException;
 import com.liferay.list.type.exception.DuplicateListTypeEntryExternalReferenceCodeException;
 import com.liferay.list.type.exception.ListTypeEntryKeyException;
 import com.liferay.list.type.exception.ListTypeEntryNameException;
+import com.liferay.list.type.exception.ListTypeEntrySystemException;
+import com.liferay.list.type.exception.NoSuchListTypeEntryException;
 import com.liferay.list.type.internal.definition.util.ListTypeDefinitionUtil;
+import com.liferay.list.type.internal.entry.util.ListTypeEntryUtil;
 import com.liferay.list.type.model.ListTypeDefinition;
 import com.liferay.list.type.model.ListTypeEntry;
 import com.liferay.list.type.service.base.ListTypeEntryLocalServiceBaseImpl;
@@ -17,6 +20,8 @@ import com.liferay.list.type.service.persistence.ListTypeDefinitionPersistence;
 import com.liferay.object.definition.util.ObjectDefinitionUtil;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.lazy.referencing.LazyReferencingThreadLocal;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
@@ -24,6 +29,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.List;
 import java.util.Locale;
@@ -46,16 +52,35 @@ public class ListTypeEntryLocalServiceImpl
 	@Override
 	public ListTypeEntry addListTypeEntry(
 			String externalReferenceCode, long userId,
-			long listTypeDefinitionId, String key, Map<Locale, String> nameMap)
+			long listTypeDefinitionId, String key, Map<Locale, String> nameMap,
+			boolean system)
 		throws PortalException {
 
 		ListTypeDefinition listTypeDefinition =
 			_listTypeDefinitionPersistence.findByPrimaryKey(
 				listTypeDefinitionId);
 
-		ListTypeDefinitionUtil.validateInvokerBundle(
-			"Only allowed bundles can add system list type entries",
-			listTypeDefinition.isSystem());
+		if (FeatureFlagManagerUtil.isEnabled(
+				listTypeDefinition.getCompanyId(), "LPD-24055")) {
+
+			if (listTypeDefinition.isSystem()) {
+				ListTypeEntryUtil.validateInvokerBundle(
+					"Only allowed bundles can add system list type entries",
+					system);
+			}
+			else if (system) {
+				throw new ListTypeEntrySystemException(
+					"System list type entries cannot be added to custom list " +
+						"type definitions");
+			}
+		}
+		else {
+			ListTypeDefinitionUtil.validateInvokerBundle(
+				"Only allowed bundles can add system list type entries",
+				listTypeDefinition.isSystem());
+
+			system = listTypeDefinition.isSystem();
+		}
 
 		User user = _userLocalService.getUser(userId);
 
@@ -66,18 +91,9 @@ public class ListTypeEntryLocalServiceImpl
 		_validateKey(listTypeDefinitionId, key);
 		_validateName(nameMap);
 
-		ListTypeEntry listTypeEntry = listTypeEntryPersistence.create(
-			counterLocalService.increment());
-
-		listTypeEntry.setExternalReferenceCode(externalReferenceCode);
-		listTypeEntry.setCompanyId(user.getCompanyId());
-		listTypeEntry.setUserId(user.getUserId());
-		listTypeEntry.setUserName(user.getFullName());
-		listTypeEntry.setListTypeDefinitionId(listTypeDefinitionId);
-		listTypeEntry.setKey(key);
-		listTypeEntry.setNameMap(nameMap);
-
-		return listTypeEntryPersistence.update(listTypeEntry);
+		return _addListTypeEntry(
+			externalReferenceCode, user, listTypeDefinitionId, key, nameMap,
+			WorkflowConstants.STATUS_APPROVED, system);
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -85,13 +101,22 @@ public class ListTypeEntryLocalServiceImpl
 	public ListTypeEntry deleteListTypeEntry(ListTypeEntry listTypeEntry)
 		throws PortalException {
 
-		ListTypeDefinition listTypeDefinition =
-			_listTypeDefinitionPersistence.findByPrimaryKey(
-				listTypeEntry.getListTypeDefinitionId());
+		if (FeatureFlagManagerUtil.isEnabled(
+				listTypeEntry.getCompanyId(), "LPD-24055")) {
 
-		ListTypeDefinitionUtil.validateInvokerBundle(
-			"Only allowed bundles can delete system list type entries",
-			listTypeDefinition.isSystem());
+			ListTypeEntryUtil.validateInvokerBundle(
+				"Only allowed bundles can delete system list type entries",
+				listTypeEntry.isSystem());
+		}
+		else {
+			ListTypeDefinition listTypeDefinition =
+				_listTypeDefinitionPersistence.findByPrimaryKey(
+					listTypeEntry.getListTypeDefinitionId());
+
+			ListTypeDefinitionUtil.validateInvokerBundle(
+				"Only allowed bundles can delete system list type entries",
+				listTypeDefinition.isSystem());
+		}
 
 		return listTypeEntryPersistence.remove(listTypeEntry);
 	}
@@ -191,6 +216,27 @@ public class ListTypeEntryLocalServiceImpl
 			externalReferenceCode, companyId, listTypeDefinitionId);
 	}
 
+	@Override
+	public ListTypeEntry getOrAddIncompleteListTypeEntry(
+			long userId, long listTypeDefinitionId, String key)
+		throws PortalException {
+
+		ListTypeEntry listTypeEntry = fetchListTypeEntry(
+			listTypeDefinitionId, key);
+
+		if (listTypeEntry != null) {
+			return listTypeEntry;
+		}
+
+		if (!LazyReferencingThreadLocal.isEnabled()) {
+			throw new NoSuchListTypeEntryException();
+		}
+
+		return _addListTypeEntry(
+			null, _userLocalService.getUser(userId), listTypeDefinitionId, key,
+			null, WorkflowConstants.STATUS_INCOMPLETE, false);
+	}
+
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public ListTypeEntry updateListTypeEntry(
@@ -205,12 +251,25 @@ public class ListTypeEntryLocalServiceImpl
 
 		listTypeEntry.setNameMap(nameMap);
 
-		ListTypeDefinition listTypeDefinition =
-			_listTypeDefinitionPersistence.findByPrimaryKey(
-				listTypeEntry.getListTypeDefinitionId());
+		if (listTypeEntry.getStatus() == WorkflowConstants.STATUS_INCOMPLETE) {
+			listTypeEntry.setStatus(WorkflowConstants.STATUS_APPROVED);
+		}
 
-		if (listTypeDefinition.isSystem() &&
-			!ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+		if (!FeatureFlagManagerUtil.isEnabled(
+				listTypeEntry.getCompanyId(), "LPD-24055")) {
+
+			ListTypeDefinition listTypeDefinition =
+				_listTypeDefinitionPersistence.findByPrimaryKey(
+					listTypeEntry.getListTypeDefinitionId());
+
+			if (listTypeDefinition.isSystem() &&
+				!ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+
+				return listTypeEntryPersistence.update(listTypeEntry);
+			}
+		}
+		else if (listTypeEntry.isSystem() &&
+				 !ObjectDefinitionUtil.isInvokerBundleAllowed()) {
 
 			return listTypeEntryPersistence.update(listTypeEntry);
 		}
@@ -235,6 +294,26 @@ public class ListTypeEntryLocalServiceImpl
 
 			listTypeEntryPersistence.update(listTypeEntry);
 		}
+	}
+
+	private ListTypeEntry _addListTypeEntry(
+		String externalReferenceCode, User user, long listTypeDefinitionId,
+		String key, Map<Locale, String> nameMap, int status, boolean system) {
+
+		ListTypeEntry listTypeEntry = listTypeEntryPersistence.create(
+			counterLocalService.increment());
+
+		listTypeEntry.setExternalReferenceCode(externalReferenceCode);
+		listTypeEntry.setCompanyId(user.getCompanyId());
+		listTypeEntry.setUserId(user.getUserId());
+		listTypeEntry.setUserName(user.getFullName());
+		listTypeEntry.setListTypeDefinitionId(listTypeDefinitionId);
+		listTypeEntry.setKey(key);
+		listTypeEntry.setNameMap(nameMap);
+		listTypeEntry.setSystem(system);
+		listTypeEntry.setStatus(status);
+
+		return listTypeEntryPersistence.update(listTypeEntry);
 	}
 
 	private void _validateExternalReferenceCode(

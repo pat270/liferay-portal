@@ -8,21 +8,27 @@ package com.liferay.marketplace;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.pagination.Page;
 import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 
 import java.net.URL;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,36 +49,43 @@ public class MarketplaceCommandLineRunner
 		_processInProgressTrials();
 
 		_processOnHoldTrials();
+
+		_processPendingOrders();
+
+		_processMarketplaceProjects();
 	}
 
-	@Override
-	protected String getWebClientBaseURL() {
-		return _liferayMarketplaceEtcSpringBootURL.toString();
-	}
-
-	private JSONObject _getAvailabilityJSONObject() throws Exception {
+	private JSONObject _getAvailabilityJSONObject() {
 		return new JSONObject(
 			get(
 				_liferayOAuth2AccessTokenManager.getAuthorization(
 					_liferayOAuthApplicationExternalReferenceCodes),
-				"/trial/availability"));
+				createURI(
+					_liferayMarketplaceEtcSpringBootURL,
+					"/trial/availability")));
 	}
 
-	private Page<Order> _getOrdersPage(int orderStatus) throws Exception {
-		OrderResource orderResource = OrderResource.builder(
+	private OrderResource _getOrderResource() throws Exception {
+		return OrderResource.builder(
 		).endpoint(
 			new URL(_lxcDXPServerProtocol + "://" + _lxcDXPMainDomain)
 		).header(
 			HttpHeaders.AUTHORIZATION,
 			_liferayOAuth2AccessTokenManager.getAuthorization(
 				_liferayOAuthApplicationExternalReferenceCodes)
+		).parameters(
+			"nestedFields", "account,orderItems"
 		).build();
+	}
+
+	private Page<Order> _getOrdersPage(
+			String filterString, int page, int pageSize)
+		throws Exception {
+
+		OrderResource orderResource = _getOrderResource();
 
 		return orderResource.getOrdersPage(
-			"",
-			"orderStatus/any(x:(x eq " + orderStatus +
-				")) and orderTypeExternalReferenceCode eq 'SOLUTIONS7'",
-			Pagination.of(-1, -1), "");
+			"", filterString, Pagination.of(page, pageSize), "");
 	}
 
 	private void _postTrialExpire(long orderId) throws Exception {
@@ -82,7 +95,9 @@ public class MarketplaceCommandLineRunner
 				HttpHeaders.AUTHORIZATION,
 				_liferayOAuth2AccessTokenManager.getAuthorization(
 					_liferayOAuthApplicationExternalReferenceCodes)),
-			"/trial/expire/" + orderId);
+			createURI(
+				_liferayMarketplaceEtcSpringBootURL, "/trial/expire/",
+				orderId));
 	}
 
 	private void _postTrialNotifyEnd(long orderId) throws Exception {
@@ -92,7 +107,9 @@ public class MarketplaceCommandLineRunner
 				HttpHeaders.AUTHORIZATION,
 				_liferayOAuth2AccessTokenManager.getAuthorization(
 					_liferayOAuthApplicationExternalReferenceCodes)),
-			"/trial/notify-end/" + orderId);
+			createURI(
+				_liferayMarketplaceEtcSpringBootURL, "/trial/notify-end/",
+				orderId));
 	}
 
 	private void _postTrialProvisioning(Order order) throws Exception {
@@ -111,11 +128,23 @@ public class MarketplaceCommandLineRunner
 				HttpHeaders.AUTHORIZATION,
 				_liferayOAuth2AccessTokenManager.getAuthorization(
 					_liferayOAuthApplicationExternalReferenceCodes)),
-			"/trial/provisioning");
+			createURI(
+				_liferayMarketplaceEtcSpringBootURL, "/trial/provisioning"));
 	}
 
 	private void _processInProgressTrials() throws Exception {
-		Page<Order> page = _getOrdersPage(_ORDER_STATUS_IN_PROGRESS);
+		Page<Order> page = _getOrdersPage(
+			"orderStatus/any(x:(x eq " + _ORDER_STATUS_IN_PROGRESS +
+				")) and orderTypeExternalReferenceCode eq 'SOLUTIONS7'",
+			-1, -1);
+
+		if (page.getTotalCount() == 0) {
+			if (_log.isInfoEnabled()) {
+				_log.info("There are no in progress trials");
+			}
+
+			return;
+		}
 
 		for (Order order : page.getItems()) {
 			try {
@@ -161,12 +190,123 @@ public class MarketplaceCommandLineRunner
 		}
 	}
 
+	private void _processMarketplaceProjects() throws Exception {
+		JSONObject jsonObject = new JSONObject();
+
+		Set<String> accountExternalReferenceCodes = new HashSet<>();
+		JSONArray ordersJSONArray = new JSONArray();
+		ZonedDateTime zonedDateTime = LocalDate.of(
+			2025, 1, 1
+		).atStartOfDay(
+			ZoneOffset.UTC
+		);
+
+		for (int i = 1;; i++) {
+			Page<Order> page = _getOrdersPage(
+				"createDate gt " + zonedDateTime, i, 200);
+
+			for (Order order : page.getItems()) {
+				String accountExternalReferenceCode =
+					order.getAccountExternalReferenceCode();
+
+				if (!accountExternalReferenceCode.startsWith("KOR-")) {
+					continue;
+				}
+
+				String appName = "";
+
+				for (OrderItem orderItem : order.getOrderItems()) {
+					appName = orderItem.getName(
+					).get(
+						"en_US"
+					);
+
+					break;
+				}
+
+				accountExternalReferenceCodes.add(accountExternalReferenceCode);
+
+				ordersJSONArray.put(
+					new JSONObject(
+					).put(
+						"accountName",
+						order.getAccount(
+						).getName()
+					).put(
+						"accountExternalReferenceCode",
+						accountExternalReferenceCode
+					).put(
+						"appName", appName
+					).put(
+						"creatorEmailAddress", order.getCreatorEmailAddress()
+					).put(
+						"id", order.getId()
+					).put(
+						"orderTypeExternalReferenceCode",
+						order.getOrderTypeExternalReferenceCode()
+					));
+			}
+
+			if (i > page.getLastPage()) {
+				break;
+			}
+		}
+
+		for (String accountExternalReferenceCode :
+				accountExternalReferenceCodes) {
+
+			JSONArray filteredOrdersJSONArray = new JSONArray();
+
+			for (int i = 0; i < ordersJSONArray.length(); i++) {
+				JSONObject orderJSONObject = ordersJSONArray.getJSONObject(i);
+
+				if (accountExternalReferenceCode.equals(
+						orderJSONObject.optString(
+							"accountExternalReferenceCode"))) {
+
+					filteredOrdersJSONArray.put(orderJSONObject);
+				}
+			}
+
+			jsonObject.put(
+				accountExternalReferenceCode,
+				new JSONObject(
+				).put(
+					"accountName",
+					filteredOrdersJSONArray.getJSONObject(
+						0
+					).optString(
+						"accountName"
+					)
+				).put(
+					"orders", filteredOrdersJSONArray
+				));
+		}
+
+		post(
+			_liferayOAuth2AccessTokenManager.getAuthorization(
+				_liferayOAuthApplicationExternalReferenceCodes),
+			jsonObject.toString(),
+			createURI(
+				_liferayMarketplaceEtcSpringBootURL,
+				"/marketplace/projects/kpi"));
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"There are " + accountExternalReferenceCodes.size() +
+					" projects with Marketplace apps");
+		}
+	}
+
 	private void _processOnHoldTrials() throws Exception {
-		Page<Order> page = _getOrdersPage(_ORDER_STATUS_ON_HOLD);
+		Page<Order> page = _getOrdersPage(
+			"orderStatus/any(x:(x eq " + _ORDER_STATUS_ON_HOLD +
+				")) and orderTypeExternalReferenceCode eq 'SOLUTIONS7'",
+			-1, -1);
 
 		if (page.getTotalCount() == 0) {
 			if (_log.isInfoEnabled()) {
-				_log.info("There are no on hold orders");
+				_log.info("There are no on hold trials");
 			}
 
 			return;
@@ -212,9 +352,60 @@ public class MarketplaceCommandLineRunner
 		}
 	}
 
+	private void _processPendingOrders() throws Exception {
+		Page<Order> page = _getOrdersPage(
+			"orderStatus/any(x:(x eq " + _ORDER_STATUS_PENDING +
+				")) and orderTypeExternalReferenceCode ne 'SOLUTIONS7'",
+			-1, -1);
+
+		if (page.getTotalCount() == 0) {
+			if (_log.isInfoEnabled()) {
+				_log.info("There are no pending orders");
+			}
+
+			return;
+		}
+
+		for (Order order : page.getItems()) {
+			if (order.getTotalAmount() > 0) {
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						"Paid order " + order.getId() +
+							" needs to be manually reviewed");
+				}
+
+				continue;
+			}
+
+			if (_log.isInfoEnabled()) {
+				_log.info("Completing free order " + order.getId());
+			}
+
+			_updateOrder(order.getId(), _ORDER_STATUS_PROCESSING);
+
+			_updateOrder(order.getId(), _ORDER_STATUS_COMPLETED);
+		}
+	}
+
+	private void _updateOrder(long orderId, int orderStatus) throws Exception {
+		OrderResource orderResource = _getOrderResource();
+
+		Order order = new Order();
+
+		order.setOrderStatus(() -> orderStatus);
+
+		orderResource.patchOrder(orderId, order);
+	}
+
+	private static final int _ORDER_STATUS_COMPLETED = 0;
+
 	private static final int _ORDER_STATUS_IN_PROGRESS = 6;
 
 	private static final int _ORDER_STATUS_ON_HOLD = 20;
+
+	private static final int _ORDER_STATUS_PENDING = 1;
+
+	private static final int _ORDER_STATUS_PROCESSING = 10;
 
 	private static final Log _log = LogFactory.getLog(
 		MarketplaceCommandLineRunner.class);

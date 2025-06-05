@@ -25,14 +25,43 @@ export class OrganizationManagementPage {
 	readonly addUserNode: Locator;
 	readonly chart: Locator;
 	readonly collapseAllButton: Locator;
+	readonly deleteItem: Locator;
+	readonly discoveredAccountNode: (accountName: string) => Locator;
+	readonly discoveredOrganizationNode: (organizationName: string) => Locator;
+	readonly editItem: Locator;
 	readonly infoText: (text: string) => Locator;
 	readonly menuButton: (container: Locator) => Locator;
+	readonly noRootOrganizationsMessage: Locator;
 	readonly organizationNode: (organizationName: string) => Locator;
 	readonly page: Page;
 	readonly removeItem: Locator;
 	readonly searchedEntry: (name: string) => Locator;
 	readonly searchInput: Locator;
+	readonly selectImage: Locator;
+	readonly selectImageDoneButton: Locator;
+	readonly sidebarAccountIDField: Locator;
+	readonly sidebarAccountNameField: Locator;
+	readonly sidebarChangeImageButton: Locator;
+	readonly sidebarDescriptionField: Locator;
+	readonly sidebarEmailAddressField: Locator;
+	readonly sidebarExternalReferenceCodeField: Locator;
+	readonly sidebarFirstNameField: Locator;
+	readonly sidebarJobTitleField: Locator;
+	readonly sidebarLanguageField: Locator;
+	readonly sidebarLastNameField: Locator;
+	readonly sidebarMiddleNameField: Locator;
+	readonly sidebarMoreAction: Locator;
+	readonly sidebarPrefixField: Locator;
+	readonly sidebarSaveButton: Locator;
+	readonly sidebarScreenNameField: Locator;
+	readonly sidebarSuffixField: Locator;
+	readonly sidebarTaxIDField: Locator;
+	readonly sidebarTitle: Locator;
+	readonly sidebarTypeField: Locator;
+	readonly sidebarUserIDField: Locator;
+	readonly sidebarValue: (label: string) => Locator;
 	readonly userNode: (userName: string) => Locator;
+	readonly viewItem: Locator;
 
 	constructor(page: Page) {
 		this.addAccountModalName = page.getByLabel('Name');
@@ -61,9 +90,20 @@ export class OrganizationManagementPage {
 			exact: true,
 			name: 'Collapse All',
 		});
+		this.deleteItem = page.getByRole('menuitem', {
+			exact: true,
+			name: 'Delete',
+		});
+		this.editItem = page.getByRole('menuitem', {
+			exact: true,
+			name: 'Edit',
+		});
 		this.infoText = (text) => {
 			return page.getByText(text);
 		};
+		this.noRootOrganizationsMessage = page.getByText(
+			'No root organizations were found'
+		);
 		this.menuButton = (container) => {
 			return container.locator('.node-menu-wrapper');
 		};
@@ -72,6 +112,45 @@ export class OrganizationManagementPage {
 			exact: true,
 			name: 'Remove',
 		});
+		this.selectImage = page
+			.frameLocator('iframe[title="Upload Image"]')
+			.getByLabel('Select Image');
+		this.selectImageDoneButton = page
+			.frameLocator('iframe[title="Upload Image"]')
+			.getByRole('button', {name: 'Done'});
+		this.sidebarAccountIDField = page.getByLabel('Account ID');
+		this.sidebarAccountNameField = page.getByLabel('Account Name');
+		this.sidebarChangeImageButton = page.getByLabel('Change Image');
+		this.sidebarDescriptionField = page.getByLabel('Description');
+		this.sidebarEmailAddressField = page.getByLabel('Email Address');
+		this.sidebarExternalReferenceCodeField = page.getByLabel(
+			'External Reference Code'
+		);
+		this.sidebarFirstNameField = page.getByLabel('First Name');
+		this.sidebarJobTitleField = page.getByLabel('Job Title');
+		this.sidebarLanguageField = page.getByLabel('Language');
+		this.sidebarLastNameField = page.getByLabel('Last Name');
+		this.sidebarMiddleNameField = page.getByLabel('Middle Name');
+		this.sidebarMoreAction = page.getByLabel('More Actions');
+		this.sidebarPrefixField = page.getByLabel('Prefi');
+		this.sidebarSaveButton = page.getByRole('button', {name: 'Save'});
+		this.sidebarScreenNameField = page.getByLabel('Screen Name');
+		this.sidebarSuffixField = page.getByLabel('Suffix');
+		this.sidebarTaxIDField = page.getByLabel('Tax ID');
+		this.sidebarTitle = page.locator('.sidebar-header .component-title');
+		this.sidebarTypeField = page.getByLabel('Type');
+		this.sidebarUserIDField = page.getByLabel('User ID');
+		this.sidebarValue = (label) =>
+			page
+				.locator('.sidebar-dt')
+				.filter({hasText: label})
+				.locator('..')
+				.locator('.sidebar-dd');
+		this.viewItem = page.getByRole('menuitem', {
+			exact: true,
+			name: 'View',
+		});
+
 		this.accountNode = (accountName) => {
 			return this.chart
 				.locator('g.chart-item-account')
@@ -87,6 +166,16 @@ export class OrganizationManagementPage {
 		this.addUserNode = this.chart
 			.locator('g.actions-wrapper.menu-open')
 			.locator('g.add-action-wrapper.user');
+		this.discoveredAccountNode = (accountName) => {
+			return this.chart
+				.locator('g.chart-item-account.discovered')
+				.filter({hasText: accountName});
+		};
+		this.discoveredOrganizationNode = (organizationName) => {
+			return this.chart
+				.locator('g.chart-item-organization.discovered')
+				.filter({hasText: organizationName});
+		};
 		this.organizationNode = (organizationName) => {
 			return this.chart
 				.locator('g.chart-item-organization')

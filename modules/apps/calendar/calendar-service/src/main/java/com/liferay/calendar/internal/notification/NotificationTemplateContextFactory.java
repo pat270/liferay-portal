@@ -32,11 +32,12 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CalendarUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import jakarta.portlet.WindowState;
 
 import java.io.Serializable;
 
@@ -45,8 +46,6 @@ import java.text.Format;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import javax.portlet.WindowState;
 
 /**
  * @author Eduardo Lundgren
@@ -119,8 +118,7 @@ public class NotificationTemplateContextFactory {
 							calendarBooking.getCalendarBookingId(),
 							CalendarUtil.ICAL_EXTENSION);
 
-					return FileUtil.createTempFile(
-						calendarBookingString.getBytes());
+					return calendarBookingString.getBytes();
 				}
 			).put(
 				"location", calendarBooking.getLocation()
@@ -133,7 +131,8 @@ public class NotificationTemplateContextFactory {
 				"portletName",
 				LanguageUtil.get(
 					user.getLocale(),
-					"javax.portlet.title.".concat(CalendarPortletKeys.CALENDAR))
+					"jakarta.portlet.title.".concat(
+						CalendarPortletKeys.CALENDAR))
 			).put(
 				"siteName",
 				() -> {

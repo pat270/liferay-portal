@@ -13,10 +13,12 @@ module.exports = {
 	symbols: {
 		ckeditor5: [
 			'Alignment',
+			'BalloonEditor',
 			'BlockQuote',
 			'Bold',
 			'ButtonView',
 			'ClassicEditor',
+			'Command',
 			'EditorConfig',
 			'Essentials',
 			'Font',

@@ -24,7 +24,9 @@ const backendPageTest = test.extend<BackendPage>({
 		const backendContext = await browser.newContext();
 		const backendPage = await backendContext.newPage();
 
-		await performLoginViaApi(backendPage, 'test');
+		await page.bringToFront();
+
+		await performLoginViaApi({page: backendPage, screenName: 'test'});
 
 		try {
 			await use(backendPage);

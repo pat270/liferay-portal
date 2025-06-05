@@ -13,9 +13,7 @@ import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.constants.ObjectFolderConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectFolder;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -24,15 +22,15 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -46,7 +44,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 /**
  * @author Mikel Lorza
  */
-@FeatureFlags("LPD-17564")
+@FeatureFlag("LPD-17564")
 @RunWith(Arquillian.class)
 @Sync
 public class ContentsSectionDisplayContextTest
@@ -58,22 +56,6 @@ public class ContentsSectionDisplayContextTest
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
-
-	@Test
-	public void testGetAPIURL() throws Exception {
-		String apiURL = _getAPIURL();
-
-		Assert.assertTrue(apiURL.contains("emptySearch=true"));
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append("filter=objectFolderExternalReferenceCode in ('");
-		sb.append(
-			StringUtil.merge(_getObjectFolderExternalReferenceCodes(), "','"));
-		sb.append("')");
-
-		Assert.assertTrue(apiURL.contains(sb.toString()));
-	}
 
 	@Ignore
 	@Test
@@ -144,17 +126,23 @@ public class ContentsSectionDisplayContextTest
 			_getFDSActionDropdownItems();
 
 		Assert.assertEquals(
-			fdsActionDropdownItems.toString(), 3,
+			fdsActionDropdownItems.toString(), 5,
 			fdsActionDropdownItems.size());
 
 		_assertFDSActionDropdownItem(
-			fdsActionDropdownItems.get(0), "pencil", "edit", "edit", "get",
-			"item");
+			fdsActionDropdownItems.get(0), "view", "actionLinkFolder",
+			"view-folder", "get", "item");
 		_assertFDSActionDropdownItem(
-			fdsActionDropdownItems.get(1), "password-policies", "permissions",
+			fdsActionDropdownItems.get(1), "pencil", "editFolder", "edit",
+			"get", "item");
+		_assertFDSActionDropdownItem(
+			fdsActionDropdownItems.get(2), "pencil", "actionLink", "edit",
+			"get", "item");
+		_assertFDSActionDropdownItem(
+			fdsActionDropdownItems.get(3), "password-policies", "permissions",
 			"permissions", "get", "item");
 		_assertFDSActionDropdownItem(
-			fdsActionDropdownItems.get(2), "trash", "delete", "delete",
+			fdsActionDropdownItems.get(4), "trash", "delete", "delete",
 			"delete", "item");
 	}
 
@@ -173,12 +161,6 @@ public class ContentsSectionDisplayContextTest
 		Assert.assertEquals(icon, fdsActionDropdownItem.get("icon"));
 		Assert.assertEquals(label, fdsActionDropdownItem.get("label"));
 		Assert.assertEquals(type, fdsActionDropdownItem.get("type"));
-	}
-
-	private String _getAPIURL() throws Exception {
-		return ReflectionTestUtil.invoke(
-			_getContentsSectionDisplayContext(getMockHttpServletRequest()),
-			"getAPIURL", new Class<?>[0]);
 	}
 
 	private Object _getContentsSectionDisplayContext(
@@ -203,12 +185,6 @@ public class ContentsSectionDisplayContextTest
 		return ReflectionTestUtil.invoke(
 			_getContentsSectionDisplayContext(getMockHttpServletRequest()),
 			"getFDSActionDropdownItems", new Class<?>[0]);
-	}
-
-	private String[] _getObjectFolderExternalReferenceCodes() throws Exception {
-		return ReflectionTestUtil.invoke(
-			_getContentsSectionDisplayContext(getMockHttpServletRequest()),
-			"getObjectFolderExternalReferenceCodes", new Class<?>[0]);
 	}
 
 	@Inject(

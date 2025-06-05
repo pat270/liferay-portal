@@ -3,29 +3,49 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
-import {useMemo} from 'react';
+import {useMemo, useState} from 'react';
 import {Link, Outlet} from 'react-router-dom';
 
 import AppPublish from '../../../../components/AppPublish';
+import {Checkbox} from '../../../../components/Checkbox/Checkbox';
+import ExternalLink from '../../../../components/ExternalLink';
 import Modal from '../../../../components/Modal';
 import {useNewAppContext} from '../../../../context/NewAppContext';
 import {ProductWorkflowStatusCode} from '../../../../enums/Product';
 import {useAccount} from '../../../../hooks/data/useAccounts';
 import i18n from '../../../../i18n';
+import usePublishAppSubmission from '../../hooks/usePublishAppSubmission';
 import usePublishHeader from '../../hooks/usePublishHeader';
 import usePublishNavigation from '../../hooks/usePublishNavigation';
 import {APP_FLOW_ITEMS} from './constants';
 
 import './PublishAppOutlet.scss';
-import usePublishAppSubmission from '../../hooks/usePublishAppSubmission';
+
+type Context = ReturnType<typeof useNewAppContext>[0];
+
+const getFlowItems = (context: Context) =>
+	APP_FLOW_ITEMS.filter((item) => item.visible(context));
+
+const isRequiredDraftFormFilled = (context: Context) =>
+	APP_FLOW_ITEMS.filter((item) => item.saveAsDraftRequired).every(
+		(item) => item.parseSchema && item.parseSchema(context).success
+	);
 
 const PublishAppOutlet = () => {
 	usePublishHeader();
 
-	const {data: account} = useAccount();
+	const [checkedUserAgreement, setCheckedUserAgreement] = useState(false);
 	const [context, dispatch] = useNewAppContext();
+	const {data: account} = useAccount();
+	const {observer, onOpenChange, open} = useModal();
+	const {onSave, onSaveAsDraft} = usePublishAppSubmission(context, dispatch);
+	const onExitModal = useModal();
+	const isEditingApp =
+		context?._product &&
+		context._product.productStatus === ProductWorkflowStatusCode.APPROVED;
 
 	const {
 		activeIndex,
@@ -35,12 +55,13 @@ const PublishAppOutlet = () => {
 		onClickPrevious,
 		onExit,
 		steps,
-	} = usePublishNavigation({exitLink: '/', flowItems: APP_FLOW_ITEMS});
+	} = usePublishNavigation({
+		exitLink: '/',
+		flowItems: getFlowItems(context),
+	});
 
-	const {onSave, onSaveAsDraft} = usePublishAppSubmission(context, dispatch);
-
-	const {observer, onOpenChange, open} = useModal();
-	const onExitModal = useModal();
+	const canSaveAsDraft =
+		!context?._product && isRequiredDraftFormFilled(context);
 
 	const parsedSchema = useMemo(() => {
 		const parseSchema = activeRoute?.parseSchema;
@@ -52,13 +73,11 @@ const PublishAppOutlet = () => {
 		return null;
 	}, [activeRoute, context]);
 
-	const isDisabled = parsedSchema ? !parsedSchema.success : false;
+	const isValidSchema = parsedSchema ? !parsedSchema.success : false;
 
-	const isDraft = (status: number) =>
-		status === ProductWorkflowStatusCode.DRAFT;
-
-	const isSaveAsDraft =
-		!context._product || isDraft(context._product.productStatus);
+	if (context.loading) {
+		return null;
+	}
 
 	return (
 		<AppPublish>
@@ -67,26 +86,20 @@ const PublishAppOutlet = () => {
 				accountName={account?.name as string}
 				appImage={context.profile.file?.preview}
 				appName={context.profile.name}
+				appStatus={context._product?.productStatus}
 				display={{
 					preview: true,
-					saveAsDraft: isSaveAsDraft,
-					submit:
-						!!context._product &&
-						!isDraft(context._product.productStatus),
+					saveAsDraft: canSaveAsDraft,
 				}}
 				exitProps={{
 					onClick: () => {
-						isSaveAsDraft
+						canSaveAsDraft
 							? onOpenChange(true)
 							: onExitModal.onOpenChange(true);
 					},
 				}}
-				previewProps={{
-					disabled: false,
-					onClick: () => alert('Preview...'),
-				}}
 				saveAsDraftProps={{
-					disabled: isDisabled,
+					disabled: isValidSchema || !canSaveAsDraft,
 					onClick: onSaveAsDraft,
 				}}
 				submitProps={{
@@ -98,31 +111,51 @@ const PublishAppOutlet = () => {
 				<AppPublish.Sidebar activeIndex={activeIndex} items={steps} />
 
 				<AppPublish.Content>
-					<h1 className="header-title mb-4">{activeRoute.title}</h1>
-					{activeRoute.description}
+					{isEditingApp && activeRoute.alertText && (
+						<ClayAlert displayType="info">
+							{activeRoute.alertText}
+						</ClayAlert>
+					)}
 
-					<details>
-						<pre>
-							{JSON.stringify(
-								(function () {
-									const _context: Partial<typeof context> = {
-										...context,
-									};
+					<h1 className="header-title mb-4">
+						{activeRoute.title(isEditingApp)}
+					</h1>
 
-									delete _context.references;
-									delete _context._product;
-
-									return _context;
-								})(),
-								null,
-								4
-							)}
-						</pre>
-					</details>
+					{activeRoute.description(isEditingApp)}
 
 					<div className="mt-6 new-app-form">
 						<Outlet />
 					</div>
+
+					{isLastStep && (
+						<div className="submit-app-page-agreement">
+							<Checkbox
+								checked={checkedUserAgreement}
+								onChange={() => {
+									setCheckedUserAgreement(
+										!checkedUserAgreement
+									);
+								}}
+							/>
+
+							<span>
+								<span className="submit-app-page-agreement-highlight">
+									{'Attention: this cannot be undone. '}
+								</span>
+								I am aware I cannot edit any data or information
+								regarding this app submission until Liferay
+								completes its review process and I agree with
+								the Liferay Marketplace{' '}
+								<ExternalLink href="https://www.liferay.com/legal/marketplace-terms-of-service">
+									terms
+								</ExternalLink>
+								{' and '}
+								<ExternalLink href="https://www.liferay.com/privacy-policy">
+									privacy
+								</ExternalLink>
+							</span>
+						</div>
+					)}
 
 					<hr className="my-6" />
 
@@ -138,7 +171,11 @@ const PublishAppOutlet = () => {
 						)}
 
 						<ClayButton
-							disabled={isDisabled}
+							disabled={
+								isLastStep
+									? !checkedUserAgreement
+									: isValidSchema
+							}
 							displayType="primary"
 							onClick={() => {
 								if (isLastStep) {
@@ -157,7 +194,11 @@ const PublishAppOutlet = () => {
 			<Modal
 				last={
 					<>
-						<ClayButton displayType="secondary">
+						<ClayButton
+							disabled={isValidSchema || !canSaveAsDraft}
+							displayType="secondary"
+							onClick={() => onSaveAsDraft().then(onExit)}
+						>
 							{i18n.translate('save-as-a-draft-exit')}
 						</ClayButton>
 
@@ -204,5 +245,4 @@ const PublishAppOutlet = () => {
 		</AppPublish>
 	);
 };
-
 export default PublishAppOutlet;

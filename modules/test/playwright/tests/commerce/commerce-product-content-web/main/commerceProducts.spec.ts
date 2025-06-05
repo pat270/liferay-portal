@@ -21,6 +21,7 @@ import {waitForAlert} from '../../../../utils/waitForAlert';
 import getFragmentDefinition from '../../../layout-content-page-editor-web/main/utils/getFragmentDefinition';
 import getPageDefinition from '../../../layout-content-page-editor-web/main/utils/getPageDefinition';
 import getWidgetDefinition from '../../../layout-content-page-editor-web/main/utils/getWidgetDefinition';
+import {miniumSetUp} from '../../utils/commerce';
 
 export const test = mergeTests(
 	applicationsMenuPageTest,
@@ -259,8 +260,6 @@ test('COMMERCE-12809 As a buyer, I want to be able to verify the included and ex
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 			account.id,
 			['test@liferay.com']
@@ -321,8 +320,6 @@ test('COMMERCE-8153 Verify the visibility rules', async ({
 		['test@liferay.com']
 	);
 
-	apiHelpers.data.push({id: account1.id, type: 'account'});
-
 	const account2 = await apiHelpers.headlessAdminUser.postAccount({
 		name: 'Account2',
 		type: 'person',
@@ -332,8 +329,6 @@ test('COMMERCE-8153 Verify the visibility rules', async ({
 		account2.id,
 		['test@liferay.com']
 	);
-
-	apiHelpers.data.push({id: account2.id, type: 'account'});
 
 	const accountGroup = await apiHelpers.headlessAdminUser.postAccountGroup({
 		name: getRandomString(),
@@ -501,8 +496,6 @@ test('LPD-33807 Mapped product add to cart', async ({
 		account.id,
 		['test@liferay.com']
 	);
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const site = await apiHelpers.headlessSite.createSite({
 		name: getRandomString(),
@@ -739,8 +732,6 @@ test('COMMERCE-12805 As a buyer, I want to be able to verify the included and ex
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 			account.id,
 			['test@liferay.com']
@@ -783,7 +774,6 @@ test('LPD-33075 Verify buyers can view the SKU of a product on the product card 
 		name: getRandomString(),
 		type: 'business',
 	});
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const user =
 		await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
@@ -874,8 +864,6 @@ test('LPD-3424 Can click AddToButton button multiple times on Diagram Product Di
 		['test@liferay.com']
 	);
 
-	apiHelpers.data.push({id: account1.id, type: 'account'});
-
 	await apiHelpers.headlessCommerceAdminChannel.postChannel({
 		name: getRandomString(),
 		siteGroupId: site.id,
@@ -954,12 +942,10 @@ test('LPD-37780 Friendly URLs history for products', async ({
 		title: getRandomString(),
 	});
 
-	const account = await apiHelpers.headlessAdminUser.postAccount({
+	await apiHelpers.headlessAdminUser.postAccount({
 		name: getRandomString(),
 		type: 'person',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await apiHelpers.headlessCommerceAdminChannel.postChannel({
 		name: getRandomString(),
@@ -1125,4 +1111,58 @@ test('LPD-39067 Can product media and relation show correct date format', async 
 	verifyDateFormat(
 		await newProductRelationFrameTableModifiedDate.textContent()
 	);
+});
+
+test('LPD-52731 Product shows in catalog after updating Account Group Visibility Filter through Batch API', async ({
+	apiHelpers,
+	applicationsMenuPage,
+	page,
+}) => {
+	const siteName = 'minium-' + getRandomInt();
+
+	const {site} = await miniumSetUp(apiHelpers, siteName);
+
+	const catalogs =
+		await apiHelpers.headlessCommerceAdminCatalog.getCatalogsPage(siteName);
+
+	const product = await apiHelpers.headlessCommerceAdminCatalog.postProduct({
+		catalogId: catalogs.items[0].id,
+		productAccountGroupFilter: true,
+	});
+
+	const accountGroup = await apiHelpers.headlessAdminUser.postAccountGroup({
+		name: getRandomString(),
+	});
+
+	apiHelpers.data.push({id: accountGroup.id, type: 'accountGroup'});
+
+	const account1 = await apiHelpers.headlessAdminUser.postAccount({
+		name: 'Account1',
+		type: 'business',
+	});
+
+	apiHelpers.data.push({id: account1.id, type: 'account'});
+
+	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
+		account1.id,
+		['test@liferay.com']
+	);
+
+	await apiHelpers.headlessAdminUser.assignAccountToAccountGroup(
+		account1.externalReferenceCode,
+		accountGroup.externalReferenceCode
+	);
+
+	await apiHelpers.headlessCommerceAdminCatalog.postProductBatch([
+		{
+			catalogId: catalogs.items[0].id,
+			externalReferenceCode: product.externalReferenceCode,
+			productAccountGroupFilter: true,
+			productAccountGroups: [{accountGroupId: accountGroup.id, id: 0}],
+		},
+	]);
+
+	await applicationsMenuPage.goToSite(site.name);
+
+	await expect(page.getByText(product.name['en_US'])).toBeVisible();
 });

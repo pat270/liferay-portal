@@ -5,21 +5,24 @@
 
 import {FrontendDataSet} from '@liferay/frontend-data-set-web';
 import {openModal} from 'frontend-js-components-web';
-import {sub} from 'frontend-js-web';
+import {navigate, sub} from 'frontend-js-web';
 import React from 'react';
 
 import {executeAsyncItemAction} from '../../FDSPropsTransformer/utils/executeAsyncItemAction';
-import SpaceSticker from '../../components/SpaceSticker';
+import SpaceSticker, {LogoColor} from '../../components/SpaceSticker';
 import CategorizationToolbar from '../CategorizationToolbar';
 import CreateTagsModal from './CreateTagsModal';
 import EditTagsModal from './EditTagsModal';
+import MergeTagsModal from './MergeTagsModal';
 
 export default function ViewTags({
 	dataSetId,
+	tagUsagesURL,
 	tagsURL,
 	vocabulariesURL,
 }: {
 	dataSetId: string;
+	tagUsagesURL: string;
 	tagsURL: string;
 	vocabulariesURL: string;
 }) {
@@ -61,9 +64,6 @@ export default function ViewTags({
 	];
 
 	const ViewsSpaceTableCell = ({itemData}: {itemData: any}) => {
-		const assetLibraryNames = itemData.assetLibraries.map(
-			(assetLibrary: any) => assetLibrary.name
-		);
 		const assetLibraryIds = itemData.assetLibraries.map(
 			(assetLibrary: any) => assetLibrary.id
 		);
@@ -75,20 +75,34 @@ export default function ViewTags({
 				</span>
 			);
 		}
-		else {
-			return (
-				<>
-					{assetLibraryNames.map((name: string, index: number) => (
+
+		return (
+			<>
+				{itemData.assetLibraries.map(
+					(
+						assetLibrary: {
+							name: string;
+							settings?: {logoColor: string};
+						},
+						index: number
+					) => (
 						<span
 							className="align-items-center d-flex space-renderer-sticker"
 							key={index}
 						>
-							<SpaceSticker name={name} size="sm" />
+							<SpaceSticker
+								displayType={
+									assetLibrary.settings
+										?.logoColor as LogoColor
+								}
+								name={assetLibrary.name}
+								size="sm"
+							/>
 						</span>
-					))}
-				</>
-			);
-		}
+					)
+				)}
+			</>
+		);
 	};
 
 	const views = [
@@ -124,7 +138,7 @@ export default function ViewTags({
 
 	const emptyState = {
 		description: Liferay.Language.get('click-new-to-create-your-first-tag'),
-		image: '/states/cms_empty_state.svg',
+		image: '/states/cms_empty_state_categorization.svg',
 		title: Liferay.Language.get('no-tags-yet'),
 	};
 
@@ -195,6 +209,25 @@ export default function ViewTags({
 		});
 	};
 
+	const mergeTag = ({
+		itemData,
+		loadData,
+	}: {
+		itemData: any;
+		loadData: () => {};
+	}) => {
+		openModal({
+			contentComponent: ({closeModal}: {closeModal: () => void}) =>
+				MergeTagsModal({
+					closeModal,
+					loadData,
+					tagId: itemData.id,
+					tagName: itemData.name,
+				}),
+			size: 'md',
+		});
+	};
+
 	const onActionDropdownItemClick = ({
 		action,
 		itemData,
@@ -207,8 +240,14 @@ export default function ViewTags({
 		if (action.id === 'deleteTag') {
 			deleteTag({itemData, loadData});
 		}
+		else if (action.id === 'mergeTag') {
+			mergeTag({itemData, loadData});
+		}
 		else if (action.id === 'editTag') {
 			editTag({itemData, loadData});
+		}
+		else if (action.id === 'viewUsages') {
+			navigate(`${tagUsagesURL}?keywordName=${itemData.name}`);
 		}
 	};
 
@@ -243,6 +282,22 @@ export default function ViewTags({
 						icon: 'pencil',
 						id: 'editTag',
 						label: Liferay.Language.get('edit'),
+					},
+					{
+						data: {
+							permissionKey: 'get',
+						},
+						icon: 'null',
+						id: 'viewUsages',
+						label: Liferay.Language.get('view-usages'),
+					},
+					{
+						data: {
+							permissionKey: 'get',
+						},
+						icon: 'merge',
+						id: 'mergeTag',
+						label: Liferay.Language.get('merge'),
 					},
 					{
 						data: {

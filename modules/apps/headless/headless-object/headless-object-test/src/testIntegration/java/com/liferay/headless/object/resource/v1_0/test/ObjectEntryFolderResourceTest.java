@@ -12,6 +12,7 @@ import com.liferay.headless.object.client.dto.v1_0.ObjectEntryFolder;
 import com.liferay.headless.object.client.pagination.Page;
 import com.liferay.headless.object.client.pagination.Pagination;
 import com.liferay.headless.object.client.problem.Problem;
+import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.Field;
@@ -20,11 +21,12 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.StringEntityField;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 
 import java.util.Collections;
@@ -38,7 +40,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Alicia García
  */
-@FeatureFlags("LPD-17564")
+@FeatureFlag("LPD-17564")
 @RunWith(Arquillian.class)
 public class ObjectEntryFolderResourceTest
 	extends BaseObjectEntryFolderResourceTestCase {
@@ -108,6 +110,75 @@ public class ObjectEntryFolderResourceTest
 
 	@Override
 	@Test
+	public void testPatchObjectEntryFolder() throws Exception {
+		super.testPatchObjectEntryFolder();
+
+		// Change parent object entry folder to default object entry folder
+
+		ObjectEntryFolder postParentObjectEntryFolder =
+			testPatchObjectEntryFolder_addObjectEntryFolder();
+
+		ObjectEntryFolder postObjectEntryFolder1 =
+			testPatchObjectEntryFolder_addObjectEntryFolder();
+
+		postObjectEntryFolder1.setParentObjectEntryFolderId(
+			postParentObjectEntryFolder.getId());
+
+		objectEntryFolderResource.patchObjectEntryFolder(
+			postObjectEntryFolder1.getId(), postObjectEntryFolder1);
+
+		postObjectEntryFolder1.setParentObjectEntryFolderId(
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT);
+
+		ObjectEntryFolder patchObjectEntryFolder1 =
+			objectEntryFolderResource.patchObjectEntryFolder(
+				postObjectEntryFolder1.getId(), postObjectEntryFolder1);
+
+		Assert.assertEquals(
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			GetterUtil.getLong(
+				patchObjectEntryFolder1.getParentObjectEntryFolderId()));
+
+		// Change parent object entry folder to existing object entry folder
+
+		ObjectEntryFolder postObjectEntryFolder2 =
+			testPatchObjectEntryFolder_addObjectEntryFolder();
+
+		postObjectEntryFolder2.setParentObjectEntryFolderId(
+			postParentObjectEntryFolder.getId());
+
+		ObjectEntryFolder patchObjectEntryFolder2 =
+			objectEntryFolderResource.patchObjectEntryFolder(
+				postObjectEntryFolder2.getId(), postObjectEntryFolder2);
+
+		Assert.assertEquals(
+			postParentObjectEntryFolder.getId(),
+			patchObjectEntryFolder2.getParentObjectEntryFolderId());
+
+		// Preserve existing parent object entry folder ID
+
+		ObjectEntryFolder postObjectEntryFolder3 =
+			testPatchObjectEntryFolder_addObjectEntryFolder();
+
+		postObjectEntryFolder3.setParentObjectEntryFolderId(
+			postParentObjectEntryFolder.getId());
+
+		objectEntryFolderResource.patchObjectEntryFolder(
+			postObjectEntryFolder3.getId(), postObjectEntryFolder3);
+
+		postObjectEntryFolder3.setParentObjectEntryFolderId((Long)null);
+
+		ObjectEntryFolder patchObjectEntryFolder3 =
+			objectEntryFolderResource.patchObjectEntryFolder(
+				postObjectEntryFolder3.getId(), postObjectEntryFolder3);
+
+		Assert.assertEquals(
+			postParentObjectEntryFolder.getId(),
+			patchObjectEntryFolder3.getParentObjectEntryFolderId());
+	}
+
+	@Override
+	@Test
 	public void testPatchScopeScopeKeyObjectEntryFolderByExternalReferenceCode()
 		throws Exception {
 
@@ -144,7 +215,7 @@ public class ObjectEntryFolderResourceTest
 
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
-		return new String[] {"label", "title"};
+		return new String[] {"description", "label", "title"};
 	}
 
 	@Override
@@ -153,6 +224,7 @@ public class ObjectEntryFolderResourceTest
 			{
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
+				description = RandomTestUtil.randomString();
 				externalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();

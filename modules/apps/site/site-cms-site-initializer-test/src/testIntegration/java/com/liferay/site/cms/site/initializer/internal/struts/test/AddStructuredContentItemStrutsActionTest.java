@@ -6,6 +6,9 @@
 package com.liferay.site.cms.site.initializer.internal.struts.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalService;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -15,11 +18,13 @@ import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.constants.ObjectDefinitionSettingConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectDefinitionSettingLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.string.StringBundler;
@@ -27,32 +32,41 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.constants.FriendlyURLResolverConstants;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
-import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,7 +78,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 /**
  * @author Lourdes Fernández Besada
  */
-@FeatureFlags("LPD-17564")
+@FeatureFlag("LPD-17564")
 @RunWith(Arquillian.class)
 public class AddStructuredContentItemStrutsActionTest {
 
@@ -75,9 +89,31 @@ public class AddStructuredContentItemStrutsActionTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_company = CompanyTestUtil.addCompany();
+
+		_groupLocalService.checkSystemGroups(_company.getCompanyId());
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		_companyLocalService.deleteCompany(_company);
+	}
+
 	@Before
 	public void setUp() throws Exception {
-		_group = GroupTestUtil.addGroup();
+		_depotEntry = _depotEntryLocalService.addDepotEntry(
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()
+			).build(),
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		_group = GroupLocalServiceUtil.getGroup(
+			_company.getCompanyId(), GroupConstants.CMS);
 
 		_layout = LayoutTestUtil.addTypeContentLayout(_group);
 
@@ -87,7 +123,13 @@ public class AddStructuredContentItemStrutsActionTest {
 					ObjectFieldConstants.BUSINESS_TYPE_TEXT,
 					ObjectFieldConstants.DB_TYPE_STRING,
 					RandomTestUtil.randomString(), "text")),
-			ObjectDefinitionConstants.SCOPE_SITE);
+			ObjectDefinitionConstants.SCOPE_DEPOT);
+
+		_objectDefinitionSettingLocalService.addObjectDefinitionSetting(
+			_objectDefinition.getUserId(),
+			_objectDefinition.getObjectDefinitionId(),
+			ObjectDefinitionSettingConstants.NAME_ACCEPT_ALL_GROUPS,
+			StringPool.TRUE);
 
 		_objectDefinition.setEnableObjectEntryDraft(true);
 
@@ -111,22 +153,37 @@ public class AddStructuredContentItemStrutsActionTest {
 		HttpServletRequest httpServletRequest = _getMockHttpServletRequest();
 
 		_testExecute(classNameId, 1, null, httpServletRequest);
-		_testExecute(
-			classNameId, 2,
+
+		Assert.assertTrue(_isAutogeneratedTypeSettingsProperty(classNameId));
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
 			_layoutPageTemplateEntryLocalService.
 				fetchDefaultLayoutPageTemplateEntry(
-					_group.getGroupId(), classNameId, 0),
-			httpServletRequest);
+					_group.getGroupId(), classNameId, 0);
+
+		_testExecute(
+			classNameId, 2, layoutPageTemplateEntry, httpServletRequest);
+
+		Assert.assertTrue(_isAutogeneratedTypeSettingsProperty(classNameId));
+
+		ContentLayoutTestUtil.addFragmentEntryLinkToLayout(
+			"{}",
+			_layoutLocalService.fetchDraftLayout(
+				layoutPageTemplateEntry.getPlid()),
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				layoutPageTemplateEntry.getPlid()));
+
+		Assert.assertFalse(_isAutogeneratedTypeSettingsProperty(classNameId));
 	}
 
 	private HttpServletRequest _getMockHttpServletRequest() throws Exception {
 		MockHttpServletRequest mockHttpServletRequest =
 			ContentLayoutTestUtil.getMockHttpServletRequest(
-				_companyLocalService.getCompany(TestPropsValues.getCompanyId()),
+				_companyLocalService.getCompany(_company.getCompanyId()),
 				_group, _layout);
 
 		mockHttpServletRequest.setParameter(
-			"groupId", String.valueOf(_group.getGroupId()));
+			"groupId", String.valueOf(_depotEntry.getGroupId()));
 		mockHttpServletRequest.setParameter(
 			"objectDefinitionId",
 			String.valueOf(_objectDefinition.getObjectDefinitionId()));
@@ -135,6 +192,20 @@ public class AddStructuredContentItemStrutsActionTest {
 		mockHttpServletRequest.setRequestURI(_layout.getFriendlyURL());
 
 		return mockHttpServletRequest;
+	}
+
+	private boolean _isAutogeneratedTypeSettingsProperty(long classNameId) {
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchDefaultLayoutPageTemplateEntry(
+					_group.getGroupId(), classNameId, 0);
+
+		Layout draftLayout = _layoutLocalService.fetchDraftLayout(
+			layoutPageTemplateEntry.getPlid());
+
+		return GetterUtil.getBoolean(
+			draftLayout.getTypeSettingsProperty(
+				LayoutTypeSettingsConstants.KEY_AUTOGENERATED));
 	}
 
 	private void _testExecute(
@@ -218,8 +289,9 @@ public class AddStructuredContentItemStrutsActionTest {
 
 		List<ObjectEntry> objectEntries =
 			_objectEntryLocalService.getObjectEntries(
-				_group.getGroupId(), _objectDefinition.getObjectDefinitionId(),
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+				_depotEntry.getGroupId(),
+				_objectDefinition.getObjectDefinitionId(), QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS);
 
 		Assert.assertEquals(
 			objectEntries.toString(), count, objectEntries.size());
@@ -239,15 +311,23 @@ public class AddStructuredContentItemStrutsActionTest {
 			mockHttpServletResponse.getRedirectedUrl());
 	}
 
+	private static Company _company;
+
+	@Inject
+	private static CompanyLocalService _companyLocalService;
+
+	@Inject
+	private static GroupLocalService _groupLocalService;
+
 	@Inject(filter = "path=/cms/add_structured_content_item")
 	private StrutsAction _addStructuredContentItemStrutsAction;
 
+	private DepotEntry _depotEntry;
+
 	@Inject
-	private CompanyLocalService _companyLocalService;
+	private DepotEntryLocalService _depotEntryLocalService;
 
-	@DeleteAfterTestRun
 	private Group _group;
-
 	private Layout _layout;
 
 	@Inject
@@ -261,16 +341,22 @@ public class AddStructuredContentItemStrutsActionTest {
 	private LayoutPageTemplateStructureLocalService
 		_layoutPageTemplateStructureLocalService;
 
-	@DeleteAfterTestRun
 	private ObjectDefinition _objectDefinition;
 
 	@Inject
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Inject
+	private ObjectDefinitionSettingLocalService
+		_objectDefinitionSettingLocalService;
+
+	@Inject
 	private ObjectEntryLocalService _objectEntryLocalService;
 
 	@Inject
 	private Portal _portal;
+
+	@Inject
+	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
 
 }

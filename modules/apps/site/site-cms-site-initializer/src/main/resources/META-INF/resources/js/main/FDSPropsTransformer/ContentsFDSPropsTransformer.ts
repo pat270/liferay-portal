@@ -9,6 +9,7 @@ import createAssetAction from './actions/createAssetAction';
 import createFolderAction from './actions/createFolderAction';
 import AuthorRenderer from './cell_renderers/AuthorRenderer';
 import NameRenderer from './cell_renderers/NameRenderer';
+import SimpleActionLinkRenderer from './cell_renderers/SimpleActionLinkRenderer';
 import SpaceRenderer from './cell_renderers/SpaceRenderer';
 import TypeRenderer from './cell_renderers/TypeRenderer';
 import addOnClickToCreationMenuItems from './utils/addOnClickToCreationMenuItems';
@@ -18,13 +19,16 @@ const ACTIONS = {
 	createFolder: createFolderAction,
 };
 
+const OBJECT_ENTRY_FOLDER_CLASSNAME =
+	'com.liferay.object.model.ObjectEntryFolder';
+
 export default function ContentFDSPropsTransformer({
-	additionalProps,
 	creationMenu,
+	itemsActions = [],
 	...otherProps
 }: {
-	additionalProps: any;
 	creationMenu: any;
+	itemsActions?: any[];
 	otherProps: any;
 }) {
 	return {
@@ -33,8 +37,7 @@ export default function ContentFDSPropsTransformer({
 			...creationMenu,
 			primaryItems: addOnClickToCreationMenuItems(
 				creationMenu.primaryItems,
-				ACTIONS,
-				additionalProps
+				ACTIONS
 			),
 		},
 		customRenderers: {
@@ -50,6 +53,11 @@ export default function ContentFDSPropsTransformer({
 					type: 'internal',
 				} as IInternalRenderer,
 				{
+					component: SimpleActionLinkRenderer,
+					name: 'simpleActionLinkTableCellRenderer',
+					type: 'internal',
+				} as IInternalRenderer,
+				{
 					component: SpaceRenderer,
 					name: 'spaceTableCellRenderer',
 					type: 'internal',
@@ -61,5 +69,19 @@ export default function ContentFDSPropsTransformer({
 				} as IInternalRenderer,
 			],
 		},
+		itemsActions: itemsActions.map((action) => {
+			if (action?.data?.id === 'actionLink') {
+				return {
+					...action,
+					isVisible: (item: any) =>
+						Boolean(
+							item?.entryClassName !==
+								OBJECT_ENTRY_FOLDER_CLASSNAME
+						),
+				};
+			}
+
+			return action;
+		}),
 	};
 }

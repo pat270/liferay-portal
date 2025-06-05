@@ -49,12 +49,7 @@ test(
 		page.on('dialog', (dialog) => dialog.accept());
 
 		const account1 = await apiHelpers.headlessAdminUser.postAccount();
-
-		apiHelpers.data.push({id: account1.id, type: 'account'});
-
 		const account2 = await apiHelpers.headlessAdminUser.postAccount();
-
-		apiHelpers.data.push({id: account2.id, type: 'account'});
 
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -145,8 +140,6 @@ test(
 
 		const account = await apiHelpers.headlessAdminUser.postAccount();
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const users = [];
 
 		for (let i = 0; i < 5; i++) {
@@ -206,8 +199,6 @@ test(
 		apiHelpers,
 	}) => {
 		const account = await apiHelpers.headlessAdminUser.postAccount();
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 		const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
@@ -278,8 +269,6 @@ test(
 	}) => {
 		const account = await apiHelpers.headlessAdminUser.postAccount();
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 		const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -347,8 +336,6 @@ test(
 	}) => {
 		const account = await apiHelpers.headlessAdminUser.postAccount();
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const users = [];
 
 		for (let i = 1; i <= 21; i++) {
@@ -407,8 +394,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -464,8 +449,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 		const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
@@ -546,8 +529,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 		const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -616,12 +597,7 @@ test(
 		apiHelpers,
 	}) => {
 		const account1 = await apiHelpers.headlessAdminUser.postAccount();
-
-		apiHelpers.data.push({id: account1.id, type: 'account'});
-
 		const account2 = await apiHelpers.headlessAdminUser.postAccount();
-
-		apiHelpers.data.push({id: account2.id, type: 'account'});
 
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount({
 			emailAddress: `A${getRandomString()}@liferay.com`,
@@ -786,8 +762,6 @@ test(
 	}) => {
 		const account = await apiHelpers.headlessAdminUser.postAccount();
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await emailDomainsInstanceSettingsPage.enableEmailDomainValidation(
 			true,
 			'yahoo.com,blocked.com'
@@ -882,7 +856,12 @@ test(
 			await editAccountPage.usersLink.click();
 			await accountUsersPage.usersTable.newButton.click();
 			await accountUsersPage.assignUserMenuItem.click();
-			await accountUserSelectorPage.usersTable.newButton.click();
+
+			await expect(async () => {
+				await accountUserSelectorPage.usersTable.newButton.click();
+
+				await expect(editUserPage.emailAddressInput).toBeVisible();
+			}).toPass();
 
 			const randomString = getRandomString();
 
@@ -1021,7 +1000,11 @@ test(
 		try {
 			await accountsPage.goto();
 
-			await accountsPage.accountsTable.newButton.click();
+			await expect(async () => {
+				await accountsPage.accountsTable.newButton.click();
+
+				await expect(editAccountPage.accountNameInput).toBeVisible();
+			}).toPass();
 
 			await editAccountPage.createAccount(apiHelpers, {
 				name: getRandomString(),
@@ -1437,8 +1420,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -1493,8 +1474,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -1551,7 +1530,7 @@ test(
 		page,
 		virtualInstancesPage,
 	}) => {
-		test.setTimeout(600000);
+		test.setTimeout(160000);
 
 		const DEFAULT_VIRTUAL_INSTANCE_NAME = 'www.able.com';
 
@@ -1565,7 +1544,12 @@ test(
 		try {
 			await accountsPage.goto(false);
 
-			await accountsPage.accountsTable.newButton.click();
+			await expect(async () => {
+				await accountsPage.accountsTable.newButton.click();
+
+				await expect(editAccountPage.accountNameInput).toBeVisible();
+			}).toPass();
+
 			await editAccountPage.createAccount(apiHelpers, {
 				name: getRandomString(),
 			});
@@ -1573,7 +1557,12 @@ test(
 			await editAccountPage.usersLink.click();
 			await accountUsersPage.usersTable.newButton.click();
 			await accountUsersPage.assignUserMenuItem.click();
-			await accountUserSelectorPage.usersTable.newButton.click();
+
+			await expect(async () => {
+				await accountUserSelectorPage.usersTable.newButton.click();
+
+				await expect(editUserPage.emailAddressInput).toBeVisible();
+			}).toPass();
 
 			const randomString = getRandomString();
 
@@ -1617,7 +1606,12 @@ test(
 
 			await accountsPage.goto(false);
 
-			await accountsPage.accountsTable.newButton.click();
+			await expect(async () => {
+				await accountsPage.accountsTable.newButton.click();
+
+				await expect(editAccountPage.accountNameInput).toBeVisible();
+			}).toPass();
+
 			await editAccountPage.createAccount(apiHelpers, {
 				name: getRandomString(),
 			});
@@ -1625,7 +1619,12 @@ test(
 			await editAccountPage.usersLink.click();
 			await accountUsersPage.usersTable.newButton.click();
 			await accountUsersPage.assignUserMenuItem.click();
-			await accountUserSelectorPage.usersTable.newButton.click();
+
+			await expect(async () => {
+				await accountUserSelectorPage.usersTable.newButton.click();
+
+				await expect(editUserPage.emailAddressInput).toBeVisible();
+			}).toPass();
 
 			await editUserPage.emailAddressInput.fill(
 				`${getRandomString()}@blocked.com`
@@ -1669,8 +1668,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await accountUsersPage.goto();
 
@@ -1770,11 +1767,11 @@ test(
 	'Can paginate account users',
 	{tag: ['@LPD-48750']},
 	async ({accountUsersPage, apiHelpers, page}) => {
+		test.setTimeout(150000);
+
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const users: Array<TUserAccount> = [];
 
@@ -1841,8 +1838,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account1.id, type: 'account'});
-
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -1853,8 +1848,6 @@ test(
 		const account2 = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account2.id, type: 'account'});
 
 		const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -2035,8 +2028,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -2128,8 +2119,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account1.id, type: 'account'});
-
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -2140,8 +2129,6 @@ test(
 		const account2 = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account2.id, type: 'account'});
 
 		await accountUsersPage.goto();
 
@@ -2163,8 +2150,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -2247,8 +2232,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -2342,8 +2325,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -2442,8 +2423,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -2478,8 +2457,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await accountUsersPage.goto();
 
@@ -2541,8 +2518,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account1.id, type: 'account'});
-
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -2553,8 +2528,6 @@ test(
 		const account2 = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account2.id, type: 'account'});
 
 		await accountUsersPage.goto();
 
@@ -2601,8 +2574,6 @@ test(
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -2680,8 +2651,6 @@ test(
 				name: `${String(i).padStart(2, '0')}_${getRandomString()}`,
 				type: 'business',
 			});
-
-			apiHelpers.data.push({id: account.id, type: 'account'});
 
 			if (i < 23) {
 				await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
@@ -2765,5 +2734,47 @@ test(
 				)
 			).toBeEnabled();
 		}).toPass();
+	}
+);
+
+test(
+	'Clearing filter goes back to default Any Account filter',
+	{tag: ['@LPD-54580']},
+	async ({accountUsersPage, apiHelpers}) => {
+		const account = await apiHelpers.headlessAdminUser.postAccount({
+			type: 'business',
+		});
+
+		apiHelpers.data.push({id: account.id, type: 'account'});
+
+		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
+
+		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
+			account.id,
+			[user1.emailAddress]
+		);
+
+		await accountUsersPage.goto();
+
+		await accountUsersPage.changeFilter('No Assigned Account');
+
+		await expect(accountUsersPage.usersTable.clearButton).toBeVisible();
+
+		await accountUsersPage.usersTable.filterButton.click();
+
+		await expect(
+			accountUsersPage.usersTable.filterMenuItem('No Assigned Account')
+		).toHaveClass(/active/);
+
+		await accountUsersPage.usersTable.filterButton.click();
+		await accountUsersPage.usersTable.clearButton.click();
+
+		await expect(accountUsersPage.usersTable.clearButton).not.toBeVisible();
+
+		await accountUsersPage.usersTable.filterButton.click();
+
+		await expect(
+			accountUsersPage.usersTable.filterMenuItem('Any Account')
+		).toHaveClass(/active/);
 	}
 );

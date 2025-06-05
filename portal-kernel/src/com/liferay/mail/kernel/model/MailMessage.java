@@ -5,14 +5,14 @@
 
 package com.liferay.mail.kernel.model;
 
-import java.io.File;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetHeaders;
+
+import java.io.InputStream;
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.InternetHeaders;
 
 /**
  * @author Brian Wing Shun Chan
@@ -49,16 +49,17 @@ public class MailMessage implements Serializable {
 		this(from, null, subject, body, htmlFormat);
 	}
 
-	public void addFileAttachment(File file) {
-		addFileAttachment(file, null);
+	public void addFileAttachment(InputStream inputStream) {
+		addFileAttachment(null, inputStream);
 	}
 
-	public void addFileAttachment(File file, String fileName) {
-		if (file == null) {
+	public void addFileAttachment(String fileName, InputStream inputStream) {
+		if (inputStream == null) {
 			return;
 		}
 
-		FileAttachment fileAttachment = new FileAttachment(file, fileName);
+		FileAttachment fileAttachment = new FileAttachment(
+			fileName, inputStream);
 
 		_fileAttachments.add(fileAttachment);
 	}

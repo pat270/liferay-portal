@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Felipe França
@@ -91,8 +91,7 @@ public class ObjectActionMDFRequestStatusManagementRestController
 		JSONObject responseJSONObject = new JSONObject(
 			get(
 				_getAuthorization(),
-				_defaultUriBuilderFactory.builder(
-				).path(
+				UriComponentsBuilder.fromPath(
 					"/o/c/activities"
 				).queryParam(
 					"filter",
@@ -103,7 +102,7 @@ public class ObjectActionMDFRequestStatusManagementRestController
 				).queryParam(
 					"pageSize", "-1"
 				).build(
-				).toString()));
+				).toUri()));
 
 		JSONArray itemsJSONArray = responseJSONObject.getJSONArray("items");
 
@@ -122,7 +121,7 @@ public class ObjectActionMDFRequestStatusManagementRestController
 
 		put(
 			_getAuthorization(), itemsJSONArray.toString(),
-			"/o/c/activities/batch");
+			createURI("/o/c/activities/batch"));
 
 		return new ResponseEntity<>(json, HttpStatus.OK);
 	}
@@ -132,9 +131,6 @@ public class ObjectActionMDFRequestStatusManagementRestController
 			"liferay-partner-etc-spring-boot-oauth-application-headless-" +
 				"server");
 	}
-
-	private final DefaultUriBuilderFactory _defaultUriBuilderFactory =
-		new DefaultUriBuilderFactory();
 
 	@Autowired
 	private LiferayOAuth2AccessTokenManager _liferayOAuth2AccessTokenManager;

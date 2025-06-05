@@ -52,6 +52,13 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.TimeZoneThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
 
+import jakarta.portlet.PortletPreferences;
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.PortletURL;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.Serializable;
 
 import java.util.HashMap;
@@ -61,13 +68,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.TimeZone;
-
-import javax.portlet.PortletPreferences;
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Provides general configuration methods for the portal, providing access to
@@ -581,10 +581,6 @@ public class ThemeDisplay
 
 	public String getPathApplet() {
 		return _pathApplet;
-	}
-
-	public String getPathCms() {
-		return _pathCms;
 	}
 
 	/**
@@ -1568,10 +1564,6 @@ public class ThemeDisplay
 		_pathApplet = pathApplet;
 	}
 
-	public void setPathCms(String pathCms) {
-		_pathCms = pathCms;
-	}
-
 	public void setPathColorSchemeImages(String pathColorSchemeImages) {
 		_pathColorSchemeImages = pathColorSchemeImages;
 	}
@@ -2038,7 +2030,6 @@ public class ThemeDisplay
 	private String _mainJSURL;
 	private List<NavItem> _navItems;
 	private String _pathApplet = StringPool.BLANK;
-	private String _pathCms = StringPool.BLANK;
 	private String _pathColorSchemeImages = StringPool.BLANK;
 	private String _pathContext = StringPool.BLANK;
 	private String _pathControlPanelSpritemap = StringPool.BLANK;

@@ -10,24 +10,29 @@ import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.model.ObjectAction;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.service.ObjectActionLocalService;
 import com.liferay.object.service.persistence.ObjectActionPersistence;
 import com.liferay.object.service.persistence.ObjectDefinitionPersistence;
 import com.liferay.object.tree.Node;
 import com.liferay.object.tree.ObjectDefinitionTreeFactory;
 import com.liferay.object.tree.Tree;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.service.PortletLocalService;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +47,7 @@ public class ObjectDefinitionResourcePermissionUtil {
 	public static void populateResourceActions(
 			ObjectActionLocalService objectActionLocalService,
 			ObjectDefinition objectDefinition,
+			Map<Long, List<ObjectRelationship>> objectRelationshipsMap,
 			ObjectDefinitionPersistence objectDefinitionPersistence,
 			ObjectDefinitionTreeFactory objectDefinitionTreeFactory,
 			PortletLocalService portletLocalService,
@@ -57,33 +63,39 @@ public class ObjectDefinitionResourcePermissionUtil {
 			new ArrayList<>();
 
 		Document document = _readDocument(
-			objectActionLocalService, objectDefinition,
+			objectActionLocalService, objectDefinition, objectRelationshipsMap,
 			objectDefinitionPersistence, objectDefinitionTreeFactory,
 			rootDescendantNodeObjectDefinitionClassNames,
 			standaloneObjectActions);
 
-		resourceActions.populateModelResources(document);
+		try (SafeCloseable safeCloseable = CompanyThreadLocal.lock(
+				objectDefinition.getCompanyId())) {
 
-		Portlet portlet = portletLocalService.getPortletById(
-			objectDefinition.getCompanyId(), objectDefinition.getPortletId());
+			resourceActions.populateModelResources(document);
 
-		if (portlet != null) {
-			resourceActions.populatePortletResource(
-				portlet,
-				ObjectDefinitionResourcePermissionUtil.class.getClassLoader(),
-				document);
+			Portlet portlet = portletLocalService.getPortletById(
+				objectDefinition.getCompanyId(),
+				objectDefinition.getPortletId());
+
+			if (portlet != null) {
+				resourceActions.populatePortletResource(
+					portlet,
+					ObjectDefinitionResourcePermissionUtil.class.
+						getClassLoader(),
+					document);
+			}
+
+			for (String rootDescendantNodeObjectDefinitionClassName :
+					rootDescendantNodeObjectDefinitionClassNames) {
+
+				resourceActions.removeModelResource(
+					rootDescendantNodeObjectDefinitionClassName,
+					ActionKeys.PERMISSIONS);
+			}
+
+			_objectDefinitionResourceActionDocumentsMap.put(
+				objectDefinition, document);
 		}
-
-		for (String rootDescendantNodeObjectDefinitionClassName :
-				rootDescendantNodeObjectDefinitionClassNames) {
-
-			resourceActions.removeModelResource(
-				rootDescendantNodeObjectDefinitionClassName,
-				ActionKeys.PERMISSIONS);
-		}
-
-		_objectDefinitionResourceActionDocumentsMap.put(
-			objectDefinition, document);
 	}
 
 	public static void populateRootDescendantNodeModelResources(
@@ -114,27 +126,33 @@ public class ObjectDefinitionResourcePermissionUtil {
 			objectDefinitionPersistence.findByPrimaryKey(
 				rootObjectDefinitionId);
 
-		resourceActions.populateModelResources(
-			SAXReaderUtil.read(
-				StringUtil.replace(
-					StringUtil.read(
-						ObjectDefinitionResourcePermissionUtil.class.
-							getClassLoader(),
-						"resource-actions/resource-actions-root-descendant-" +
-							"node.xml.tpl"),
-					new String[] {
-						"[$MODEL_NAME$]", "[$PERMISSIONS_GUEST_UNSUPPORTED$]",
-						"[$PERMISSIONS_SUPPORTS$]", "[$PORTLET_NAME$]"
-					},
-					new String[] {
-						rootDescendantNodeObjectDefinition.getClassName(),
-						objectActionPermissionKeys, objectActionPermissionKeys,
-						rootObjectDefinition.getPortletId()
-					})));
+		try (SafeCloseable safeCloseable = CompanyThreadLocal.lock(
+				rootObjectDefinition.getCompanyId())) {
 
-		resourceActions.removeModelResource(
-			rootDescendantNodeObjectDefinition.getClassName(),
-			ActionKeys.PERMISSIONS);
+			resourceActions.populateModelResources(
+				SAXReaderUtil.read(
+					StringUtil.replace(
+						StringUtil.read(
+							ObjectDefinitionResourcePermissionUtil.class.
+								getClassLoader(),
+							"resource-actions/resource-actions-root-" +
+								"descendant-node.xml.tpl"),
+						new String[] {
+							"[$MODEL_NAME$]",
+							"[$PERMISSIONS_GUEST_UNSUPPORTED$]",
+							"[$PERMISSIONS_SUPPORTS$]", "[$PORTLET_NAME$]"
+						},
+						new String[] {
+							rootDescendantNodeObjectDefinition.getClassName(),
+							objectActionPermissionKeys,
+							objectActionPermissionKeys,
+							rootObjectDefinition.getPortletId()
+						})));
+
+			resourceActions.removeModelResource(
+				rootDescendantNodeObjectDefinition.getClassName(),
+				ActionKeys.PERMISSIONS);
+		}
 	}
 
 	public static void removeResourceActions(
@@ -150,7 +168,7 @@ public class ObjectDefinitionResourcePermissionUtil {
 
 		if (document == null) {
 			document = _readDocument(
-				objectActionLocalService, objectDefinition,
+				objectActionLocalService, objectDefinition, null,
 				objectDefinitionPersistence, objectDefinitionTreeFactory,
 				new ArrayList<>(), null);
 		}
@@ -182,19 +200,23 @@ public class ObjectDefinitionResourcePermissionUtil {
 			return;
 		}
 
-		resourceActions.removeModelResources(
-			SAXReaderUtil.read(
-				StringUtil.replace(
-					StringUtil.read(
-						ObjectDefinitionResourcePermissionUtil.class.
-							getClassLoader(),
-						"resource-actions/resource-actions-root-descendant-" +
-							"node.xml.tpl"),
-					new String[] {"[$MODEL_NAME$]", "[$PORTLET_NAME$]"},
-					new String[] {
-						rootDescendantNodeObjectDefinition.getClassName(),
-						rootObjectDefinition.getPortletId()
-					})));
+		try (SafeCloseable safeCloseable = CompanyThreadLocal.lock(
+				rootObjectDefinition.getCompanyId())) {
+
+			resourceActions.removeModelResources(
+				SAXReaderUtil.read(
+					StringUtil.replace(
+						StringUtil.read(
+							ObjectDefinitionResourcePermissionUtil.class.
+								getClassLoader(),
+							"resource-actions/resource-actions-root-" +
+								"descendant-node.xml.tpl"),
+						new String[] {"[$MODEL_NAME$]", "[$PORTLET_NAME$]"},
+						new String[] {
+							rootDescendantNodeObjectDefinition.getClassName(),
+							rootObjectDefinition.getPortletId()
+						})));
+		}
 	}
 
 	private static String _getObjectActionPermissionKeys(
@@ -256,13 +278,26 @@ public class ObjectDefinitionResourcePermissionUtil {
 			ObjectDefinitionTreeFactory objectDefinitionTreeFactory,
 			List<String> rootDescendantNodeObjectDefinitionClassNames,
 			ObjectDefinition rootNodeObjectDefinition,
+			Map<Long, List<ObjectRelationship>> objectRelationshipsMap,
 			List<ObjectAction> standaloneObjectActions)
 		throws Exception {
 
 		int weight = _INITIAL_WEIGHT;
 
-		Tree tree = objectDefinitionTreeFactory.create(
-			rootNodeObjectDefinition.getObjectDefinitionId());
+		Tree tree = null;
+
+		if (objectRelationshipsMap == null) {
+			tree = objectDefinitionTreeFactory.create(
+				true, rootNodeObjectDefinition.getObjectDefinitionId());
+		}
+		else {
+			tree = objectDefinitionTreeFactory.create(
+				true, rootNodeObjectDefinition.getObjectDefinitionId(),
+				pk -> ListUtil.filter(
+					objectRelationshipsMap.getOrDefault(
+						pk, Collections.emptyList()),
+					ObjectRelationship::isEdge));
+		}
 
 		Iterator<Node> iterator = tree.iterator();
 
@@ -310,6 +345,7 @@ public class ObjectDefinitionResourcePermissionUtil {
 	private static Document _readDocument(
 			ObjectActionLocalService objectActionLocalService,
 			ObjectDefinition objectDefinition,
+			Map<Long, List<ObjectRelationship>> objectRelationshipsMap,
 			ObjectDefinitionPersistence objectDefinitionPersistence,
 			ObjectDefinitionTreeFactory objectDefinitionTreeFactory,
 			List<String> rootDescendantNodeObjectDefinitionClassNames,
@@ -357,7 +393,8 @@ public class ObjectDefinitionResourcePermissionUtil {
 						objectActionLocalService, objectDefinitionPersistence,
 						objectDefinitionTreeFactory,
 						rootDescendantNodeObjectDefinitionClassNames,
-						objectDefinition, standaloneObjectActions)
+						objectDefinition, objectRelationshipsMap,
+						standaloneObjectActions)
 				}));
 	}
 

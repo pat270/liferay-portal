@@ -17,17 +17,17 @@ import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
+import jakarta.annotation.Generated;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import jakarta.ws.rs.core.UriInfo;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.annotation.Generated;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -49,11 +49,21 @@ public interface AssetLibraryResource {
 			String externalReferenceCode)
 		throws Exception;
 
+	public void deleteAssetLibraryByExternalReferenceCodePin(
+			String externalReferenceCode)
+		throws Exception;
+
+	public void deleteAssetLibraryPin(Long assetLibraryId) throws Exception;
+
 	public Page<AssetLibrary> getAssetLibrariesPage(
 			String keywords, String search,
 			com.liferay.portal.kernel.search.filter.Filter filter,
 			Pagination pagination,
 			com.liferay.portal.kernel.search.Sort[] sorts)
+		throws Exception;
+
+	public Page<AssetLibrary> getAssetLibrariesPinnedByMePage(
+			Pagination pagination)
 		throws Exception;
 
 	public AssetLibrary getAssetLibrary(Long assetLibraryId) throws Exception;
@@ -75,6 +85,13 @@ public interface AssetLibraryResource {
 
 	public AssetLibrary putAssetLibraryByExternalReferenceCode(
 			String externalReferenceCode, AssetLibrary assetLibrary)
+		throws Exception;
+
+	public AssetLibrary putAssetLibraryByExternalReferenceCodePin(
+			String externalReferenceCode)
+		throws Exception;
+
+	public AssetLibrary putAssetLibraryPin(Long assetLibraryId)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {Page, expect, mergeTests} from '@playwright/test';
+import {expect, mergeTests} from '@playwright/test';
 import {createReadStream} from 'fs';
 import path from 'node:path';
 
@@ -11,9 +11,11 @@ import {applicationsMenuPageTest} from '../../../fixtures/applicationsMenuPageTe
 import {contactsCenterPagesTest} from '../../../fixtures/contactsCenterPagesTest';
 import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
+import {formsPagesTest} from '../../../fixtures/formsPagesTest';
 import {isolatedSiteTest} from '../../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {messageBoardsPagesTest} from '../../../fixtures/messageBoardsTest';
+import {pagesAdminPagesTest} from '../../../fixtures/pagesAdminPagesTest';
 import {productMenuPageTest} from '../../../fixtures/productMenuPageTest';
 import {siteStagingPageTest} from '../../../fixtures/siteStagingPageTest';
 import {usersAndOrganizationsPagesTest} from '../../../fixtures/usersAndOrganizationsPagesTest';
@@ -50,52 +52,16 @@ export const testAdmin = mergeTests(
 		'LPD-35013': {enabled: true},
 		'LPS-178052': {enabled: true},
 	}),
+	formsPagesTest,
 	isolatedSiteTest,
 	journalPagesTest,
 	loginTest(),
 	messageBoardsPagesTest,
+	pagesAdminPagesTest,
 	productMenuPageTest,
 	siteStagingPageTest,
 	usersAndOrganizationsPagesTest
 );
-
-const anonymousUserName = 'Anonymous Anonymous';
-
-async function checkUsernameAssociatedWithObjects(
-	counters: {
-		blog: number;
-		document: number;
-		message: number;
-		webContent: number;
-		wiki: number;
-	},
-	page: Page,
-	userAccountName: string,
-	siteName: string,
-	wikiNodeName: string
-) {
-	const portletBaseURL = `/group/${siteName}`;
-
-	await page.goto(`${portletBaseURL}${PORTLET_URLS.journal}`);
-	await expect(page.getByText(userAccountName)).toHaveCount(
-		counters.webContent
-	);
-
-	await page.goto(`${portletBaseURL}${PORTLET_URLS.blogs}`);
-	await expect(page.getByText(userAccountName)).toHaveCount(counters.blog);
-
-	await page.goto(`${portletBaseURL}${PORTLET_URLS.documentLibrary}`);
-	await expect(page.getByText(userAccountName)).toHaveCount(
-		counters.document
-	);
-
-	await page.goto(`${portletBaseURL}${PORTLET_URLS.messageBoardsAdmin}`);
-	await expect(page.getByText(userAccountName)).toHaveCount(counters.message);
-
-	await page.goto(`${portletBaseURL}${PORTLET_URLS.wikiAdmin}`);
-	await page.getByRole('link', {name: wikiNodeName}).click();
-	await expect(page.getByText(userAccountName)).toHaveCount(counters.wiki);
-}
 
 test(
 	'Can export multiple entries',
@@ -173,7 +139,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await page.goto(`/web/${site.name}`);
 
@@ -198,134 +164,27 @@ test(
 
 		await exportUserDataPage.exportButton.click();
 
-		await expect(exportUserDataPage.announcementsStatus).toBeVisible();
-		await expect(exportUserDataPage.blogsStatus).toBeVisible();
-		await expect(exportUserDataPage.contactsCenterStatus).toBeVisible();
-		await expect(exportUserDataPage.documentsAndMediaStatus).toBeVisible();
-		await expect(exportUserDataPage.messageBoardsStatus).toBeVisible();
-		await expect(exportUserDataPage.webContentStatus).toBeVisible();
-		await expect(exportUserDataPage.wikiStatus).toBeVisible();
+		await expect(
+			exportUserDataPage.announcementsStatusSuccessful
+		).toBeVisible();
+		await expect(exportUserDataPage.blogsStatusSuccessful).toBeVisible();
+		await expect(
+			exportUserDataPage.contactsCenterStatusSuccessful
+		).toBeVisible();
+		await expect(
+			exportUserDataPage.documentsAndMediaStatusSuccessful
+		).toBeVisible();
+		await expect(
+			exportUserDataPage.messageBoardsStatusSuccessful
+		).toBeVisible();
+		await expect(
+			exportUserDataPage.webContentStatusSuccessful
+		).toBeVisible();
+		await expect(exportUserDataPage.wikiStatusSuccessful).toBeVisible();
 
 		await exportUserDataPage.creationMenuNewButton.click();
 
 		await expect(exportUserDataPage.announcementsCheckbox).toBeVisible();
-	}
-);
-
-testAdmin(
-	'Can anonymize all entries',
-	{tag: '@LPD-27068'},
-	async ({
-		apiHelpers,
-		page,
-		personalDataErasurePage,
-		usersAndOrganizationsPage,
-	}) => {
-		testAdmin.setTimeout(120000);
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: getRandomString(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		await apiHelpers.headlessDelivery.postBlog(site.id);
-
-		const contentStructureId =
-			await getBasicWebContentStructureId(apiHelpers);
-
-		const folder = await apiHelpers.jsonWebServicesJournal.addFolder({
-			groupId: site.id,
-		});
-
-		await apiHelpers.jsonWebServicesJournal.addWebContent({
-			ddmStructureId: contentStructureId,
-			groupId: site.id,
-		});
-
-		await apiHelpers.jsonWebServicesJournal.addWebContent({
-			ddmStructureId: contentStructureId,
-			folderId: folder.folderId,
-			groupId: site.id,
-		});
-
-		await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.txt')
-			)
-		);
-
-		await apiHelpers.jsonWebServicesMBApiHelper.addMessage({
-			groupId: site.id,
-		});
-
-		const wikiNode = await apiHelpers.headlessDelivery.postWikiNode(
-			site.id
-		);
-
-		await apiHelpers.headlessDelivery.postWikiPage(wikiNode.id);
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await page.goto(`/web/${site.name}`);
-
-		await checkUsernameAssociatedWithObjects(
-			{blog: 1, document: 1, message: 1, webContent: 2, wiki: 1},
-			page,
-			userAccount.name,
-			site.name,
-			wikiNode.name
-		);
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-
-		page.on('dialog', (dialog) => {
-			dialog.accept().catch(() => {});
-		});
-
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await personalDataErasurePage.selectAllItemsOnPageCheckbox.check();
-		await personalDataErasurePage.allSelectedButton.click();
-
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await personalDataErasurePage.anonymizeButton.click();
-
-		await checkUsernameAssociatedWithObjects(
-			{blog: 0, document: 0, message: 0, webContent: 0, wiki: 0},
-			page,
-			userAccount.name,
-			site.name,
-			wikiNode.name
-		);
 	}
 );
 
@@ -376,7 +235,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		const blog1Name = 'Blog1';
 		const blog2Name = 'Blog2';
@@ -404,7 +263,7 @@ testAdmin(
 		await waitForAlert(page, 'Local staging is successfully enabled.');
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await usersAndOrganizationsPage.goToUsers(false);
 		await (
@@ -429,7 +288,7 @@ testAdmin(
 			.check();
 
 		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.menuItemDelete.click();
+		await personalDataErasurePage.deleteMenuItem.click();
 
 		await expect(
 			personalDataErasurePage.selectAllItemsOnPageCheckbox
@@ -446,187 +305,6 @@ testAdmin(
 		await expect(blogsPage.blogName(blog1Name)).toHaveCount(0);
 		await expect(blogsPage.blogName(blog2Name)).toHaveCount(1);
 		await expect(blogsPage.blogName(blog3Name)).toHaveCount(1);
-	}
-);
-
-testAdmin(
-	'Can anonymize a single staged and live web content entry',
-	{tag: '@LPD-32063'},
-	async ({
-		apiHelpers,
-		journalEditArticlePage,
-		journalPage,
-		page,
-		personalDataErasurePage,
-		site,
-		siteStagingPage,
-		userAssociatedDataJournalPage,
-		userAssociatedDataSiteStagingPage,
-		usersAndOrganizationsPage,
-	}) => {
-		testAdmin.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept();
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.staging}`);
-
-		await siteStagingPage.localStagingCheckbox.check();
-		await userAssociatedDataSiteStagingPage.webContentCheckbox.check();
-		await siteStagingPage.saveButton.click();
-
-		await waitForAlert(page, 'Local staging is successfully enabled.');
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const webContent1Name = 'wcontent1';
-		const webContent2Name = 'wcontent2';
-		const webContent3Name = 'wcontent3';
-
-		await page.goto(`/group/${site.name}-staging${PORTLET_URLS.journal}`);
-
-		for (const articleName of [
-			webContent1Name,
-			webContent2Name,
-			webContent3Name,
-		]) {
-			await journalPage.goToCreateArticle();
-			await journalEditArticlePage.createAndPublishBasicArticle(
-				articleName
-			);
-			await waitForAlert(page, 'was created successfully');
-		}
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await page.goto(`/group/${site.name}-staging${PORTLET_URLS.journal}`);
-
-		await userAssociatedDataJournalPage.optionsButton.click();
-		await userAssociatedDataSiteStagingPage.stagingMenuItem.click();
-		await userAssociatedDataSiteStagingPage.stagingFramePublishToLiveButton.click();
-
-		await expect(
-			userAssociatedDataSiteStagingPage.stagingFrameSuccessfulStatusCell
-		).toBeVisible();
-
-		await page.reload();
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await expect(
-			personalDataErasurePage.selectAllItemsOnPageCheckbox
-		).toBeVisible();
-
-		await personalDataErasurePage.objectCountLink('6').click();
-
-		const article1 =
-			await apiHelpers.jsonWebServicesJournal.getArticleByUrlTitle(
-				site.id,
-				webContent1Name
-			);
-		const article2 =
-			await apiHelpers.jsonWebServicesJournal.getArticleByUrlTitle(
-				site.id,
-				webContent2Name
-			);
-
-		await personalDataErasurePage
-			.journalArticleCheckBox(article1.articleId, webContent1Name, true)
-			.check();
-		await personalDataErasurePage
-			.journalArticleCheckBox(article2.articleId, webContent2Name, false)
-			.check();
-		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await waitForAlert(page);
-
-		await page.goto(`/group/${site.name}-staging${PORTLET_URLS.journal}`);
-
-		await expect(
-			userAssociatedDataJournalPage.articleLink(webContent1Name)
-		).toHaveCount(1);
-		await expect(
-			userAssociatedDataJournalPage.articleLink(webContent2Name)
-		).toHaveCount(1);
-		await expect(
-			userAssociatedDataJournalPage.articleLink(webContent3Name)
-		).toHaveCount(1);
-		await expect(
-			userAssociatedDataJournalPage.articleCreator(
-				anonymousUserName,
-				webContent1Name
-			)
-		).toBeVisible();
-		await expect(
-			userAssociatedDataJournalPage.articleCreator(
-				userAccount.name,
-				webContent2Name
-			)
-		).toBeVisible();
-		await expect(
-			userAssociatedDataJournalPage.articleCreator(
-				userAccount.name,
-				webContent3Name
-			)
-		).toBeVisible();
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.journal}`);
-
-		await expect(
-			userAssociatedDataJournalPage.articleLink(webContent1Name)
-		).toHaveCount(1);
-		await expect(
-			userAssociatedDataJournalPage.articleLink(webContent2Name)
-		).toHaveCount(1);
-		await expect(
-			userAssociatedDataJournalPage.articleLink(webContent3Name)
-		).toHaveCount(1);
-		await expect(
-			userAssociatedDataJournalPage.articleCreator(
-				anonymousUserName,
-				webContent2Name
-			)
-		).toBeVisible();
-		await expect(
-			userAssociatedDataJournalPage.articleCreator(
-				userAccount.name,
-				webContent1Name
-			)
-		).toBeVisible();
-		await expect(
-			userAssociatedDataJournalPage.articleCreator(
-				userAccount.name,
-				webContent3Name
-			)
-		).toBeVisible();
 	}
 );
 
@@ -663,7 +341,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		const site = await apiHelpers.headlessSite.createSite({
 			name: getRandomString(),
@@ -697,7 +375,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await usersAndOrganizationsPage.goToUsers(false);
 		await (
@@ -749,427 +427,6 @@ testAdmin(
 );
 
 testAdmin(
-	'Can anonymize multiple entries from an application',
-	{tag: '@LPD-48828'},
-	async ({
-		apiHelpers,
-		page,
-		personalDataErasurePage,
-		userAssociatedDataDocumentLibraryPage,
-		usersAndOrganizationsPage,
-	}) => {
-		testAdmin.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept().catch(() => {});
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: getRandomString(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		const folder = await apiHelpers.headlessDelivery.postDocumentFolder(
-			site.id
-		);
-
-		const attachment1 = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.docx')
-			)
-		);
-
-		const attachment2 = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.jpeg')
-			)
-		);
-
-		await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.txt')
-			)
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await expect(
-			personalDataErasurePage.selectAllItemsOnPageCheckbox
-		).toBeVisible();
-
-		await personalDataErasurePage.documentsAndMediaRadioButton.check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				folder.name
-			)
-		).check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				attachment1.fileName
-			)
-		).check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				attachment2.fileName
-			)
-		).check();
-		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await waitForAlert(page);
-
-		await expect(page.getByText(folder.name)).not.toBeVisible();
-		await expect(page.getByText(attachment1.fileName)).not.toBeVisible();
-		await expect(page.getByText(attachment2.fileName)).not.toBeVisible();
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(2);
-
-		await userAssociatedDataDocumentLibraryPage.checkFolderCreator(
-			folder,
-			anonymousUserName
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment1,
-			anonymousUserName
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment2,
-			anonymousUserName
-		);
-	}
-);
-
-testAdmin(
-	'Can anonymize all staged data from DM',
-	{tag: '@LPD-49859'},
-	async ({
-		apiHelpers,
-		page,
-		personalDataErasurePage,
-		productMenuPage,
-		siteStagingPage,
-		userAssociatedDataDocumentLibraryPage,
-		usersAndOrganizationsPage,
-	}) => {
-		testAdmin.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept().catch(() => {});
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: getRandomString(),
-		});
-
-		const layout = await apiHelpers.headlessDelivery.createSitePage({
-			siteId: site.id,
-			title: 'Page' + getRandomInt(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		const folder = await apiHelpers.headlessDelivery.postDocumentFolder(
-			site.id
-		);
-
-		const attachment1 = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.docx')
-			)
-		);
-
-		const attachment2 = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.jpeg')
-			)
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await page.goto(`/group/${site.name}/${layout.friendlyUrlPath}`);
-
-		await productMenuPage.openProductMenuIfClosed();
-		await productMenuPage.publishingButton.click();
-		await productMenuPage.stagingMenuItem.click();
-		await siteStagingPage.localStagingCheckbox.check();
-		await siteStagingPage.saveButton.click();
-
-		await waitForAlert(page, 'Local staging is successfully enabled.');
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await waitForAlert(page);
-
-		await expect(
-			personalDataErasurePage.selectAllItemsOnPageCheckbox
-		).toBeVisible();
-
-		await personalDataErasurePage.documentsAndMediaRadioButton.check();
-		await personalDataErasurePage
-			.objectCheckBox(folder.id, folder.name, false)
-			.check();
-		await personalDataErasurePage
-			.objectCheckBox(attachment1.id, attachment1.fileName, false)
-			.check();
-		await personalDataErasurePage
-			.objectCheckBox(attachment2.id, attachment2.fileName, false)
-			.check();
-		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await expect(
-			personalDataErasurePage.objectCheckBox(
-				folder.id,
-				folder.name,
-				false
-			)
-		).not.toBeVisible();
-		await expect(
-			personalDataErasurePage.objectCheckBox(
-				attachment1.id,
-				attachment1.fileName,
-				false
-			)
-		).not.toBeVisible();
-		await expect(
-			personalDataErasurePage.objectCheckBox(
-				attachment2.id,
-				attachment2.fileName,
-				false
-			)
-		).not.toBeVisible();
-
-		await waitForAlert(page);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(0);
-
-		await userAssociatedDataDocumentLibraryPage.checkFolderCreator(
-			folder,
-			userAccount.name
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment1,
-			userAccount.name
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment2,
-			userAccount.name
-		);
-
-		await page.goto(
-			`/group/${site.name}-staging${PORTLET_URLS.documentLibrary}`
-		);
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(2);
-
-		await userAssociatedDataDocumentLibraryPage.checkFolderCreator(
-			folder,
-			anonymousUserName
-		);
-
-		await page.goto(
-			`/group/${site.name}-staging${PORTLET_URLS.documentLibrary}`
-		);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment1,
-			anonymousUserName
-		);
-
-		await page.goto(
-			`/group/${site.name}-staging${PORTLET_URLS.documentLibrary}`
-		);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment2,
-			anonymousUserName
-		);
-	}
-);
-
-testAdmin(
-	'Can anonymize via info panel',
-	{tag: '@LPD-50002'},
-	async ({
-		apiHelpers,
-		blogsPage,
-		page,
-		personalDataErasurePage,
-		usersAndOrganizationsPage,
-	}) => {
-		testAdmin.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept();
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: 'Site' + getRandomInt(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		const layout = await apiHelpers.headlessDelivery.createSitePage({
-			siteId: site.id,
-			title: 'Page' + getRandomInt(),
-		});
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const blog1Name = 'Blog' + getRandomInt();
-		const blog2Name = 'Blog' + getRandomInt();
-
-		const blog1 = await apiHelpers.headlessDelivery.postBlog(site.id, {
-			headline: blog1Name,
-		});
-
-		await apiHelpers.headlessDelivery.postBlog(site.id, {
-			headline: blog2Name,
-		});
-
-		await page.goto(`/group/${site.name}/${layout.friendlyUrlPath}`);
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await waitForAlert(page);
-
-		await expect(
-			personalDataErasurePage.selectAllItemsOnPageCheckbox
-		).toBeVisible();
-
-		await personalDataErasurePage.blogsRadioButton.check();
-		await personalDataErasurePage
-			.objectCheckBox(blog1.id, blog1Name, true)
-			.check();
-
-		await expect(async () => {
-			await personalDataErasurePage.infoPanelButton.click();
-			await personalDataErasurePage
-				.infoPanelEllipsisButton(blog1Name)
-				.click();
-		}).toPass();
-
-		await personalDataErasurePage.anonymizeLink.click();
-
-		await expect(
-			personalDataErasurePage.objectLink(blog1.headline)
-		).not.toBeVisible();
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.blogs}`);
-
-		await expect(blogsPage.blogName(blog1Name)).toHaveCount(1);
-		await expect(blogsPage.blogName(blog2Name)).toHaveCount(1);
-		await expect(page.getByText(anonymousUserName)).toHaveCount(1);
-	}
-);
-
-testAdmin(
 	'Applications without entries are visible but disabled in new data export',
 	{tag: '@LPD-50594'},
 	async ({
@@ -1208,7 +465,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		await apiHelpers.headlessDelivery.postBlog(site.id, {
 			headline: getRandomString(),
@@ -1227,7 +484,7 @@ testAdmin(
 		});
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await usersAndOrganizationsPage.goToUsers(false);
 
@@ -1255,16 +512,26 @@ testAdmin(
 		await exportUserDataPage.messageBoardsCheckbox.check();
 		await exportUserDataPage.exportButton.click();
 
-		await expect(exportUserDataPage.blogsStatus).toBeVisible();
-		await expect(exportUserDataPage.webContentStatus).toBeVisible();
-		await expect(exportUserDataPage.messageBoardsStatus).toBeVisible();
-		await expect(exportUserDataPage.announcementsStatus).not.toBeVisible();
-		await expect(exportUserDataPage.contactsCenterStatus).not.toBeVisible();
+		await expect(exportUserDataPage.blogsStatusSuccessful).toBeVisible();
 		await expect(
-			exportUserDataPage.documentsAndMediaStatus
+			exportUserDataPage.webContentStatusSuccessful
+		).toBeVisible();
+		await expect(
+			exportUserDataPage.messageBoardsStatusSuccessful
+		).toBeVisible();
+		await expect(
+			exportUserDataPage.announcementsStatusSuccessful
 		).not.toBeVisible();
-		await expect(exportUserDataPage.formsStatus).not.toBeVisible();
-		await expect(exportUserDataPage.wikiStatus).not.toBeVisible();
+		await expect(
+			exportUserDataPage.contactsCenterStatusSuccessful
+		).not.toBeVisible();
+		await expect(
+			exportUserDataPage.documentsAndMediaStatusSuccessful
+		).not.toBeVisible();
+		await expect(
+			exportUserDataPage.formsStatusSuccessful
+		).not.toBeVisible();
+		await expect(exportUserDataPage.wikiStatusSuccessful).not.toBeVisible();
 	}
 );
 
@@ -1301,7 +568,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		const site = await apiHelpers.headlessSite.createSite({
 			name: 'Site' + getRandomInt(),
@@ -1326,7 +593,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await usersAndOrganizationsPage.goToUsers(false);
 
@@ -1384,342 +651,6 @@ testAdmin(
 );
 
 testAdmin(
-	'Entries are still anonymous after activating user',
-	{tag: '@LPD-50693'},
-	async ({
-		apiHelpers,
-		page,
-		personalDataErasurePage,
-		userAssociatedDataDocumentLibraryPage,
-		usersAndOrganizationsPage,
-	}) => {
-		test.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept();
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: 'Site' + getRandomInt(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		const folder = await apiHelpers.headlessDelivery.postDocumentFolder(
-			site.id
-		);
-
-		const attachment = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.txt')
-			),
-			{
-				description: getRandomString(),
-				fileName: 'attachment.txt',
-				title: getRandomString(),
-			}
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-		await personalDataErasurePage.documentsAndMediaRadioButton.check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				folder.name
-			)
-		).check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				attachment.fileName
-			)
-		).check();
-		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await waitForAlert(page);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(1);
-
-		await userAssociatedDataDocumentLibraryPage.checkFolderCreator(
-			folder,
-			anonymousUserName
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment,
-			anonymousUserName
-		);
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await usersAndOrganizationsPage.filterUsers('inactive');
-		await usersAndOrganizationsPage.activateUsers([userAccount.name]);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(1);
-
-		await userAssociatedDataDocumentLibraryPage.checkFolderCreator(
-			folder,
-			anonymousUserName
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment,
-			anonymousUserName
-		);
-	}
-);
-
-testAdmin(
-	'Can anonymize all entries from an application',
-	{tag: '@LPD-50693'},
-	async ({
-		apiHelpers,
-		page,
-		personalDataErasurePage,
-		userAssociatedDataDocumentLibraryPage,
-		usersAndOrganizationsPage,
-	}) => {
-		testAdmin.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept().catch(() => {});
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: getRandomString(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		const attachment1 = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.docx')
-			)
-		);
-
-		const attachment2 = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.jpeg')
-			)
-		);
-
-		const attachment3 = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.txt')
-			)
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await expect(
-			personalDataErasurePage.selectAllItemsOnPageCheckbox
-		).toBeVisible();
-
-		await personalDataErasurePage.documentsAndMediaRadioButton.check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				attachment1.fileName
-			)
-		).check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				attachment2.fileName
-			)
-		).check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				attachment3.fileName
-			)
-		).check();
-		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await waitForAlert(page);
-
-		await expect(page.getByText(attachment1.fileName)).not.toBeVisible();
-		await expect(page.getByText(attachment2.fileName)).not.toBeVisible();
-		await expect(page.getByText(attachment3.fileName)).not.toBeVisible();
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(3);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment1,
-			anonymousUserName
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment2,
-			anonymousUserName
-		);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment3,
-			anonymousUserName
-		);
-	}
-);
-
-testAdmin(
-	'Can anonymize entry from application',
-	{tag: '@LPD-50693'},
-	async ({
-		apiHelpers,
-		page,
-		personalDataErasurePage,
-		userAssociatedDataDocumentLibraryPage,
-		usersAndOrganizationsPage,
-	}) => {
-		testAdmin.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept().catch(() => {});
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: getRandomString(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		const attachment = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.txt')
-			)
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await expect(
-			personalDataErasurePage.selectAllItemsOnPageCheckbox
-		).toBeVisible();
-
-		await personalDataErasurePage.documentsAndMediaRadioButton.check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				attachment.fileName
-			)
-		).check();
-		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await waitForAlert(page);
-
-		await page.goto(`/group/${site.name}${PORTLET_URLS.documentLibrary}`);
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(1);
-
-		await userAssociatedDataDocumentLibraryPage.checkDocumentCreator(
-			attachment,
-			anonymousUserName
-		);
-	}
-);
-
-testAdmin(
 	'Can delete all staged data from an application',
 	{tag: '@LPD-51202'},
 	async ({
@@ -1754,7 +685,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		const site = await apiHelpers.headlessSite.createSite({
 			name: getRandomString(),
@@ -1800,7 +731,7 @@ testAdmin(
 		await waitForAlert(page, 'Local staging is successfully enabled.');
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await usersAndOrganizationsPage.goToUsers(false);
 		await (
@@ -1899,175 +830,6 @@ testAdmin(
 );
 
 testAdmin(
-	'Can anonymize a related asset',
-	{tag: '@LPD-51202'},
-	async ({
-		apiHelpers,
-		messageBoardsEditThreadPage,
-		messageBoardsPage,
-		page,
-		personalDataErasurePage,
-		userAssociatedDataEditMessageBoardThreadPage,
-		userAssociatedDataMessageBoardPage,
-		usersAndOrganizationsPage,
-	}) => {
-		test.setTimeout(120000);
-
-		page.on('dialog', (dialog) => {
-			dialog.accept().catch(() => {});
-		});
-
-		const userAccount =
-			await apiHelpers.headlessAdminUser.postUserAccount();
-
-		userData[userAccount.alternateName] = {
-			name: userAccount.givenName,
-			password: 'test',
-			surname: userAccount.familyName,
-		};
-
-		const role =
-			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
-
-		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
-			role.externalReferenceCode,
-			userAccount.id
-		);
-
-		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
-
-		const site = await apiHelpers.headlessSite.createSite({
-			name: getRandomString(),
-		});
-
-		apiHelpers.data.push({id: site.id, type: 'site'});
-
-		const blog = await apiHelpers.headlessDelivery.postBlog(site.id, {
-			headline: 'Blog' + getRandomInt(),
-		});
-
-		const document = await apiHelpers.headlessDelivery.postDocument(
-			site.id,
-			createReadStream(
-				path.join(__dirname, '/dependencies/attachment.txt')
-			)
-		);
-
-		const threadSubject = 'Thread' + getRandomInt();
-
-		await messageBoardsEditThreadPage.gotoAndPublishNewBasicThread(
-			threadSubject,
-			getRandomString(),
-			site.friendlyUrlPath
-		);
-
-		await waitForAlert(page);
-
-		await userAssociatedDataMessageBoardPage.actionButton.click();
-		await userAssociatedDataMessageBoardPage.editMenuItem.click();
-
-		await expect(
-			userAssociatedDataEditMessageBoardThreadPage.relatedAssetsButton
-		).toBeVisible();
-
-		await userAssociatedDataEditMessageBoardThreadPage.relatedAssetsButton.click();
-
-		await expect(async () => {
-			await userAssociatedDataEditMessageBoardThreadPage.selectButton.click();
-			await expect(
-				userAssociatedDataEditMessageBoardThreadPage.blogEntryMenuItem
-			).toBeVisible();
-		}).toPass();
-
-		await userAssociatedDataEditMessageBoardThreadPage.blogEntryMenuItem.click();
-
-		await expect(
-			await userAssociatedDataEditMessageBoardThreadPage.tableRowCheckBox(
-				blog.headline
-			)
-		).toBeVisible();
-
-		await (
-			await userAssociatedDataEditMessageBoardThreadPage.tableRowCheckBox(
-				blog.headline
-			)
-		).check();
-		await userAssociatedDataEditMessageBoardThreadPage.doneButton.click();
-
-		await expect(async () => {
-			await userAssociatedDataEditMessageBoardThreadPage.selectButton.click();
-			await expect(
-				userAssociatedDataEditMessageBoardThreadPage.basicDocumentMenuItem
-			).toBeVisible();
-		}).toPass();
-
-		await userAssociatedDataEditMessageBoardThreadPage.basicDocumentMenuItem.click();
-
-		await expect(
-			await userAssociatedDataEditMessageBoardThreadPage.tableRowCheckBox(
-				document.title
-			)
-		).toBeVisible();
-
-		await (
-			await userAssociatedDataEditMessageBoardThreadPage.tableRowCheckBox(
-				document.title
-			)
-		).check();
-		await userAssociatedDataEditMessageBoardThreadPage.doneButton.click();
-		await userAssociatedDataEditMessageBoardThreadPage.publishButton.click();
-
-		await performLogout(page);
-		await performLoginViaApi(page, 'test');
-
-		await usersAndOrganizationsPage.goToUsers(false);
-		await (
-			await usersAndOrganizationsPage.usersTableRowActions(
-				userAccount.alternateName
-			)
-		).click();
-		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
-
-		await waitForAlert(page);
-
-		await personalDataErasurePage.blogsRadioButton.check();
-		await (
-			await personalDataErasurePage.userAssociatedDataTableRowCheckBox(
-				blog.headline
-			)
-		).check();
-		await personalDataErasurePage.actionsButton.click();
-		await personalDataErasurePage.anonymizeMenuItem.click();
-
-		await waitForAlert(page);
-
-		await messageBoardsPage.goto(site.friendlyUrlPath);
-
-		await expect(page.getByText(userAccount.name)).toHaveCount(1);
-
-		await userAssociatedDataMessageBoardPage
-			.threadSubjectLink(threadSubject)
-			.click();
-		await userAssociatedDataEditMessageBoardThreadPage
-			.relatedAssetLink(blog.headline)
-			.click();
-
-		await expect(page.getByText(anonymousUserName)).toHaveCount(1);
-
-		await messageBoardsPage.goto(site.friendlyUrlPath);
-		await userAssociatedDataMessageBoardPage
-			.threadSubjectLink(threadSubject)
-			.click();
-		await userAssociatedDataEditMessageBoardThreadPage
-			.relatedAssetLink(document.title)
-			.click();
-
-		await expect(page.getByText(userAccount.name)).toHaveCount(1);
-	}
-);
-
-testAdmin(
 	'Can delete a related asset',
 	{tag: '@LPD-51202'},
 	async ({
@@ -2104,7 +866,7 @@ testAdmin(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		const site = await apiHelpers.headlessSite.createSite({
 			name: getRandomString(),
@@ -2188,7 +950,7 @@ testAdmin(
 		await userAssociatedDataEditMessageBoardThreadPage.publishButton.click();
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await usersAndOrganizationsPage.goToUsers(false);
 		await (
@@ -2219,5 +981,1344 @@ testAdmin(
 
 		await expect(page.getByText(blog.headline)).toBeVisible();
 		await expect(page.getByText(document.title)).toHaveCount(0);
+	}
+);
+
+testAdmin(
+	'Can publish to live a deleted live entry',
+	{tag: '@LPD-55588'},
+	async ({
+		apiHelpers,
+		blogsPage,
+		page,
+		personalDataErasurePage,
+		productMenuPage,
+		siteStagingPage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept();
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: 'Site' + getRandomInt(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const layout = await apiHelpers.headlessDelivery.createSitePage({
+			siteId: site.id,
+			title: 'Page' + getRandomInt(),
+		});
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const blog = await apiHelpers.headlessDelivery.postBlog(site.id, {
+			headline: getRandomString(),
+		});
+
+		await page.goto(`/group/${site.name}/${layout.friendlyUrlPath}`);
+
+		await productMenuPage.openProductMenuIfClosed();
+		await productMenuPage.publishingButton.click();
+		await productMenuPage.stagingMenuItem.click();
+		await siteStagingPage.localStagingCheckbox.check();
+		await siteStagingPage.blogsCheckbox.check();
+		await siteStagingPage.saveButton.click();
+
+		await waitForAlert(page, 'Local staging is successfully enabled.');
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await personalDataErasurePage.blogsRadioButton.check();
+		await personalDataErasurePage
+			.objectCheckBox(blog.id, blog.headline, true)
+			.check();
+		await personalDataErasurePage.actionsButton.click();
+		await personalDataErasurePage.deleteMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await page.goto(`/group/${site.name}${PORTLET_URLS.blogs}`);
+
+		await expect(blogsPage.blogName(blog.headline)).toHaveCount(0);
+
+		await page.goto(`/group/${site.name}-staging${PORTLET_URLS.blogs}`);
+
+		await expect(blogsPage.blogName(blog.headline)).toHaveCount(1);
+
+		await blogsPage.goToBlogEntryAction('Publish to Live', blog.title);
+		await blogsPage.successMessage.waitFor();
+
+		await page.goto(`/group/${site.name}${PORTLET_URLS.blogs}`);
+
+		await expect(blogsPage.blogName(blog.headline)).toHaveCount(1);
+	}
+);
+
+testAdmin(
+	'Can filter and view data',
+	{tag: '@LPD-56386'},
+	async ({
+		apiHelpers,
+		contactsCenterPage,
+		formBuilderPage,
+		formBuilderSidePanelPage,
+		page,
+		personalDataErasurePage,
+		userAssociatedDataFormPage,
+		usersAndOrganizationsPage,
+	}) => {
+		testAdmin.setTimeout(90000);
+
+		page.on('dialog', (dialog) => {
+			dialog.accept();
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const formTitle = 'Form' + getRandomInt();
+		const textFieldLabel = 'Text Field';
+
+		await formBuilderPage.goToNew(site.friendlyUrlPath);
+		await formBuilderPage.fillFormTitle(formTitle);
+		await formBuilderSidePanelPage.addFieldByDoubleClick('Text');
+		await formBuilderSidePanelPage.label.fill(textFieldLabel);
+		await formBuilderPage.publishButton.click();
+
+		await waitForAlert(page);
+
+		const formPageName = 'form-page-' + getRandomInt();
+
+		await userAssociatedDataFormPage.createFormPage(
+			apiHelpers,
+			formTitle,
+			site,
+			{
+				title: formPageName,
+			}
+		);
+
+		await page.goto(`/web/${site.name}/${formPageName}`);
+
+		await expect(
+			userAssociatedDataFormPage.formWidgetTextFieldLabel(textFieldLabel)
+		).toBeVisible();
+
+		await userAssociatedDataFormPage
+			.formWidgetTextFieldLabel(textFieldLabel)
+			.fill(`${textFieldLabel} value`);
+		await userAssociatedDataFormPage.formWidgetSubmitButton.click();
+
+		await waitForAlert(page);
+
+		const contactsCenterPageName = 'contact-center-' + getRandomInt();
+
+		await contactsCenterPage.createPage(apiHelpers, site.id, {
+			title: contactsCenterPageName,
+		});
+
+		await page.goto(`/web/${site.name}/${contactsCenterPageName}`);
+
+		await contactsCenterPage.addContactButton.click();
+
+		const name = getRandomString();
+		const email = `${getRandomString()}@liferay.com`;
+
+		await contactsCenterPage.nameInput.fill(name);
+		await contactsCenterPage.emailAddressInput.fill(email);
+		await contactsCenterPage.saveButton.click();
+
+		await expect(contactsCenterPage.successMessage).toBeVisible();
+
+		const contentStructureId =
+			await getBasicWebContentStructureId(apiHelpers);
+
+		const webContent =
+			await apiHelpers.jsonWebServicesJournal.addWebContent({
+				ddmStructureId: contentStructureId,
+				groupId: site.id,
+			});
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await personalDataErasurePage.contactsCenterRadioButton.check();
+
+		await expect(page.getByText(name)).toHaveCount(1);
+		await expect(page.getByText(email)).toHaveCount(1);
+
+		await personalDataErasurePage.regularSitesRadioButton.check();
+
+		await expect(personalDataErasurePage.formsRadioButton).toBeVisible();
+
+		await personalDataErasurePage.formsRadioButton.check();
+
+		await expect(page.getByText(formTitle)).toHaveCount(1);
+
+		await personalDataErasurePage.webContentRadioButton.check();
+		await personalDataErasurePage.journalArticleRadioButton.check();
+
+		await expect(page.getByText(webContent.title)).toHaveCount(1);
+	}
+);
+
+testAdmin(
+	'Remaining items count is accurate',
+	{tag: ['@LPD-56386', '@LPS-91766']},
+	async ({
+		apiHelpers,
+		page,
+		personalDataErasurePage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const folder = await apiHelpers.headlessDelivery.postDocumentFolder(
+			site.id
+		);
+
+		const attachment = await apiHelpers.headlessDelivery.postDocument(
+			site.id,
+			createReadStream(
+				path.join(__dirname, '/dependencies/attachment.docx')
+			)
+		);
+
+		const blog = await apiHelpers.headlessDelivery.postBlog(site.id, {
+			headline: getRandomString(),
+		});
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.remainingItemsCount('3')
+		).toBeVisible();
+		await expect(
+			await personalDataErasurePage.allApplicationsDataTableRowCount(
+				'1',
+				'Blogs'
+			)
+		).toBeVisible();
+		await expect(
+			await personalDataErasurePage.allApplicationsDataTableRowCount(
+				'2',
+				'Documents and Media'
+			)
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.objectRadioButtonLabelCount('Blogs', '1')
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.objectRadioButtonLabelCount(
+				'Documents and Media',
+				'2'
+			)
+		).toBeVisible();
+
+		await personalDataErasurePage.documentsAndMediaRadioButton.check();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await personalDataErasurePage
+			.objectCheckBox(folder.id, folder.name, true)
+			.check();
+		await personalDataErasurePage
+			.objectCheckBox(attachment.id, attachment.fileName, true)
+			.check();
+		await personalDataErasurePage.actionsButton.click();
+		await personalDataErasurePage.deleteMenuItem.click();
+
+		await waitForAlert(page);
+
+		await expect(
+			personalDataErasurePage.remainingItemsCount('1')
+		).toBeVisible();
+
+		await personalDataErasurePage.blogsRadioButton.check();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await personalDataErasurePage
+			.objectCheckBox(blog.id, blog.headline, true)
+			.check();
+		await personalDataErasurePage.actionsButton.click();
+		await personalDataErasurePage.deleteMenuItem.click();
+
+		await waitForAlert(page);
+
+		await expect(personalDataErasurePage.anonymizeButton).toBeVisible();
+
+		await personalDataErasurePage.reviewDataLink.click();
+
+		await expect(personalDataErasurePage.emptyMessage).toBeVisible();
+		await expect(
+			personalDataErasurePage.objectRadioButtonLabelCount('Blogs', '0')
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.objectRadioButtonLabelCount(
+				'Documents and Media',
+				'0'
+			)
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.remainingItemsCount('0')
+		).toBeVisible();
+	}
+);
+
+testAdmin(
+	'Can delete an export process',
+	{tag: '@LPD-56386'},
+	async ({
+		apiHelpers,
+		exportUserDataPage,
+		page,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: 'Site' + getRandomInt(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		await apiHelpers.headlessDelivery.postBlog(site.id, {
+			headline: getRandomString(),
+		});
+
+		const contentStructureId =
+			await getBasicWebContentStructureId(apiHelpers);
+
+		await apiHelpers.jsonWebServicesJournal.addWebContent({
+			ddmStructureId: contentStructureId,
+			groupId: site.id,
+		});
+
+		await apiHelpers.jsonWebServicesMBApiHelper.addMessage({
+			groupId: site.id,
+		});
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.exportPersonalDataItem.click();
+		await exportUserDataPage.addExportProcessesButton.click();
+
+		await exportUserDataPage.blogsCheckbox.check();
+		await exportUserDataPage.webContentCheckbox.check();
+		await exportUserDataPage.messageBoardsCheckbox.check();
+		await exportUserDataPage.exportButton.click();
+
+		await waitForAlert(page);
+
+		await expect(exportUserDataPage.blogsStatusSuccessful).toBeVisible();
+		await expect(
+			exportUserDataPage.webContentStatusSuccessful
+		).toBeVisible();
+		await expect(
+			exportUserDataPage.messageBoardsStatusSuccessful
+		).toBeVisible();
+
+		await expect(async () => {
+			await (
+				await exportUserDataPage.rowActions('Blogs', 0, false)
+			).click();
+
+			await exportUserDataPage.deleteLink.click({
+				timeout: 1000,
+			});
+
+			await expect(
+				exportUserDataPage.blogsStatusSuccessful
+			).not.toBeVisible();
+		}).toPass();
+
+		await expect(async () => {
+			await (
+				await exportUserDataPage.rowActions('Message Boards', 0, false)
+			).click();
+
+			await exportUserDataPage.deleteLink.click({
+				timeout: 1000,
+			});
+
+			await expect(
+				exportUserDataPage.messageBoardsStatusSuccessful
+			).not.toBeVisible();
+		}).toPass();
+
+		await expect(async () => {
+			await (
+				await exportUserDataPage.rowActions('Web Content', 0, false)
+			).click();
+
+			await exportUserDataPage.deleteLink.click({
+				timeout: 1000,
+			});
+
+			await expect(
+				exportUserDataPage.webContentStatusSuccessful
+			).not.toBeVisible();
+		}).toPass();
+
+		await expect(
+			exportUserDataPage.emptyExportProcessesMessage
+		).toBeVisible();
+	}
+);
+
+testAdmin(
+	'Can order data in view data',
+	{tag: ['@LPD-56386', '@LPS-77749']},
+	async ({
+		apiHelpers,
+		page,
+		personalDataErasurePage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const documentA = await apiHelpers.headlessDelivery.postDocument(
+			site.id,
+			createReadStream(
+				path.join(__dirname, '/dependencies/attachment.txt')
+			),
+			{
+				description: '1',
+				fileName: 'A Document',
+			}
+		);
+		const documentB = await apiHelpers.headlessDelivery.postDocument(
+			site.id,
+			createReadStream(
+				path.join(__dirname, '/dependencies/attachment.docx')
+			),
+			{
+				description: '2',
+				fileName: 'B Document',
+			}
+		);
+		const documentC = await apiHelpers.headlessDelivery.postDocument(
+			site.id,
+			createReadStream(
+				path.join(__dirname, '/dependencies/attachment.jpeg')
+			),
+			{
+				description: '3',
+				fileName: 'C Document',
+			}
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await personalDataErasurePage.documentsAndMediaRadioButton.check();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await expect(async () => {
+			await personalDataErasurePage.orderButton.click();
+
+			await personalDataErasurePage
+				.orderMenuItem('Description')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(async () => {
+			await personalDataErasurePage.orderButton.click();
+
+			await personalDataErasurePage
+				.orderMenuItem('Descending')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(
+			personalDataErasurePage.optionalColumnRow(3, 2)
+		).toHaveText(documentC.description);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(3, 3)
+		).toHaveText(documentB.description);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(3, 4)
+		).toHaveText(documentA.description);
+
+		await expect(async () => {
+			await personalDataErasurePage.orderButton.click();
+
+			await personalDataErasurePage
+				.orderMenuItem('Ascending')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(
+			personalDataErasurePage.optionalColumnRow(3, 2)
+		).toHaveText(documentA.description);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(3, 3)
+		).toHaveText(documentB.description);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(3, 4)
+		).toHaveText(documentC.description);
+
+		await expect(async () => {
+			await personalDataErasurePage.orderButton.click();
+
+			await personalDataErasurePage
+				.orderMenuItem('Name')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(
+			personalDataErasurePage.optionalColumnRow(1, 2)
+		).toHaveText(documentA.fileName);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(1, 3)
+		).toHaveText(documentB.fileName);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(1, 4)
+		).toHaveText(documentC.fileName);
+
+		await expect(async () => {
+			await personalDataErasurePage.orderButton.click();
+
+			await personalDataErasurePage
+				.orderMenuItem('Descending')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(
+			personalDataErasurePage.optionalColumnRow(1, 2)
+		).toHaveText(documentC.fileName);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(1, 3)
+		).toHaveText(documentB.fileName);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(1, 4)
+		).toHaveText(documentA.fileName);
+	}
+);
+
+testAdmin(
+	'Can delete all entries from instance scope',
+	{tag: '@LPD-56386'},
+	async ({
+		apiHelpers,
+		page,
+		personalDataErasurePage,
+		userAssociatedDataAnnouncementPage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const announcementsPage =
+			await userAssociatedDataAnnouncementPage.createAnnouncementPage(
+				apiHelpers,
+				site,
+				{
+					title: 'Announcements Page',
+				}
+			);
+
+		const announcement =
+			await apiHelpers.jsonWebServicesAnnouncementsEntryApiHelper.addEntry(
+				{
+					content: 'This is an announcement added via json.',
+					title: 'Announcement Entry Title',
+				}
+			);
+
+		await page.goto(
+			`/web/${site.name}${announcementsPage.friendlyUrlPath}`
+		);
+
+		await expect(page.getByText(announcement.title)).toBeVisible();
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+		await expect(personalDataErasurePage.instanceRadioButton).toBeChecked();
+		await expect(
+			personalDataErasurePage.allApplicationsRadioButton
+		).toBeChecked();
+		await expect(
+			personalDataErasurePage.objectRadioButtonLabelCount(
+				'Announcements',
+				'1'
+			)
+		).toBeVisible();
+
+		await personalDataErasurePage.selectAllItemsOnPageCheckbox.check();
+		await personalDataErasurePage.actionsButton.click();
+		await personalDataErasurePage.deleteMenuItem.click();
+
+		await expect(personalDataErasurePage.anonymizeButton).toBeVisible();
+
+		await page.goto(
+			`/web/${site.name}${announcementsPage.friendlyUrlPath}`
+		);
+
+		await expect(page.getByText(announcement.title)).toHaveCount(0);
+	}
+);
+
+testAdmin(
+	'Can edit entry from application',
+	{tag: '@LPD-56476'},
+	async ({
+		apiHelpers,
+		page,
+		personalDataErasurePage,
+		userAssociatedDataEditDocumentPage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const document = await apiHelpers.headlessDelivery.postDocument(
+			site.id,
+			createReadStream(
+				path.join(__dirname, '/dependencies/attachment.txt')
+			),
+			{
+				description: 'This is a document description',
+				fileName: 'Name of the file',
+			}
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await waitForAlert(page);
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await personalDataErasurePage.documentsAndMediaRadioButton.check();
+
+		await expect(async () => {
+			await (
+				await personalDataErasurePage.userAssociatedDataTableRowActions(
+					document.fileName
+				)
+			).click();
+
+			await personalDataErasurePage.editMenuItem.click({
+				timeout: 1000,
+			});
+		}).toPass();
+
+		await expect(
+			userAssociatedDataEditDocumentPage.selectFileButton
+		).toBeVisible();
+
+		const newDocumentFileName = getRandomString();
+		const newDocumentDescription = getRandomString();
+
+		await userAssociatedDataEditDocumentPage.documentFileName.fill(
+			newDocumentFileName
+		);
+		await userAssociatedDataEditDocumentPage.documentDescription.fill(
+			newDocumentDescription
+		);
+		await userAssociatedDataEditDocumentPage.publishButton.click();
+
+		await expect(
+			personalDataErasurePage.remainingItemsCount('1')
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.optionalColumnRow(1, 2)
+		).toContainText(newDocumentFileName);
+		await expect(
+			personalDataErasurePage.optionalColumnRow(3, 2)
+		).toContainText(newDocumentDescription);
+	}
+);
+
+testAdmin(
+	'Can delete all entries from personal site scope',
+	{tag: '@LPD-56476'},
+	async ({
+		apiHelpers,
+		page,
+		personalDataErasurePage,
+		productMenuPage,
+		userAssociatedDataBlogPage,
+		userAssociatedDataEditMessageBoardThreadPage,
+		userAssociatedDataMessageBoardPage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		// My profile
+
+		await page.goto(`/web/${userAccount.alternateName}`);
+
+		await productMenuPage.goToBlogs();
+
+		await userAssociatedDataBlogPage.newButton.click();
+		await userAssociatedDataBlogPage.blogTitleInput.fill(
+			'Blog' + getRandomInt()
+		);
+		await userAssociatedDataBlogPage.blogContentInput.click();
+		await userAssociatedDataBlogPage.blogContentInput.fill(
+			getRandomString()
+		);
+		await userAssociatedDataBlogPage.publishButton.click();
+
+		// My dashboard
+
+		await page.goto(`/user/${userAccount.alternateName}`);
+
+		await productMenuPage.goToBlogs();
+
+		await userAssociatedDataBlogPage.newButton.click();
+		await userAssociatedDataBlogPage.blogTitleInput.fill(
+			'Blog' + getRandomInt()
+		);
+		await userAssociatedDataBlogPage.blogContentInput.click();
+		await userAssociatedDataBlogPage.blogContentInput.fill(
+			getRandomString()
+		);
+		await userAssociatedDataBlogPage.publishButton.click();
+
+		await productMenuPage.goToMessageBoards();
+
+		await userAssociatedDataMessageBoardPage.newButton.click();
+		await userAssociatedDataMessageBoardPage.threadMenuItem.click();
+		await userAssociatedDataEditMessageBoardThreadPage.subjectInput.fill(
+			getRandomString()
+		);
+		await userAssociatedDataEditMessageBoardThreadPage.editorFrameTextInput.click();
+		await userAssociatedDataEditMessageBoardThreadPage.editorFrameTextInput.fill(
+			getRandomString()
+		);
+		await userAssociatedDataEditMessageBoardThreadPage.publishButton.click();
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await expect(
+			personalDataErasurePage.personalSiteRadioButton
+		).toBeChecked();
+		await expect(
+			personalDataErasurePage.allApplicationsRadioButton
+		).toBeChecked();
+
+		await personalDataErasurePage.selectAllItemsOnPageCheckbox.check();
+		await personalDataErasurePage.actionsButton.click();
+		await personalDataErasurePage.deleteMenuItem.click();
+
+		await expect(personalDataErasurePage.anonymizeButton).toBeVisible();
+
+		await personalDataErasurePage.reviewDataLink.click();
+
+		await expect(personalDataErasurePage.emptyMessage).toBeVisible();
+	}
+);
+
+testAdmin(
+	'Can filter and order export processes',
+	{tag: '@LPD-56476'},
+	async ({
+		apiHelpers,
+		exportUserDataPage,
+		page,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		await apiHelpers.headlessDelivery.postBlog(site.id, {
+			headline: 'Blog' + getRandomInt(),
+		});
+
+		await apiHelpers.headlessDelivery.postDocument(
+			site.id,
+			createReadStream(
+				path.join(__dirname, '/dependencies/attachment.txt')
+			),
+			{
+				fileName: 'Document' + getRandomInt(),
+			}
+		);
+
+		await apiHelpers.jsonWebServicesMBApiHelper.addMessage({
+			groupId: site.id,
+			subject: 'Message' + getRandomInt(),
+		});
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+
+		await usersAndOrganizationsPage.exportPersonalDataItem.click();
+		await exportUserDataPage.addExportProcessesButton.click();
+		await exportUserDataPage.blogsCheckbox.check();
+		await exportUserDataPage.messageBoardsCheckbox.check();
+		await exportUserDataPage.documentsAndMediaCheckbox.check();
+		await exportUserDataPage.exportButton.click();
+
+		await waitForAlert(page);
+
+		await expect(async () => {
+			await exportUserDataPage.filterButton.click();
+			await exportUserDataPage
+				.filterMenuItem('Successful')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(exportUserDataPage.blogsStatusSuccessful).toBeVisible();
+		await expect(
+			exportUserDataPage.messageBoardsStatusSuccessful
+		).toBeVisible();
+		await expect(
+			exportUserDataPage.documentsAndMediaStatusSuccessful
+		).toBeVisible();
+		await expect(exportUserDataPage.statusText('Failed')).toHaveCount(0);
+		await expect(exportUserDataPage.statusText('In Progress')).toHaveCount(
+			0
+		);
+
+		await expect(async () => {
+			await exportUserDataPage.orderButton.click();
+			await exportUserDataPage
+				.orderMenuItem('Name')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(async () => {
+			await exportUserDataPage.orderButton.click();
+			await exportUserDataPage
+				.orderMenuItem('Descending')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(exportUserDataPage.optionalColumnRow(0, 1)).toContainText(
+			'Message Boards'
+		);
+		await expect(exportUserDataPage.optionalColumnRow(0, 2)).toContainText(
+			'Documents and Media'
+		);
+		await expect(exportUserDataPage.optionalColumnRow(0, 3)).toContainText(
+			'Blogs'
+		);
+
+		await expect(async () => {
+			await exportUserDataPage.filterButton.click();
+			await exportUserDataPage
+				.filterMenuItem('Failed')
+				.click({timeout: 1000});
+		}).toPass();
+
+		await expect(
+			exportUserDataPage.emptyExportProcessesMessage
+		).toBeVisible();
+	}
+);
+
+testAdmin(
+	'Can delete all entries from regular sites scope',
+	{tag: '@LPD-56476'},
+	async ({
+		apiHelpers,
+		blogsPage,
+		page,
+		personalDataErasurePage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept();
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const blog1 = await apiHelpers.headlessDelivery.postBlog(site.id, {
+			headline: 'Blog' + getRandomInt(),
+		});
+		const blog2 = await apiHelpers.headlessDelivery.postBlog(site.id, {
+			headline: 'Blog' + getRandomInt(),
+		});
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await expect(
+			personalDataErasurePage.regularSitesRadioButton
+		).toBeChecked();
+		await expect(
+			personalDataErasurePage.allApplicationsRadioButton
+		).toBeChecked();
+
+		await personalDataErasurePage.selectAllItemsOnPageCheckbox.check();
+		await personalDataErasurePage.actionsButton.click();
+		await personalDataErasurePage.deleteMenuItem.click();
+
+		await expect(personalDataErasurePage.anonymizeButton).toBeVisible();
+
+		await page.goto(`/group/${site.name}${PORTLET_URLS.blogs}`);
+
+		await expect(blogsPage.blogName(blog1.headline)).toHaveCount(0);
+		await expect(blogsPage.blogName(blog2.headline)).toHaveCount(0);
+	}
+);
+
+testAdmin(
+	'Can delete entry from application',
+	{tag: '@LPD-56476'},
+	async ({
+		apiHelpers,
+		blogsPage,
+		page,
+		personalDataErasurePage,
+		usersAndOrganizationsPage,
+	}) => {
+		page.on('dialog', (dialog) => {
+			dialog.accept().catch(() => {});
+		});
+
+		const userAccount =
+			await apiHelpers.headlessAdminUser.postUserAccount();
+
+		userData[userAccount.alternateName] = {
+			name: userAccount.givenName,
+			password: 'test',
+			surname: userAccount.familyName,
+		};
+
+		const role =
+			await apiHelpers.headlessAdminUser.getRoleByName('Administrator');
+
+		await apiHelpers.headlessAdminUser.postRoleByExternalReferenceCodeUserAccountAssociation(
+			role.externalReferenceCode,
+			userAccount.id
+		);
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({id: site.id, type: 'site'});
+
+		const blog = await apiHelpers.headlessDelivery.postBlog(site.id, {
+			headline: 'Blog' + getRandomInt(),
+		});
+
+		await performLogout(page);
+		await performLoginViaApi({page, screenName: 'test'});
+
+		await usersAndOrganizationsPage.goToUsers(false);
+		await (
+			await usersAndOrganizationsPage.usersTableRowActions(
+				userAccount.alternateName
+			)
+		).click();
+		await usersAndOrganizationsPage.deletePersonalDataMenuItem.click();
+
+		await expect(
+			personalDataErasurePage.selectAllItemsOnPageCheckbox
+		).toBeVisible();
+
+		await personalDataErasurePage.blogsRadioButton.check();
+
+		await expect(
+			personalDataErasurePage.objectRadioButtonLabelCount('Blogs', '1')
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.remainingItemsCount('1')
+		).toBeVisible();
+
+		await expect(async () => {
+			await (
+				await personalDataErasurePage.userAssociatedDataTableRowActions(
+					blog.headline
+				)
+			).click();
+
+			await personalDataErasurePage.deleteLink.click({
+				timeout: 1000,
+			});
+		}).toPass();
+
+		await expect(personalDataErasurePage.anonymizeButton).toBeVisible();
+
+		await personalDataErasurePage.reviewDataLink.click();
+
+		await expect(
+			personalDataErasurePage.objectRadioButtonLabelCount('Blogs', '0')
+		).toBeVisible();
+		await expect(
+			personalDataErasurePage.remainingItemsCount('0')
+		).toBeVisible();
+		await expect(personalDataErasurePage.emptyMessage).toBeVisible();
+
+		await page.goto(`/group/${site.name}${PORTLET_URLS.blogs}`);
+
+		await expect(blogsPage.blogName(blog.headline)).toHaveCount(0);
 	}
 );

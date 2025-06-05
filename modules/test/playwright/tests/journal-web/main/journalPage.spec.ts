@@ -241,3 +241,199 @@ test(
 		await expect(page.getByRole('button', {name: 'Delete'})).toBeDisabled();
 	}
 );
+
+test(
+	'Current item checkbox is disabled in Related Assets',
+	{
+		tag: '@LPD-54293',
+	},
+	async ({apiHelpers, journalEditArticlePage, journalPage, page, site}) => {
+		const basicWebContentStructureId =
+			await getBasicWebContentStructureId(apiHelpers);
+
+		const webContentTitles = [
+			'First Web Content',
+			'Second Web Content',
+			'Third Web Content',
+		];
+
+		for (const title of webContentTitles) {
+			await apiHelpers.jsonWebServicesJournal.addWebContent({
+				ddmStructureId: basicWebContentStructureId,
+				groupId: site.id,
+				titleMap: {en_US: title},
+			});
+		}
+
+		await journalPage.goto(site.friendlyUrlPath);
+
+		await page.getByRole('link', {name: 'First Web Content'}).click();
+
+		await journalEditArticlePage.openRelatedAsset('Basic Web Content');
+
+		await journalEditArticlePage.changeViewInRelatedAssetPopUp(
+			'Basic Web Content',
+			'list'
+		);
+
+		const relatedAssetsFrame = page.frameLocator(
+			`iframe[title="Select Basic Web Content"]`
+		);
+
+		const relatedAssetItems = relatedAssetsFrame.locator(
+			'dd:has(input[type="checkbox"]:not([disabled]))'
+		);
+
+		await expect(relatedAssetItems).toHaveCount(2);
+	}
+);
+
+test(
+	'Check Search Works in View History Page',
+	{
+		tag: '@LPD-54659',
+	},
+	async ({apiHelpers, journalPage, page, site}) => {
+		const basicWebContentStructureId =
+			await getBasicWebContentStructureId(apiHelpers);
+
+		const webContent =
+			await apiHelpers.jsonWebServicesJournal.addWebContent({
+				ddmStructureId: basicWebContentStructureId,
+				groupId: site.id,
+				titleMap: {en_US: 'test'},
+			});
+
+		await apiHelpers.jsonWebServicesJournal.editWebContent(
+			{title: 'Basic Web Content'},
+			site.id,
+			webContent
+		);
+
+		await journalPage.goto(site.friendlyUrlPath);
+
+		await page.getByRole('button', {name: 'Actions'}).click();
+		await page.getByRole('menuitem', {name: 'View History'}).click();
+
+		await page.getByRole('button', {name: 'Versions'}).waitFor();
+
+		await page.getByLabel('Select View, Currently').click();
+		await page.getByRole('menuitem', {name: 'Table'}).click();
+
+		const searchInput = page.locator('input[type="search"]');
+		await searchInput.waitFor({state: 'visible'});
+		await searchInput.fill('Basic');
+		await searchInput.press('Enter');
+
+		await page
+			.locator('div')
+			.filter({hasText: /^Clear$/})
+			.waitFor();
+
+		const resultRows = page.locator('tbody tr[data-selectable="true"]');
+		await resultRows.first().waitFor({state: 'visible'});
+		const count = await resultRows.count();
+		expect(count).toBe(1);
+	}
+);
+
+test(
+	'Validate PrimaryKey for Folder in Related Assets',
+	{
+		tag: '@LPD-55314',
+	},
+	async ({apiHelpers, journalEditArticlePage, journalPage, page, site}) => {
+		const basicWebContentStructureId =
+			await getBasicWebContentStructureId(apiHelpers);
+
+		await apiHelpers.jsonWebServicesJournal.addWebContent({
+			ddmStructureId: basicWebContentStructureId,
+			groupId: site.id,
+			titleMap: {en_US: 'Basic Web content'},
+		});
+
+		await apiHelpers.jsonWebServicesJournal.addFolder({
+			groupId: site.id,
+		});
+
+		await journalPage.goto(site.friendlyUrlPath);
+
+		await page.getByRole('link', {name: 'Basic Web content'}).click();
+
+		await journalEditArticlePage.openRelatedAsset('Basic Web Content');
+
+		await journalEditArticlePage.changeViewInRelatedAssetPopUp(
+			'Basic Web Content',
+			'list'
+		);
+
+		const relatedAssetsFrame = page.frameLocator(
+			`iframe[title="Select Basic Web Content"]`
+		);
+
+		const inputValue = await relatedAssetsFrame
+			.locator(
+				'#_com_liferay_item_selector_web_portlet_ItemSelectorPortlet_articlesPrimaryKeys'
+			)
+			.getAttribute('value');
+
+		expect(/[[{]/.test(inputValue || '')).toBeFalsy();
+	}
+);
+
+test(
+	'Folders come first when having multiple pages and filtering by Approved',
+	{
+		tag: '@LPD-55865',
+	},
+	async ({apiHelpers, journalPage, page, site}) => {
+		const basicWebContentStructureId =
+			await getBasicWebContentStructureId(apiHelpers);
+
+		for (let i = 1; i <= 6; i++) {
+			await apiHelpers.jsonWebServicesJournal.addFolder({
+				groupId: site.id,
+				name: `Folder ${i}`,
+			});
+		}
+
+		for (let i = 1; i <= 6; i++) {
+			await apiHelpers.jsonWebServicesJournal.addWebContent({
+				ddmStructureId: basicWebContentStructureId,
+				groupId: site.id,
+				titleMap: {en_US: `Web Content ${i}`},
+			});
+		}
+
+		for (let i = 7; i <= 12; i++) {
+			await apiHelpers.jsonWebServicesJournal.addFolder({
+				groupId: site.id,
+				name: `Folder ${i}`,
+			});
+		}
+
+		for (let i = 7; i <= 12; i++) {
+			await apiHelpers.jsonWebServicesJournal.addWebContent({
+				ddmStructureId: basicWebContentStructureId,
+				groupId: site.id,
+				titleMap: {en_US: `Web Content ${i}`},
+			});
+		}
+
+		await journalPage.goto(site.friendlyUrlPath);
+
+		await page.getByLabel('Filter', {exact: true}).click();
+
+		await page.getByRole('menuitem', {name: 'Approved'}).click();
+
+		await page.getByLabel('Filter', {exact: true}).click();
+
+		await page.getByRole('menuitem', {name: 'Web Content'}).click();
+
+		const foldersList = await page
+			.getByRole('link')
+			.filter({hasText: 'Folder'})
+			.all();
+		expect(foldersList.length).toBe(12);
+	}
+);

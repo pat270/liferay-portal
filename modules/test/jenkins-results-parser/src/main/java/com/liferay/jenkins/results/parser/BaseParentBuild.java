@@ -463,11 +463,23 @@ public abstract class BaseParentBuild extends BaseBuild implements ParentBuild {
 			return;
 		}
 
-		List<Build> downstreamBuilds = getDownstreamBuilds(null);
+		int buildThreadSpawnFrequency = 0;
 
+		try {
+			buildThreadSpawnFrequency = Integer.parseInt(
+				JenkinsResultsParserUtil.getBuildProperty(
+					"build.thread.spawn.frequency"));
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to parse property \"build.thread.spawn.frequency\"",
+				ioException);
+		}
+
+		Map<String, Integer> callableGroupCounter = new HashMap<>();
 		List<Callable<Object>> callables = new ArrayList<>();
 
-		for (final Build downstreamBuild : downstreamBuilds) {
+		for (final Build downstreamBuild : getDownstreamBuilds(null)) {
 			String status = downstreamBuild.getStatus();
 
 			if (status.equals("completed")) {
@@ -476,20 +488,47 @@ public abstract class BaseParentBuild extends BaseBuild implements ParentBuild {
 
 			JenkinsMaster jenkinsMaster = downstreamBuild.getJenkinsMaster();
 
-			ParallelExecutor.SequentialCallable<Object> callable =
-				new ParallelExecutor.SequentialCallable<Object>(
-					jenkinsMaster.getName()) {
+			String jenkinsMasterName = jenkinsMaster.getName();
 
-					@Override
-					public Object call() {
-						downstreamBuild.update();
+			if (!callableGroupCounter.containsKey(jenkinsMasterName)) {
+				callableGroupCounter.put(jenkinsMasterName, 0);
+			}
 
-						return null;
-					}
+			Integer buildCounter = callableGroupCounter.get(jenkinsMasterName);
 
-				};
+			String sequentialCallableGroupName = jenkinsMasterName;
 
-			callables.add(callable);
+			try {
+				if (buildCounter >= buildThreadSpawnFrequency) {
+					int groupNumber = buildCounter / buildThreadSpawnFrequency;
+
+					sequentialCallableGroupName =
+						JenkinsResultsParserUtil.combine(
+							sequentialCallableGroupName, "_",
+							String.valueOf(groupNumber));
+				}
+
+				callableGroupCounter.put(
+					sequentialCallableGroupName, buildCounter + 1);
+
+				ParallelExecutor.SequentialCallable<Object> callable =
+					new ParallelExecutor.SequentialCallable<Object>(
+						sequentialCallableGroupName) {
+
+						@Override
+						public Object call() {
+							downstreamBuild.update();
+
+							return null;
+						}
+
+					};
+
+				callables.add(callable);
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
 		}
 
 		List<List<Callable<Object>>> callablesList = Lists.partition(

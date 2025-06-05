@@ -13,6 +13,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.TaxonomyCategoryBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.json.BaseJSONParser;
 
+import jakarta.annotation.Generated;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -21,8 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-
-import javax.annotation.Generated;
 
 /**
  * @author Javier Gamarra
@@ -322,6 +322,20 @@ public class AccountSerDes {
 			}
 
 			sb.append("]");
+		}
+
+		if (account.getLogoBase64() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"logoBase64\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(account.getLogoBase64()));
+
+			sb.append("\"");
 		}
 
 		if (account.getLogoExternalReferenceCode() != null) {
@@ -728,6 +742,13 @@ public class AccountSerDes {
 			map.put("keywords", String.valueOf(account.getKeywords()));
 		}
 
+		if (account.getLogoBase64() == null) {
+			map.put("logoBase64", null);
+		}
+		else {
+			map.put("logoBase64", String.valueOf(account.getLogoBase64()));
+		}
+
 		if (account.getLogoExternalReferenceCode() == null) {
 			map.put("logoExternalReferenceCode", null);
 		}
@@ -937,6 +958,9 @@ public class AccountSerDes {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "keywords")) {
+				return false;
+			}
+			else if (Objects.equals(jsonParserFieldName, "logoBase64")) {
 				return false;
 			}
 			else if (Objects.equals(
@@ -1171,6 +1195,11 @@ public class AccountSerDes {
 				if (jsonParserFieldValue != null) {
 					account.setKeywords(
 						toStrings((Object[])jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "logoBase64")) {
+				if (jsonParserFieldValue != null) {
+					account.setLogoBase64((String)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(

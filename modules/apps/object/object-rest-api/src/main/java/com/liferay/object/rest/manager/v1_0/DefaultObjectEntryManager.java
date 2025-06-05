@@ -38,8 +38,28 @@ public interface DefaultObjectEntryManager extends ObjectEntryManager {
 			long primaryKey2)
 		throws Exception;
 
+	public ObjectEntry copyObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
+		throws Exception;
+
+	public ObjectEntry copyObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			String externalReferenceCode, ObjectDefinition objectDefinition,
+			int version)
+		throws Exception;
+
 	public void deleteObjectEntry(
 			ObjectDefinition objectDefinition, long objectEntryId)
+		throws Exception;
+
+	public void deleteObjectEntryByVersion(
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
+		throws Exception;
+
+	public void deleteObjectEntryByVersion(
+			String externalReferenceCode, ObjectDefinition objectDefinition,
+			int version)
 		throws Exception;
 
 	public void disassociateRelatedModels(
@@ -58,6 +78,17 @@ public interface DefaultObjectEntryManager extends ObjectEntryManager {
 			long companyId, DTOConverterContext dtoConverterContext,
 			String externalReferenceCode, String objectActionName,
 			ObjectDefinition objectDefinition, String scopeKey)
+		throws Exception;
+
+	public ObjectEntry expireObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
+		throws Exception;
+
+	public ObjectEntry expireObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			String externalReferenceCode, ObjectDefinition objectDefinition,
+			int version)
 		throws Exception;
 
 	public ObjectEntry fetchObjectEntry(
@@ -91,13 +122,13 @@ public interface DefaultObjectEntryManager extends ObjectEntryManager {
 
 	public ObjectEntry getObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext, Long objectEntryId,
-			Integer version)
+			int version)
 		throws Exception;
 
 	public ObjectEntry getObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext,
 			String externalReferenceCode, ObjectDefinition objectDefinition,
-			Integer version)
+			int version)
 		throws Exception;
 
 	public Page<ObjectEntry> getObjectEntryRelatedObjectEntries(
@@ -135,14 +166,13 @@ public interface DefaultObjectEntryManager extends ObjectEntryManager {
 
 	public ObjectEntry restoreObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext,
-			ObjectDefinition objectDefinition, long objectEntryId,
-			Integer version)
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
 		throws Exception;
 
 	public ObjectEntry restoreObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext,
 			String externalReferenceCode, ObjectDefinition objectDefinition,
-			Integer version)
+			int version)
 		throws Exception;
 
 	public ObjectEntry updateObjectEntry(

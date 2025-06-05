@@ -15,6 +15,40 @@
 		);
 	}
 
+	function defineReadOnlyGlobal(name, getValue) {
+		Object.defineProperty(
+			window,
+			name,
+			{
+				get: getValue,
+				set: (x) => {
+					if (x !== getValue()) {
+						console.error(`Global variable '${name}' is read-only`);
+					}
+				}
+			}
+		);
+	}
+
+	function isObject(item) {
+		return (item && typeof item === 'object' && !Array.isArray(item));
+	}
+
+	function merge(target, source) {
+		for (const key in source) {
+			if (isObject(source[key])) {
+				if (!target[key]) {
+					Object.assign(target, { [key]: {} });
+				}
+
+				merge(target[key], source[key]);
+			}
+			else {
+				Object.assign(target, { [key]: source[key] });
+			}
+		}
+	}
+
 	let __liferay = {
 AUI: {
 getCombine: () => false,
@@ -115,33 +149,33 @@ getCanonicalURL: () => 'http\x3a\x2f\x2flocalhost\x3a8080',
 getCDNBaseURL: () => 'http://localhost:8080',
 getCDNDynamicResourcesHost: () => '',
 getCDNHost: () => '',
-getCompanyGroupId: () => 0,
-getCompanyId: () => 0,
+getCompanyGroupId: () => '0',
+getCompanyId: () => '0',
 getDefaultLanguageId: () => 'en',
 getDoAsUserIdEncoded: () => '',
 getLanguageId: () => 'en_US',
-getParentGroupId: () => 0,
+getParentGroupId: () => '0',
 getPathContext: () => '',
 getPathImage: () => '/image',
 getPathJavaScript: () => '/o/frontend-js-web',
 getPathMain: () => 'c',
 getPathThemeImages: () => 'http://localhost:8080/o/classic-theme/images',
 getPathThemeRoot: () => '/o/classic-theme',
-getPlid: () => 0,
+getPlid: () => '0',
 getPortalURL: () => 'http://localhost:8080',
-getRealUserId: () => 0,
+getRealUserId: () => '0',
 getRemoteAddr: () => '127.0.0.1',
 getRemoteHost: () => '127.0.0.1',
-getScopeGroupId: () => 0,
-getScopeGroupIdOrLiveGroupId: () => 0,
+getScopeGroupId: () => '0',
+getScopeGroupIdOrLiveGroupId: () => '0',
 getSessionId: () => '',
 getSiteAdminURL: () => 'http://localhost:8080/group/guest/~/control_panel/manage?p_p_lifecycle=0&p_p_state=maximized&p_p_mode=view',
-getSiteGroupId: () => 0,
+getSiteGroupId: () => '0',
 getTimeZone: () => 'UTC',
 getURLControlPanel: () => '/group/control_panel?refererPlid=8',
 getURLHome: () => 'http\x3a\x2f\x2flocalhost\x3a8080\x2fweb\x2fguest',
 getUserEmailAddress: () => '',
-getUserId: () => 0,
+getUserId: () => '0',
 getUserName: () => '',
 isAddSessionIdToURL: () => false,
 isImpersonated: () => false,
@@ -152,6 +186,10 @@ isStateMaximized: () => false,
 isStatePopUp: () => false,
 },
 Util: {
+Window: {
+	_map: {},
+	getById: (id) => Liferay.Util.Window._map[id],
+},
 openAlertModal: buildESMStub('frontend-js-components-web', 'openAlertModal'),
 openConfirmModal: buildESMStub('frontend-js-components-web', 'openConfirmModal'),
 openModal: buildESMStub('frontend-js-components-web', 'openModal'),
@@ -160,69 +198,17 @@ openSimpleInputModal: buildESMStub('frontend-js-components-web', 'openSimpleInpu
 openToast: buildESMStub('frontend-js-components-web', 'openToast'),
 },
 authToken: 'LrPaVz44',
-currentURL: '/',
+currentURL: '\x2f',
 currentURLEncoded: '\x252F',
 
 	};
 
 	if (window.Liferay) {
-		window.Liferay = {
-			...window.Liferay,
-			...__liferay,
-			__disableOverwriteCheck: true
-		}
+		merge(window.Liferay, __liferay);
 	}
 	else {
-		Object.defineProperty(
-			window,
-			"Liferay",
-			{
-				get: () => __liferay,
-				set: (x) => {
-					if (x.hasOwnProperty("Loader")) {
-						__liferay.Loader = x.Loader;
-						return;
-					}
-
-					if (x.hasOwnProperty("__disableOverwriteCheck")) {
-						delete x.__disableOverwriteCheck;
-						__liferay = x;
-						return;
-					}
-
-					console.warn("Global variable 'Liferay' is read-only");
-				}
-			}
-		);
-
-		const themeDisplayLocations = new Set();
-
-		Object.defineProperty(
-			window,
-			"themeDisplay",
-			{
-				get: () => {
-					if (true) {
-						let location = new Error().stack.split('\n')[1];
-
-						if (location.includes(':')) {
-							location = location.split(':')[0];
-						}
-
-						if (!themeDisplayLocations.has(location)) {
-							console.warn("Global variable 'themeDisplay' is deprecated. Use 'Liferay.ThemeDisplay' instead.");
-
-							themeDisplayLocations.add(location);
-						}
-					}
-
-					return window.Liferay.ThemeDisplay;
-				},
-				set: () => {
-					console.warn("Global variable 'themeDisplay' is read-only");
-				}
-			}
-		);
+		defineReadOnlyGlobal('Liferay', () => __liferay);
+		defineReadOnlyGlobal('themeDisplay', () => window.Liferay.ThemeDisplay);
 	}
 })();
 </script>

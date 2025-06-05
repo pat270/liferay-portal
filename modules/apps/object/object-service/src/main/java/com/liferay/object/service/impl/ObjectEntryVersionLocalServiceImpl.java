@@ -6,17 +6,21 @@
 package com.liferay.object.service.impl;
 
 import com.liferay.object.entry.util.ObjectEntryDTOConverterUtil;
+import com.liferay.object.exception.RequiredObjectEntryVersionException;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectEntryVersion;
 import com.liferay.object.service.base.ObjectEntryVersionLocalServiceBaseImpl;
 import com.liferay.object.util.comparator.ObjectEntryVersionVersionComparator;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 
+import java.util.Date;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -44,6 +48,35 @@ public class ObjectEntryVersionLocalServiceImpl
 	}
 
 	@Override
+	public ObjectEntryVersion deleteObjectEntryVersion(
+			long objectEntryId, int version)
+		throws PortalException {
+
+		if (getObjectEntryVersionsCount(objectEntryId) == 1) {
+			throw new RequiredObjectEntryVersionException.MustHaveOneVersion(
+				"At least one version must remain",
+				"at-least-one-version-must-remain");
+		}
+
+		ObjectEntryVersion objectEntryVersion =
+			objectEntryVersionPersistence.fetchByObjectEntryId_First(
+				objectEntryId,
+				ObjectEntryVersionVersionComparator.getInstance(false));
+
+		if (version == objectEntryVersion.getVersion()) {
+			throw new RequiredObjectEntryVersionException.
+				MustNotDeleteLatestVersion(
+					"The latest version cannot be deleted",
+					"the-last-version-cannot-be-deleted");
+		}
+
+		objectEntryVersion = objectEntryVersionPersistence.findByOEI_V(
+			objectEntryId, version);
+
+		return deleteObjectEntryVersion(objectEntryVersion);
+	}
+
+	@Override
 	public void deleteObjectEntryVersionByObjectDefinitionId(
 		Long objectDefinitionId) {
 
@@ -54,6 +87,36 @@ public class ObjectEntryVersionLocalServiceImpl
 	@Override
 	public void deleteObjectEntryVersions(long objectEntryId) {
 		objectEntryVersionPersistence.removeByObjectEntryId(objectEntryId);
+	}
+
+	@Override
+	public ObjectEntryVersion expireObjectEntryVersion(
+			long userId, long objectEntryId, int version)
+		throws PortalException {
+
+		ObjectEntryVersion objectEntryVersion =
+			objectEntryVersionPersistence.findByOEI_V(objectEntryId, version);
+
+		if (objectEntryVersion.isDraft() || objectEntryVersion.isExpired() ||
+			objectEntryVersion.isPending()) {
+
+			return objectEntryVersion;
+		}
+
+		Date date = new Date();
+
+		objectEntryVersion.setExpirationDate(date);
+
+		objectEntryVersion.setStatus(WorkflowConstants.STATUS_EXPIRED);
+
+		User user = _userLocalService.getUser(userId);
+
+		objectEntryVersion.setStatusByUserId(user.getUserId());
+		objectEntryVersion.setStatusByUserName(user.getFullName());
+
+		objectEntryVersion.setStatusDate(date);
+
+		return objectEntryVersionPersistence.update(objectEntryVersion);
 	}
 
 	@Override
@@ -122,8 +185,39 @@ public class ObjectEntryVersionLocalServiceImpl
 			throw new PortalException(exception);
 		}
 
+		if (FeatureFlagManagerUtil.isEnabled(
+				objectEntry.getCompanyId(), "LPD-17564")) {
+
+			objectEntryVersion.setDisplayDate(objectEntry.getDisplayDate());
+		}
+
+		Date date = new Date();
+		Date expirationDate = objectEntryVersion.getExpirationDate();
+		int status = objectEntry.getStatus();
+
+		if ((status == WorkflowConstants.STATUS_APPROVED) &&
+			(expirationDate != null) && expirationDate.before(date)) {
+
+			objectEntryVersion.setExpirationDate(null);
+		}
+
+		if ((status == WorkflowConstants.STATUS_EXPIRED) &&
+			(expirationDate == null)) {
+
+			objectEntryVersion.setExpirationDate(date);
+		}
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				objectEntry.getCompanyId(), "LPD-17564")) {
+
+			objectEntryVersion.setReviewDate(objectEntry.getReviewDate());
+		}
+
 		objectEntryVersion.setVersion(version);
-		objectEntryVersion.setStatus(objectEntry.getStatus());
+		objectEntryVersion.setStatus(status);
+		objectEntryVersion.setStatusByUserId(user.getUserId());
+		objectEntryVersion.setStatusByUserName(user.getFullName());
+		objectEntryVersion.setStatusDate(date);
 
 		return objectEntryVersionPersistence.update(objectEntryVersion);
 	}

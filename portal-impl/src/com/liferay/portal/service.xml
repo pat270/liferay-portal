@@ -38,6 +38,7 @@
 		<column name="validationDate" type="Date" />
 		<column name="validationStatus" type="int" />
 		<column name="zip" type="String" />
+		<column name="status" type="int" />
 
 		<!-- Order -->
 
@@ -1223,6 +1224,7 @@
 		<column name="statusListTypeId" type="long" />
 		<column name="comments" type="String" />
 		<column name="logoId" type="long" />
+		<column name="status" type="int" />
 
 		<!-- Relationships -->
 
@@ -1604,7 +1606,7 @@
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column name="companyId" />
 		</finder>
-		<finder name="C_P" return-type="Portlet" unique="true">
+		<finder name="C_P" pretouch="true" return-type="Portlet" unique="true">
 			<finder-column name="companyId" />
 			<finder-column name="portletId" />
 		</finder>
@@ -1953,7 +1955,7 @@
 
 		<!-- Finder methods -->
 
-		<finder name="ServletContextName" return-type="Release" unique="true">
+		<finder name="ServletContextName" pretouch="true" return-type="Release" unique="true">
 			<finder-column case-sensitive="false" name="servletContextName" />
 		</finder>
 	</entity>
@@ -2219,7 +2221,7 @@
 		<finder name="Subtype" return-type="Collection">
 			<finder-column name="subtype" />
 		</finder>
-		<finder name="C_N" return-type="Role" unique="true">
+		<finder name="C_N" pretouch="true" return-type="Role" unique="true">
 			<finder-column name="companyId" />
 			<finder-column case-sensitive="false" name="name" />
 		</finder>
@@ -3126,6 +3128,10 @@
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column name="companyId" />
 		</finder>
+		<finder name="C_C" return-type="Collection">
+			<finder-column name="companyId" />
+			<finder-column name="classNameId" />
+		</finder>
 		<finder name="G_C_C" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="companyId" />
@@ -3187,6 +3193,10 @@
 
 		<!-- Finder methods -->
 
+		<finder name="C_C" return-type="Collection">
+			<finder-column name="companyId" />
+			<finder-column name="classNameId" />
+		</finder>
 		<finder name="G_C_C" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="companyId" />

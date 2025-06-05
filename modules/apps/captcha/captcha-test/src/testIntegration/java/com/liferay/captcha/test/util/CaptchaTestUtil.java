@@ -5,23 +5,25 @@
 
 package com.liferay.captcha.test.util;
 
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.portlet.PortletMode;
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.WindowState;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import javax.portlet.PortletMode;
-import javax.portlet.PortletRequest;
-import javax.portlet.WindowState;
 
 import org.junit.Assert;
 
@@ -84,12 +86,20 @@ public class CaptchaTestUtil {
 		themeDisplay.setLayout(
 			LayoutLocalServiceUtil.fetchLayout(TestPropsValues.getPlid()));
 		themeDisplay.setPlid(TestPropsValues.getPlid());
-		themeDisplay.setPortalURL("http://localhost:8080");
+
+		Company company = CompanyLocalServiceUtil.getCompany(
+			TestPropsValues.getCompanyId());
+
+		themeDisplay.setPortalURL(
+			"http://" + company.getVirtualHostname() + ":8080");
+
 		themeDisplay.setScopeGroupId(TestPropsValues.getGroupId());
 		themeDisplay.setSiteGroupId(TestPropsValues.getGroupId());
 
 		mockHttpServletRequest.setAttribute(
 			WebKeys.THEME_DISPLAY, themeDisplay);
+
+		mockHttpServletRequest.setServerName(company.getVirtualHostname());
 
 		return mockHttpServletRequest;
 	}

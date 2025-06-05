@@ -18,6 +18,7 @@ export class NodePropertiesSidebarPage {
 	readonly addTimerButton: Locator;
 	readonly deleteNotificationsButton: Locator;
 	readonly diagramViewPage: DiagramViewPage;
+	readonly editActionButton: Locator;
 	readonly editAssignmentButton: Locator;
 	readonly nodeLabelInput: Locator;
 	readonly notificationPage: NotificationSectionPage;
@@ -47,6 +48,10 @@ export class NodePropertiesSidebarPage {
 			'button[title="Delete Notifications"]'
 		);
 		this.diagramViewPage = new DiagramViewPage(page);
+		this.editActionButton = page
+			.getByRole('tablist')
+			.filter({hasText: 'Actions'})
+			.locator('a');
 		this.editAssignmentButton = page
 			.getByRole('tablist')
 			.filter({hasText: 'Assignments'})

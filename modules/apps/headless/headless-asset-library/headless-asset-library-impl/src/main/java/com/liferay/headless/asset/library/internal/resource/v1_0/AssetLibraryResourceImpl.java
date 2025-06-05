@@ -8,12 +8,16 @@ package com.liferay.headless.asset.library.internal.resource.v1_0;
 import com.liferay.depot.constants.DepotActionKeys;
 import com.liferay.depot.model.DepotAppCustomization;
 import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.model.DepotEntryPin;
 import com.liferay.depot.service.DepotAppCustomizationLocalService;
+import com.liferay.depot.service.DepotEntryPinLocalService;
+import com.liferay.depot.service.DepotEntryPinService;
 import com.liferay.depot.service.DepotEntryService;
 import com.liferay.headless.asset.library.dto.v1_0.AssetLibrary;
 import com.liferay.headless.asset.library.dto.v1_0.Settings;
 import com.liferay.headless.asset.library.resource.v1_0.AssetLibraryResource;
 import com.liferay.petra.function.UnsafeSupplier;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.Field;
@@ -36,9 +40,11 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -81,6 +87,32 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 	}
 
 	@Override
+	public void deleteAssetLibraryByExternalReferenceCodePin(
+			String externalReferenceCode)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-17564")) {
+			throw new UnsupportedOperationException();
+		}
+
+		deleteAssetLibraryPin(
+			_getGroupIdByExternalReferenceCode(externalReferenceCode));
+	}
+
+	@Override
+	public void deleteAssetLibraryPin(Long assetLibraryId) throws Exception {
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-17564")) {
+			throw new UnsupportedOperationException();
+		}
+
+		DepotEntry depotEntry = _depotEntryService.getGroupDepotEntry(
+			assetLibraryId);
+
+		_depotEntryPinService.deleteDepotEntryPin(
+			contextUser.getUserId(), depotEntry.getDepotEntryId());
+	}
+
+	@Override
 	public Page<AssetLibrary> getAssetLibrariesPage(
 			String keywords, String search, Filter filter,
 			Pagination pagination, Sort[] sorts)
@@ -108,6 +140,36 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 			document -> _toAssetLibrary(
 				_depotEntryService.getDepotEntry(
 					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))));
+	}
+
+	@Override
+	public Page<AssetLibrary> getAssetLibrariesPinnedByMePage(
+			Pagination pagination)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-17564")) {
+			throw new UnsupportedOperationException();
+		}
+
+		List<AssetLibrary> assetLibraries = new ArrayList<>(
+			pagination.getPageSize());
+
+		List<DepotEntryPin> depotEntryPins =
+			_depotEntryPinLocalService.getUserDepotEntryPins(
+				contextUser.getUserId(), pagination.getStartPosition(),
+				pagination.getEndPosition());
+
+		for (DepotEntryPin depotEntryPin : depotEntryPins) {
+			assetLibraries.add(
+				_toAssetLibrary(
+					_depotEntryService.getDepotEntry(
+						depotEntryPin.getDepotEntryId())));
+		}
+
+		return Page.of(
+			assetLibraries, pagination,
+			_depotEntryPinLocalService.getUserDepotEntryPinsCount(
+				contextUser.getUserId()));
 	}
 
 	@Override
@@ -204,15 +266,17 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 		}
 
 		return _toAssetLibrary(
-			_depotEntryService.addDepotEntry(
-				LocalizedMapUtil.getLocalizedMap(
-					contextAcceptLanguage.getPreferredLocale(),
-					assetLibrary.getName(), assetLibrary.getName_i18n()),
+			_addOrUpdateDepotEntry(
 				LocalizedMapUtil.getLocalizedMap(
 					contextAcceptLanguage.getPreferredLocale(),
 					assetLibrary.getDescription(),
 					assetLibrary.getDescription_i18n()),
-				_getServiceContext()));
+				StringPool.BLANK,
+				LocalizedMapUtil.getLocalizedMap(
+					contextAcceptLanguage.getPreferredLocale(),
+					assetLibrary.getName(), assetLibrary.getName_i18n()),
+				_getServiceContext(),
+				_toUnicodeProperties(assetLibrary.getSettings())));
 	}
 
 	@Override
@@ -238,37 +302,78 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 				_toUnicodeProperties(assetLibrary.getSettings())));
 	}
 
+	@Override
+	public AssetLibrary putAssetLibraryByExternalReferenceCodePin(
+			String externalReferenceCode)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-17564")) {
+			throw new UnsupportedOperationException();
+		}
+
+		return putAssetLibraryPin(
+			_getGroupIdByExternalReferenceCode(externalReferenceCode));
+	}
+
+	@Override
+	public AssetLibrary putAssetLibraryPin(Long assetLibraryId)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-17564")) {
+			throw new UnsupportedOperationException();
+		}
+
+		DepotEntry depotEntry = _depotEntryService.getGroupDepotEntry(
+			assetLibraryId);
+
+		_depotEntryPinService.addDepotEntryPin(
+			contextUser.getUserId(), depotEntry.getDepotEntryId());
+
+		return _toAssetLibrary(depotEntry);
+	}
+
 	private DepotEntry _addOrUpdateDepotEntry(
 			Map<Locale, String> descriptionMap, String externalReferenceCode,
 			Map<Locale, String> nameMap, ServiceContext serviceContext,
 			UnicodeProperties unicodeProperties)
 		throws Exception {
 
-		DepotEntry depotEntry = null;
+		Group group = null;
 
-		Group group = _groupLocalService.fetchGroupByExternalReferenceCode(
-			externalReferenceCode, serviceContext.getCompanyId());
+		if (Validator.isNotNull(externalReferenceCode)) {
+			group = _groupLocalService.fetchGroupByExternalReferenceCode(
+				externalReferenceCode, serviceContext.getCompanyId());
+		}
 
 		if (group != null) {
-			depotEntry = _depotEntryService.getGroupDepotEntry(
+			DepotEntry depotEntry = _depotEntryService.getGroupDepotEntry(
 				group.getGroupId());
 
-			depotEntry = _depotEntryService.updateDepotEntry(
+			return _depotEntryService.updateDepotEntry(
 				depotEntry.getDepotEntryId(), nameMap, descriptionMap,
 				_getDepotAppCustomizationMap(
 					depotEntry.getCompanyId(), externalReferenceCode),
 				unicodeProperties, serviceContext);
 		}
-		else {
-			depotEntry = _depotEntryService.addDepotEntry(
-				nameMap, descriptionMap, serviceContext);
+
+		DepotEntry depotEntry = _depotEntryService.addDepotEntry(
+			nameMap, descriptionMap, serviceContext);
+
+		if (Validator.isNotNull(externalReferenceCode) ||
+			((unicodeProperties != null) && !unicodeProperties.isEmpty())) {
+
+			group = depotEntry.getGroup();
+
+			if (Validator.isNotNull(externalReferenceCode)) {
+				group.setExternalReferenceCode(externalReferenceCode);
+			}
+
+			if ((unicodeProperties != null) && !unicodeProperties.isEmpty()) {
+				group.setTypeSettingsProperties(unicodeProperties);
+			}
+
+			_groupLocalService.updateGroup(group);
 		}
-
-		group = depotEntry.getGroup();
-
-		group.setExternalReferenceCode(externalReferenceCode);
-
-		_groupLocalService.updateGroup(group);
 
 		return depotEntry;
 	}
@@ -370,6 +475,14 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 					addAction(
 						ActionKeys.PERMISSIONS, depotEntry, "patchAssetLibrary")
 				).put(
+					"pin",
+					addAction(
+						ActionKeys.UPDATE, depotEntry, "putAssetLibraryPin")
+				).put(
+					"unpin",
+					addAction(
+						ActionKeys.UPDATE, depotEntry, "deleteAssetLibraryPin")
+				).put(
 					"update",
 					addAction(
 						ActionKeys.UPDATE, depotEntry, "patchAssetLibrary")
@@ -388,19 +501,16 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 			true
 		).put(
 			"autoTaggingEnabled",
-			GetterUtil.getString(
-				Boolean.toString(settings.getAutoTaggingEnabled()), "false")
+			GetterUtil.getString(settings.getAutoTaggingEnabled(), "false")
 		).put(
 			"logoColor",
-			GetterUtil.getString(settings.getLogoColor(), "color-0")
+			GetterUtil.getString(settings.getLogoColor(), "outline-0")
 		).put(
 			"sharingEnabled",
-			GetterUtil.getString(
-				Boolean.toString(settings.getSharingEnabled()), "false")
+			GetterUtil.getString(settings.getSharingEnabled(), "false")
 		).put(
 			"useCustomLanguages",
-			GetterUtil.getString(
-				Boolean.toString(settings.getUseCustomLanguages()), "false")
+			GetterUtil.getString(settings.getUseCustomLanguages(), "false")
 		).build();
 	}
 
@@ -412,6 +522,12 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 	@Reference
 	private DepotAppCustomizationLocalService
 		_depotAppCustomizationLocalService;
+
+	@Reference
+	private DepotEntryPinLocalService _depotEntryPinLocalService;
+
+	@Reference
+	private DepotEntryPinService _depotEntryPinService;
 
 	@Reference
 	private DepotEntryService _depotEntryService;

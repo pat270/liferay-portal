@@ -53,12 +53,12 @@ test(
 		};
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await expect(page.getByTestId('simulation')).toHaveCount(0);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		const role = await apiHelpers.headlessAdminUser.postRole({
 			name: getRandomString(),
@@ -81,7 +81,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await expect(page.getByTestId('simulation')).toBeVisible();
 
@@ -133,7 +133,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await rolesPage.goto(false);
 
@@ -159,7 +159,7 @@ test(
 		await expect(rolesPage.rolesTable.newButton).toHaveCount(0);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		const role2 = await apiHelpers.headlessAdminUser.postRole({
 			name: getRandomString(),
@@ -186,7 +186,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await rolesPage.goto(false);
 
@@ -310,7 +310,7 @@ test(
 			const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
 
 			await performLogout(page);
-			await performLoginViaApi(page, user1.alternateName);
+			await performLoginViaApi({page, screenName: user1.alternateName});
 
 			await usersAndOrganizationsPage.goToUsersWithLimitedAccess();
 
@@ -341,7 +341,7 @@ test(
 		}
 		finally {
 			await performLogout(page);
-			await performLoginViaApi(page, 'test');
+			await performLoginViaApi({page, screenName: 'test'});
 
 			await apiHelpers.jsonWebServicesResourcePermissionApiHelper.setIndividualResourcePermissions(
 				['VIEW'],
@@ -411,7 +411,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		const homePage = new HomePage(page);
 
@@ -465,8 +465,6 @@ test(
 	async ({accountsPage, apiHelpers, page, site}) => {
 		const account = await apiHelpers.headlessAdminUser.postAccount();
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const companyId = await page.evaluate(() => {
 			return Liferay.ThemeDisplay.getCompanyId();
 		});
@@ -516,7 +514,7 @@ test(
 		};
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -525,7 +523,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await apiHelpers.jsonWebServicesUser.assignUsersToSite(
 			site.id,
@@ -533,7 +531,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -542,7 +540,7 @@ test(
 		).toBeVisible();
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		const guestRole = await apiHelpers.headlessAdminUser.getRoleByName(
 			'Guest',
@@ -695,7 +693,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await teamsPage.goTo(site.friendlyUrlPath);
 
@@ -739,7 +737,7 @@ test(
 		}).toPass();
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -775,7 +773,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await teamsPage.goTo(site.friendlyUrlPath);
 
@@ -841,14 +839,14 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
 		await expect(bookmarksPage.bookmarkItem(bookmarkName)).toHaveCount(0);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await apiHelpers.headlessAdminUser.assignUserToSite(
 			role.id,
@@ -857,7 +855,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -970,7 +968,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user1.alternateName);
+		await performLoginViaApi({page, screenName: user1.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -981,7 +979,7 @@ test(
 		).toBeVisible();
 
 		await performLogout(page);
-		await performLoginViaApi(page, user2.alternateName);
+		await performLoginViaApi({page, screenName: user2.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -1013,7 +1011,7 @@ test(
 		await usersAndOrganizationsPage.goToOrganizations();
 
 		await (
-			await usersAndOrganizationsPage.organizationActionsMenu(
+			await usersAndOrganizationsPage.organizationsTable.rowActions(
 				organization.name
 			)
 		).click();
@@ -1147,7 +1145,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user1.alternateName);
+		await performLoginViaApi({page, screenName: user1.alternateName});
 
 		await page.goto(`/web/${organization.name}/${layout.friendlyUrlPath}`);
 
@@ -1155,7 +1153,7 @@ test(
 		await expect(blogsPage.noEntriesMessage).toHaveCount(0);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user2.alternateName);
+		await performLoginViaApi({page, screenName: user2.alternateName});
 
 		await page.goto(`/web/${organization.name}/${layout.friendlyUrlPath}`);
 
@@ -1261,7 +1259,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user1.alternateName);
+		await performLoginViaApi({page, screenName: user1.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -1269,7 +1267,7 @@ test(
 		await expect(blogsPage.noEntriesMessage).toHaveCount(0);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user2.alternateName);
+		await performLoginViaApi({page, screenName: user2.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -1312,7 +1310,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 
@@ -1323,7 +1321,7 @@ test(
 		).toBeVisible();
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		const userGroup = await apiHelpers.headlessAdminUser.postUserGroup();
 
@@ -1354,7 +1352,7 @@ test(
 		await waitForAlert(page);
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}/${layout.friendlyUrlPath}`);
 

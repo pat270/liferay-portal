@@ -768,6 +768,11 @@
 			<category name="Bug Prevention" />
 			<description name="Performs several checks on class in `internal` package." />
 		</check>
+		<check name="JavaJSImportMapsContributorCheck">
+			<category name="Bug Prevention" />
+			<description name="Performs several checks on `*JSImportMapsContributor` class." />
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaJSPDynamicIncludeCheck">
 			<category name="Bug Prevention" />
 			<description name="Performs several checks on `*JSPDynamicInclude` class." />
@@ -1734,7 +1739,13 @@
 
 		<check name="TSConfigFileCheck">
 			<category name="Bug Prevention" />
-			<description name="Finds missing `test.properties` files." />
+			<description name="Performs several checks on `ts.config` file." />
+			<property name="enabled" value="false" />
+		</check>
+		<check name="TSSpecFileLocationCheck">
+			<category name="Bug Prevention" />
+			<description name="Checks that `*.spec.ts` file should be inside a folder that contains a `config.ts`." />
+			<property name="enabled" value="false" />
 		</check>
 	</source-processor>
 	<source-processor name="TXTSourceProcessor">
@@ -2194,6 +2205,11 @@
 			<category name="Styling" />
 			<description name="Finds lines that are longer than the specified maximum line length." />
 			<property name="maxLineLength" value="120" />
+		</check>
+		<check name="YMLRESTConfigFileBreakingChangeCommitMessageCheck">
+			<category name="Bug Prevention" />
+			<description name="Checks that commit message should contain the schematized breaking changes." />
+			<property name="enabled" value="false" />
 		</check>
 		<check name="YMLStylingCheck">
 			<category name="Styling" />

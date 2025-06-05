@@ -280,6 +280,7 @@ function BulkActions({
 								{!!bulkActions.length && (
 									<li className="nav-item">
 										<DropDown
+											closeOnClick
 											hasLeftSymbols
 											trigger={
 												<ClayButtonWithIcon
@@ -336,7 +337,7 @@ function BulkActions({
 }
 
 BulkActions.propTypes = {
-	allItemsSelectedActive: PropTypes.bool.isRequired,
+	allItemsSelectedActive: PropTypes.bool,
 	bulkActions: PropTypes.arrayOf(
 		PropTypes.shape({
 			href: PropTypes.string.isRequired,

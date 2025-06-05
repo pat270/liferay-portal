@@ -26,13 +26,14 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collections;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -57,9 +58,14 @@ public class DepotRoleContributorTest {
 		_group = GroupTestUtil.addGroup();
 	}
 
-	@FeatureFlags("LPD-17564")
+	@FeatureFlag("LPD-17564")
 	@Test
 	public void testCMSConsumerRoleAssignment() throws Exception {
+		Role role = _roleLocalService.fetchRole(
+			_group.getCompanyId(), DepotRolesConstants.CMS_CONSUMER);
+
+		Assume.assumeNotNull(role);
+
 		Group group = GroupTestUtil.addGroup(
 			_group.getCompanyId(), TestPropsValues.getUserId(),
 			GroupConstants.DEFAULT_PARENT_GROUP_ID, GroupConstants.CMS);
@@ -70,14 +76,11 @@ public class DepotRoleContributorTest {
 				PermissionChecker permissionChecker =
 					_permissionCheckerFactory.create(user);
 
-				long[] roleIds = permissionChecker.getRoleIds(
-					user.getUserId(), group.getGroupId());
-
-				Role role = _roleLocalService.getRole(
-					_group.getCompanyId(), DepotRolesConstants.CMS_CONSUMER);
-
 				Assert.assertTrue(
-					ArrayUtil.contains(roleIds, role.getRoleId()));
+					ArrayUtil.contains(
+						permissionChecker.getRoleIds(
+							user.getUserId(), group.getGroupId()),
+						role.getRoleId()));
 			});
 	}
 

@@ -11,10 +11,10 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
-import java.util.List;
+import jakarta.portlet.RenderRequest;
+import jakarta.portlet.RenderResponse;
 
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
+import java.util.List;
 
 /**
  * @author Antonio Ortega
@@ -40,6 +40,13 @@ public class SampleDisplayContext {
 				_renderResponse.createRenderURL(), "navigation", "fieldset"
 			).setLabel(
 				"Fieldset"
+			).build(),
+			NavigationItemBuilder.setActive(
+				navigation.equals("icon-menu")
+			).setHref(
+				_renderResponse.createRenderURL(), "navigation", "icon-menu"
+			).setLabel(
+				"Icon Menu"
 			).build(),
 			NavigationItemBuilder.setActive(
 				navigation.equals("input-localized")

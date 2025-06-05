@@ -54,17 +54,17 @@ import com.yubico.webauthn.data.PublicKeyCredentialDescriptor;
 import com.yubico.webauthn.data.RelyingPartyIdentity;
 import com.yubico.webauthn.data.UserIdentity;
 
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -154,11 +154,7 @@ public class FIDO2BrowserSetupMFAChecker
 			_mfaFIDO2CredentialEntryLocalService.
 				getMFAFIDO2CredentialEntriesByUserId(userId);
 
-		if (!mfaFIDO2CredentialEntries.isEmpty()) {
-			return true;
-		}
-
-		return false;
+		return !mfaFIDO2CredentialEntries.isEmpty();
 	}
 
 	@Override
@@ -168,11 +164,8 @@ public class FIDO2BrowserSetupMFAChecker
 		HttpServletRequest originalHttpServletRequest =
 			_portal.getOriginalServletRequest(httpServletRequest);
 
-		if (_isVerified(originalHttpServletRequest.getSession(false), userId)) {
-			return true;
-		}
-
-		return false;
+		return _isVerified(
+			originalHttpServletRequest.getSession(false), userId);
 	}
 
 	@Override

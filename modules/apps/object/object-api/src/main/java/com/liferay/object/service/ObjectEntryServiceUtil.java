@@ -77,6 +77,15 @@ public class ObjectEntryServiceUtil {
 			externalReferenceCode, companyId, groupId);
 	}
 
+	public static ObjectEntry expireObjectEntry(
+			long userId, long objectEntryId, int version,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().expireObjectEntry(
+			userId, objectEntryId, version, serviceContext);
+	}
+
 	public static ObjectEntry fetchManyToOneObjectEntry(
 			long groupId, long objectRelationshipId, long primaryKey)
 		throws PortalException {
@@ -199,6 +208,15 @@ public class ObjectEntryServiceUtil {
 
 		return getService().hasPortletResourcePermission(
 			groupId, objectDefinitionId, actionId);
+	}
+
+	public static ObjectEntry partialUpdateObjectEntry(
+			long objectEntryId, Map<String, Serializable> values,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().partialUpdateObjectEntry(
+			objectEntryId, values, serviceContext);
 	}
 
 	public static ObjectEntry updateObjectEntry(

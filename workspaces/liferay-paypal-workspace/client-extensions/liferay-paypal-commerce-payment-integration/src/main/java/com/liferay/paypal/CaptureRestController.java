@@ -5,7 +5,6 @@
 
 package com.liferay.paypal;
 
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Objects;
@@ -68,7 +67,7 @@ public class CaptureRestController extends BaseRestController {
 					).put(
 						"Prefer", "return=representation"
 					).build(),
-					StringBundler.concat(
+					createURI(
 						getPayPalURL(typeSettingsJSONObject.getString("mode")),
 						"v2/checkout/orders/",
 						commercePaymentEntryJSONObject.getString(
@@ -119,7 +118,7 @@ public class CaptureRestController extends BaseRestController {
 						"webhookId",
 						typeSettingsJSONObject.getString("webhookId")
 					).toString(),
-					getLiferayURL() + "/o/c/b9k3paypalwebhooks");
+					createURI("/o/c/b9k3paypalwebhooks"));
 			}
 		}
 		catch (Exception exception) {

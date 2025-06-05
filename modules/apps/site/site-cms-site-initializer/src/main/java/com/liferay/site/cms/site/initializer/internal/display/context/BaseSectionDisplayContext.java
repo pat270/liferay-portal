@@ -12,6 +12,8 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.info.constants.InfoDisplayWebKeys;
 import com.liferay.object.constants.ObjectDefinitionSettingConstants;
+import com.liferay.object.constants.ObjectEntryFolderConstants;
+import com.liferay.object.constants.ObjectFolderConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectDefinitionSetting;
 import com.liferay.object.model.ObjectEntryFolder;
@@ -19,6 +21,7 @@ import com.liferay.object.service.ObjectDefinitionService;
 import com.liferay.object.service.ObjectDefinitionSettingLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -27,22 +30,25 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.portlet.ActionRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.List;
 import java.util.Map;
-
-import javax.portlet.ActionRequest;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 /**
  * @author Marco Galluzzi
@@ -54,8 +60,8 @@ public abstract class BaseSectionDisplayContext {
 		GroupLocalService groupLocalService,
 		HttpServletRequest httpServletRequest, Language language,
 		ObjectDefinitionService objectDefinitionService,
-		ObjectDefinitionSettingLocalService
-			objectDefinitionSettingLocalService) {
+		ObjectDefinitionSettingLocalService objectDefinitionSettingLocalService,
+		Portal portal) {
 
 		_depotEntryLocalService = depotEntryLocalService;
 		_groupLocalService = groupLocalService;
@@ -70,38 +76,30 @@ public abstract class BaseSectionDisplayContext {
 		Object object = httpServletRequest.getAttribute(
 			InfoDisplayWebKeys.INFO_ITEM);
 
-		_objectEntryFolder =
+		objectEntryFolder =
 			object instanceof ObjectEntryFolder ? (ObjectEntryFolder)object :
 				null;
+
+		this.portal = portal;
 
 		themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
 
 	public String getAPIURL() {
-		String[] objectFolderExternalReferenceCodes =
-			getObjectFolderExternalReferenceCodes();
+		StringBundler sb = new StringBundler(4);
 
-		StringBundler sb = new StringBundler(9);
+		sb.append("/o/search/v1.0/search?emptySearch=true&filter=");
 
-		sb.append("/o/search/v1.0/search?emptySearch=true&");
-		sb.append("filter=objectFolderExternalReferenceCode in ('");
-		sb.append(StringUtil.merge(objectFolderExternalReferenceCodes, "','"));
-		sb.append("')");
-
-		String cmsSectionFilterString = getCMSSectionFilterString();
-
-		if (Validator.isNotNull(cmsSectionFilterString)) {
-			sb.append(" or ");
-			sb.append(cmsSectionFilterString);
+		if (objectEntryFolder != null) {
+			sb.append("folderId eq ");
+			sb.append(objectEntryFolder.getObjectEntryFolderId());
+		}
+		else {
+			sb.append(getCMSSectionFilterString());
 		}
 
-		if (_objectEntryFolder != null) {
-			sb.append(" and folderId eq");
-			sb.append(_objectEntryFolder.getObjectEntryFolderId());
-		}
-
-		sb.append("&nestedFields=embedded");
+		sb.append("&nestedFields=embedded,file.thumbnailURL");
 
 		return sb.toString();
 	}
@@ -114,7 +112,63 @@ public abstract class BaseSectionDisplayContext {
 				null));
 	}
 
-	public abstract CreationMenu getCreationMenu();
+	public CreationMenu getCreationMenu() {
+		return new CreationMenu() {
+			{
+				if (getRootObjectEntryFolderExternalReferenceCode() != null) {
+					addPrimaryDropdownItem(
+						dropdownItem -> {
+							dropdownItem.putData("action", "createFolder");
+							dropdownItem.putData(
+								"assetLibraries", _getDepotEntriesJSONArray());
+							dropdownItem.putData(
+								"baseAssetLibraryViewURL",
+								StringBundler.concat(
+									themeDisplay.getPathFriendlyURLPublic(),
+									GroupConstants.CMS_FRIENDLY_URL,
+									"/e/space/",
+									portal.getClassNameId(DepotEntry.class),
+									StringPool.SLASH));
+							dropdownItem.putData(
+								"baseFolderViewURL",
+								StringBundler.concat(
+									themeDisplay.getPathFriendlyURLPublic(),
+									GroupConstants.CMS_FRIENDLY_URL,
+									"/e/view-folder/",
+									portal.getClassNameId(
+										ObjectEntryFolder.class),
+									StringPool.SLASH));
+							dropdownItem.putData(
+								"parentObjectEntryFolderExternalReferenceCode",
+								_getParentObjectEntryFolderExternalReferenceCode());
+							dropdownItem.setIcon("folder");
+							dropdownItem.setLabel(
+								language.get(httpServletRequest, "folder"));
+						});
+				}
+
+				if (!Objects.equals(
+						getRootObjectEntryFolderExternalReferenceCode(),
+						ObjectEntryFolderConstants.
+							EXTERNAL_REFERENCE_CODE_CONTENTS)) {
+
+					addPrimaryDropdownItem(
+						dropdownItem -> {
+							dropdownItem.putData(
+								"action", "uploadMultipleFiles");
+							dropdownItem.putData(
+								"assetLibraries", _getDepotEntriesJSONArray());
+							dropdownItem.setIcon("upload-multiple");
+							dropdownItem.setLabel(
+								language.get(
+									httpServletRequest, "multiple-files"));
+						});
+				}
+
+				addStructureContentDropdownItems(this);
+			}
+		};
+	}
 
 	public abstract Map<String, Object> getEmptyState();
 
@@ -122,15 +176,40 @@ public abstract class BaseSectionDisplayContext {
 		return ListUtil.fromArray(
 			new FDSActionDropdownItem(
 				StringBundler.concat(
+					themeDisplay.getPathFriendlyURLPublic(),
+					GroupConstants.CMS_FRIENDLY_URL, "/e/view-folder/",
+					portal.getClassNameId(ObjectEntryFolder.class),
+					"/{embedded.id}"),
+				"view", "actionLinkFolder",
+				LanguageUtil.get(httpServletRequest, "view-folder"), "get",
+				"update", null,
+				HashMapBuilder.<String, Object>put(
+					"entryClassName", ObjectEntryFolder.class.getName()
+				).build()),
+			new FDSActionDropdownItem(
+				StringBundler.concat(
+					themeDisplay.getPathFriendlyURLPublic(),
+					GroupConstants.CMS_FRIENDLY_URL, "/e/edit-folder/",
+					portal.getClassNameId(ObjectEntryFolder.class),
+					"/{embedded.id}?redirect=", themeDisplay.getURLCurrent()),
+				"pencil", "editFolder",
+				LanguageUtil.get(httpServletRequest, "edit"), "get", "update",
+				null,
+				HashMapBuilder.<String, Object>put(
+					"entryClassName", ObjectEntryFolder.class.getName()
+				).build()),
+			new FDSActionDropdownItem(
+				StringBundler.concat(
 					themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
-					"/cms/edit_content_item?className={entryClassName}&",
-					"objectEntryId={embedded.id}&redirect=",
-					themeDisplay.getURLCurrent()),
-				"pencil", "edit", LanguageUtil.get(httpServletRequest, "edit"),
-				"get", "update", null),
+					GroupConstants.CMS_FRIENDLY_URL,
+					"/edit_content_item?objectEntryId={embedded.id}&",
+					"redirect=", themeDisplay.getURLCurrent()),
+				"pencil", "actionLink",
+				LanguageUtil.get(httpServletRequest, "edit"), "get", "update",
+				null),
 			new FDSActionDropdownItem(
 				PortletURLBuilder.create(
-					PortalUtil.getControlPanelPortletURL(
+					portal.getControlPanelPortletURL(
 						httpServletRequest,
 						"com_liferay_portlet_configuration_web_portlet_" +
 							"PortletConfigurationPortlet",
@@ -177,10 +256,15 @@ public abstract class BaseSectionDisplayContext {
 						StringBundler.concat(
 							themeDisplay.getPortalURL(),
 							themeDisplay.getPathMain(),
-							"/cms/add_structured_content_item?",
+							GroupConstants.CMS_FRIENDLY_URL,
+							"/add_structured_content_item?",
 							"objectDefinitionId=",
-							objectDefinition.getObjectDefinitionId(), "&plid=",
-							themeDisplay.getPlid()));
+							objectDefinition.getObjectDefinitionId(),
+							"&objectEntryFolderExternalReferenceCode=",
+							_getObjectEntryFolderExternalReferenceCode(
+								objectDefinition),
+							"&plid=", themeDisplay.getPlid(), "&redirect=",
+							themeDisplay.getURLCurrent()));
 					dropdownItem.putData(
 						"title",
 						objectDefinition.getLabel(themeDisplay.getLocale()));
@@ -217,9 +301,31 @@ public abstract class BaseSectionDisplayContext {
 
 	protected abstract String[] getObjectFolderExternalReferenceCodes();
 
+	protected abstract String getRootObjectEntryFolderExternalReferenceCode();
+
 	protected final HttpServletRequest httpServletRequest;
 	protected final Language language;
+	protected final ObjectEntryFolder objectEntryFolder;
+	protected final Portal portal;
 	protected final ThemeDisplay themeDisplay;
+
+	private JSONArray _getDepotEntriesJSONArray() {
+		if (objectEntryFolder == null) {
+			return getDepotEntriesJSONArray(
+				_depotEntryLocalService.getDepotEntries(
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS));
+		}
+
+		Group group = _groupLocalService.fetchGroup(
+			objectEntryFolder.getGroupId());
+
+		return JSONUtil.putAll(
+			JSONUtil.put(
+				"groupId", group.getGroupId()
+			).put(
+				"name", group.getName(themeDisplay.getLocale())
+			));
+	}
 
 	private JSONArray _getDepotEntriesJSONArray(
 		ObjectDefinition objectDefinition) {
@@ -255,11 +361,43 @@ public abstract class BaseSectionDisplayContext {
 					GetterUtil.getLong(groupId))));
 	}
 
+	private String _getObjectEntryFolderExternalReferenceCode(
+		ObjectDefinition objectDefinition) {
+
+		if (objectEntryFolder != null) {
+			return objectEntryFolder.getExternalReferenceCode();
+		}
+
+		if (Objects.equals(
+				objectDefinition.getObjectFolderExternalReferenceCode(),
+				ObjectFolderConstants.
+					EXTERNAL_REFERENCE_CODE_CONTENT_STRUCTURES)) {
+
+			return ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS;
+		}
+
+		if (Objects.equals(
+				objectDefinition.getObjectFolderExternalReferenceCode(),
+				ObjectFolderConstants.EXTERNAL_REFERENCE_CODE_FILE_TYPES)) {
+
+			return ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_FILES;
+		}
+
+		return null;
+	}
+
+	private String _getParentObjectEntryFolderExternalReferenceCode() {
+		if (objectEntryFolder == null) {
+			return getRootObjectEntryFolderExternalReferenceCode();
+		}
+
+		return objectEntryFolder.getExternalReferenceCode();
+	}
+
 	private final DepotEntryLocalService _depotEntryLocalService;
 	private final GroupLocalService _groupLocalService;
 	private final ObjectDefinitionService _objectDefinitionService;
 	private final ObjectDefinitionSettingLocalService
 		_objectDefinitionSettingLocalService;
-	private final ObjectEntryFolder _objectEntryFolder;
 
 }

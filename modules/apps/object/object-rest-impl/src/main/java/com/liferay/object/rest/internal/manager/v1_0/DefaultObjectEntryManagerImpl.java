@@ -6,6 +6,7 @@
 package com.liferay.object.rest.internal.manager.v1_0;
 
 import com.liferay.account.exception.NoSuchGroupException;
+import com.liferay.batch.engine.attachment.BatchEngineAttachmentManager;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.object.action.engine.ObjectActionEngine;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
@@ -58,6 +59,7 @@ import com.liferay.object.service.ObjectRelationshipService;
 import com.liferay.object.system.SystemObjectDefinitionManager;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -120,10 +122,16 @@ import com.liferay.portal.vulcan.util.ActionUtil;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.UriInfo;
+
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 
 import java.text.ParseException;
 
@@ -136,10 +144,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -233,6 +237,42 @@ public class DefaultObjectEntryManagerImpl
 	}
 
 	@Override
+	public ObjectEntry copyObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
+		throws Exception {
+
+		if (!objectDefinition.isEnableObjectEntryVersioning()) {
+			throw new UnsupportedOperationException();
+		}
+
+		ObjectEntry objectEntry = getObjectEntryByVersion(
+			dtoConverterContext, objectEntryId, version);
+
+		return _copyVersionedObjectEntry(
+			dtoConverterContext, objectDefinition, objectEntry);
+	}
+
+	@Override
+	public ObjectEntry copyObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			String externalReferenceCode, ObjectDefinition objectDefinition,
+			int version)
+		throws Exception {
+
+		if (!objectDefinition.isEnableObjectEntryVersioning()) {
+			throw new UnsupportedOperationException();
+		}
+
+		ObjectEntry objectEntry = getObjectEntryByVersion(
+			dtoConverterContext, externalReferenceCode, objectDefinition,
+			version);
+
+		return _copyVersionedObjectEntry(
+			dtoConverterContext, objectDefinition, objectEntry);
+	}
+
+	@Override
 	public void deleteObjectEntry(
 			long companyId, DTOConverterContext dtoConverterContext,
 			String externalReferenceCode, ObjectDefinition objectDefinition,
@@ -261,6 +301,45 @@ public class DefaultObjectEntryManagerImpl
 			_objectEntryService.getObjectEntry(objectEntryId));
 
 		_objectEntryService.deleteObjectEntry(objectEntryId);
+	}
+
+	@Override
+	public void deleteObjectEntryByVersion(
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
+		throws Exception {
+
+		if (!objectDefinition.isEnableObjectEntryVersioning()) {
+			throw new UnsupportedOperationException();
+		}
+
+		_checkObjectEntryObjectDefinitionId(
+			objectDefinition,
+			_objectEntryService.getObjectEntry(objectEntryId));
+
+		_objectEntryVersionService.deleteObjectEntryVersion(
+			objectEntryId, version);
+	}
+
+	@Override
+	public void deleteObjectEntryByVersion(
+			String externalReferenceCode, ObjectDefinition objectDefinition,
+			int version)
+		throws Exception {
+
+		if (!objectDefinition.isEnableObjectEntryVersioning()) {
+			throw new UnsupportedOperationException();
+		}
+
+		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry =
+			_objectEntryService.getObjectEntry(
+				externalReferenceCode, objectDefinition.getCompanyId(),
+				getGroupId(objectDefinition, null));
+
+		_checkObjectEntryObjectDefinitionId(
+			objectDefinition, serviceBuilderObjectEntry);
+
+		_objectEntryVersionService.deleteObjectEntryVersion(
+			serviceBuilderObjectEntry.getObjectEntryId(), version);
 	}
 
 	@Override
@@ -307,6 +386,32 @@ public class DefaultObjectEntryManagerImpl
 			objectEntryLocalService.getObjectEntry(
 				externalReferenceCode, companyId,
 				getGroupId(objectDefinition, scopeKey)));
+	}
+
+	@Override
+	public ObjectEntry expireObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
+		throws Exception {
+
+		return _expireObjectEntry(
+			dtoConverterContext, objectDefinition,
+			_objectEntryService.getObjectEntry(objectEntryId), version);
+	}
+
+	@Override
+	public ObjectEntry expireObjectEntryByVersion(
+			DTOConverterContext dtoConverterContext,
+			String externalReferenceCode, ObjectDefinition objectDefinition,
+			int version)
+		throws Exception {
+
+		return _expireObjectEntry(
+			dtoConverterContext, objectDefinition,
+			_objectEntryService.getObjectEntry(
+				externalReferenceCode, objectDefinition.getCompanyId(),
+				getGroupId(objectDefinition, null)),
+			version);
 	}
 
 	@Override
@@ -596,7 +701,7 @@ public class DefaultObjectEntryManagerImpl
 	@Override
 	public ObjectEntry getObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext, Long objectEntryId,
-			Integer version)
+			int version)
 		throws Exception {
 
 		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry =
@@ -615,7 +720,7 @@ public class DefaultObjectEntryManagerImpl
 	public ObjectEntry getObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext,
 			String externalReferenceCode, ObjectDefinition objectDefinition,
-			Integer version)
+			int version)
 		throws Exception {
 
 		ObjectEntry objectEntry = getObjectEntry(
@@ -823,16 +928,15 @@ public class DefaultObjectEntryManagerImpl
 					dtoConverterContext, objectDefinition, objectEntryId),
 				objectDefinition.getObjectDefinitionId(), objectEntry);
 
-		return updateObjectEntry(
-			dtoConverterContext, objectDefinition, objectEntryId,
-			existingObjectEntry);
+		return _updateObjectEntry(
+			dtoConverterContext, objectDefinition, existingObjectEntry,
+			objectEntryId, true);
 	}
 
 	@Override
 	public ObjectEntry restoreObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext,
-			ObjectDefinition objectDefinition, long objectEntryId,
-			Integer version)
+			ObjectDefinition objectDefinition, long objectEntryId, int version)
 		throws Exception {
 
 		return _restoreVersionedObjectEntry(
@@ -845,7 +949,7 @@ public class DefaultObjectEntryManagerImpl
 	public ObjectEntry restoreObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext,
 			String externalReferenceCode, ObjectDefinition objectDefinition,
-			Integer version)
+			int version)
 		throws Exception {
 
 		return _restoreVersionedObjectEntry(
@@ -862,35 +966,9 @@ public class DefaultObjectEntryManagerImpl
 			ObjectEntry objectEntry)
 		throws Exception {
 
-		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry =
-			_objectEntryService.getObjectEntry(objectEntryId);
-
-		_checkObjectEntryObjectDefinitionId(
-			objectDefinition, serviceBuilderObjectEntry);
-
-		validateReadOnlyObjectFields(
-			serviceBuilderObjectEntry.getExternalReferenceCode(),
-			objectDefinition, objectEntry);
-
-		String scopeKey = String.valueOf(
-			serviceBuilderObjectEntry.getGroupId());
-
-		ServiceContext serviceContext = _createServiceContext(
-			dtoConverterContext, objectDefinition, objectEntry);
-
-		serviceBuilderObjectEntry = _objectEntryService.updateObjectEntry(
-			objectEntryId,
-			_toObjectValues(
-				dtoConverterContext.getLocale(), objectDefinition, objectEntry,
-				scopeKey, serviceContext),
-			serviceContext);
-
-		return _toObjectEntry(
-			dtoConverterContext, objectDefinition,
-			_addOrUpdateNestedObjectEntries(
-				dtoConverterContext, objectDefinition, objectEntry,
-				_getObjectRelationships(objectDefinition, objectEntry),
-				serviceBuilderObjectEntry, scopeKey));
+		return _updateObjectEntry(
+			dtoConverterContext, objectDefinition, objectEntry, objectEntryId,
+			false);
 	}
 
 	@Override
@@ -1142,6 +1220,21 @@ public class DefaultObjectEntryManagerImpl
 		}
 	}
 
+	private ObjectEntry _copyVersionedObjectEntry(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, ObjectEntry objectEntry)
+		throws Exception {
+
+		objectEntry.setExternalReferenceCode(() -> null);
+		objectEntry.setId(() -> null);
+
+		_removeReadOnlyProperties(objectDefinition, objectEntry);
+
+		return addObjectEntry(
+			dtoConverterContext, objectDefinition, objectEntry,
+			objectEntry.getScopeKey());
+	}
+
 	private ServiceContext _createServiceContext(
 			DTOConverterContext dtoConverterContext,
 			ObjectDefinition objectDefinition, ObjectEntry objectEntry)
@@ -1259,6 +1352,31 @@ public class DefaultObjectEntryManagerImpl
 				}
 			),
 			dtoConverterContext.getUserId());
+	}
+
+	private ObjectEntry _expireObjectEntry(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition,
+			com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry,
+			int version)
+		throws Exception {
+
+		_checkObjectEntryObjectDefinitionId(
+			objectDefinition, serviceBuilderObjectEntry);
+
+		_objectEntryService.expireObjectEntry(
+			dtoConverterContext.getUserId(),
+			serviceBuilderObjectEntry.getObjectEntryId(), version,
+			ServiceContextUtil.createServiceContext(
+				serviceBuilderObjectEntry.getObjectEntryId()));
+
+		dtoConverterContext.setAttribute(
+			"objectEntryVersion",
+			_objectEntryVersionService.getObjectEntryVersion(
+				serviceBuilderObjectEntry.getObjectEntryId(), version));
+
+		return _objectEntryDTOConverter.toDTO(
+			dtoConverterContext, serviceBuilderObjectEntry);
 	}
 
 	private int _getEndPosition(Pagination pagination) {
@@ -1627,7 +1745,8 @@ public class DefaultObjectEntryManagerImpl
 				 FeatureFlagManagerUtil.isEnabled("LPD-39967")) {
 
 			try {
-				URL url = new URL(fileEntry.getFileURL());
+				URL url = _batchEngineAttachmentManager.getURL(
+					fileEntry.getFileURL());
 
 				if (Objects.equals(url.getProtocol(), "file")) {
 					throw new UnsupportedOperationException(
@@ -1637,21 +1756,22 @@ public class DefaultObjectEntryManagerImpl
 							url.getProtocol()));
 				}
 
-				Http.Options options = new Http.Options();
+				URLConnection urlConnection = url.openConnection();
 
-				options.setLocation(url.toString());
+				if ((urlConnection instanceof
+						HttpURLConnection httpURLConnection) &&
+					(httpURLConnection.getResponseCode() !=
+						HttpURLConnection.HTTP_OK)) {
 
-				fileContent = _http.URLtoByteArray(options);
-
-				Http.Response response = options.getResponse();
-
-				if (response.getResponseCode() != 200) {
 					throw new IllegalArgumentException(
 						StringBundler.concat(
 							"Unable to download file from ",
 							fileEntry.getFileURL(), ", unexpected HTTP code: ",
-							response.getResponseCode()));
+							httpURLConnection.getResponseCode()));
 				}
+
+				fileContent = StreamUtil.toByteArray(
+					urlConnection.getInputStream());
 			}
 			catch (IOException ioException) {
 				_log.error(ioException);
@@ -1777,8 +1897,7 @@ public class DefaultObjectEntryManagerImpl
 			primaryKey2, serviceContext);
 	}
 
-	private ObjectEntry _restoreVersionedObjectEntry(
-			DTOConverterContext dtoConverterContext,
+	private void _removeReadOnlyProperties(
 			ObjectDefinition objectDefinition, ObjectEntry objectEntry)
 		throws Exception {
 
@@ -1796,6 +1915,14 @@ public class DefaultObjectEntryManagerImpl
 				properties.remove(objectField.getName());
 			}
 		}
+	}
+
+	private ObjectEntry _restoreVersionedObjectEntry(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, ObjectEntry objectEntry)
+		throws Exception {
+
+		_removeReadOnlyProperties(objectDefinition, objectEntry);
 
 		return updateObjectEntry(
 			dtoConverterContext, objectDefinition, objectEntry.getId(),
@@ -2054,7 +2181,59 @@ public class DefaultObjectEntryManagerImpl
 				objectField.getName(), _getValue(locale, objectField, value));
 		}
 
+		values.put("displayDate", objectEntry.getDisplayDate());
+		values.put("expirationDate", objectEntry.getExpirationDate());
+		values.put("reviewDate", objectEntry.getReviewDate());
+
 		return values;
+	}
+
+	private ObjectEntry _updateObjectEntry(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, ObjectEntry objectEntry,
+			long objectEntryId, boolean partialUpdate)
+		throws Exception {
+
+		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry =
+			_objectEntryService.getObjectEntry(objectEntryId);
+
+		_checkObjectEntryObjectDefinitionId(
+			objectDefinition, serviceBuilderObjectEntry);
+
+		validateReadOnlyObjectFields(
+			serviceBuilderObjectEntry.getExternalReferenceCode(),
+			objectDefinition, objectEntry);
+
+		String scopeKey = String.valueOf(
+			serviceBuilderObjectEntry.getGroupId());
+
+		ServiceContext serviceContext = _createServiceContext(
+			dtoConverterContext, objectDefinition, objectEntry);
+
+		if (partialUpdate) {
+			serviceBuilderObjectEntry =
+				_objectEntryService.partialUpdateObjectEntry(
+					objectEntryId,
+					_toObjectValues(
+						dtoConverterContext.getLocale(), objectDefinition,
+						objectEntry, scopeKey, serviceContext),
+					serviceContext);
+		}
+		else {
+			serviceBuilderObjectEntry = _objectEntryService.updateObjectEntry(
+				objectEntryId,
+				_toObjectValues(
+					dtoConverterContext.getLocale(), objectDefinition,
+					objectEntry, scopeKey, serviceContext),
+				serviceContext);
+		}
+
+		return _toObjectEntry(
+			dtoConverterContext, objectDefinition,
+			_addOrUpdateNestedObjectEntries(
+				dtoConverterContext, objectDefinition, objectEntry,
+				_getObjectRelationships(objectDefinition, objectEntry),
+				serviceBuilderObjectEntry, scopeKey));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -2065,6 +2244,9 @@ public class DefaultObjectEntryManagerImpl
 
 	@Reference
 	private AttachmentManager _attachmentManager;
+
+	@Reference
+	private BatchEngineAttachmentManager _batchEngineAttachmentManager;
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;

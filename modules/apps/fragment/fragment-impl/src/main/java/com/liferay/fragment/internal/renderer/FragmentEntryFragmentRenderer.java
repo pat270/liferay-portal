@@ -46,15 +46,15 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -251,7 +251,7 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 		FragmentRendererContext fragmentRendererContext, String html,
 		HttpServletRequest httpServletRequest, String nonce) {
 
-		StringBundler sb = new StringBundler(29);
+		StringBundler sb = new StringBundler(31);
 
 		sb.append("<div id=\"");
 
@@ -337,6 +337,8 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 			sb.append(fragmentRendererContext.getFragmentElementId());
 			sb.append("'); const fragmentEntryLinkNamespace = '");
 			sb.append(fragmentEntryLink.getNamespace());
+			sb.append("'; const fragmentName = '");
+			sb.append(_getFragmentEntryName(fragmentEntryLink));
 			sb.append("'; const fragmentNamespace = '");
 			sb.append(fragmentEntryLink.getNamespace());
 			sb.append("'");

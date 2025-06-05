@@ -6,9 +6,8 @@
 import {openModal} from 'frontend-js-components-web';
 import {navigate} from 'frontend-js-web';
 
-import CreationModalContent, {
-	AssetLibrary,
-} from '../../components/modal/CreationModalContent';
+import {AssetLibrary} from '../../../types/AssetLibrary';
+import CreationModalContent from '../../components/modal/CreationModalContent';
 
 export type AssetData = {
 	action: 'createAsset';
@@ -22,7 +21,7 @@ export default function createAssetAction(data: AssetData) {
 		const url = new URL(data.redirect);
 
 		url.searchParams.set('name', '');
-		url.searchParams.set('groupId', data.assetLibraries[0].groupId);
+		url.searchParams.set('groupId', String(data.assetLibraries[0].groupId));
 
 		navigate(url.pathname + url.search);
 

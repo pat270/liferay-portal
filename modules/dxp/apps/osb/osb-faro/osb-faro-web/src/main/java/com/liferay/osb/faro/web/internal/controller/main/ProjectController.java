@@ -55,6 +55,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.DateUtil;
@@ -63,6 +64,22 @@ import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
+
+import jakarta.annotation.security.RolesAllowed;
+
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -80,22 +97,6 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
-
-import javax.annotation.security.RolesAllowed;
-
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -663,37 +664,41 @@ public class ProjectController extends BaseFaroController {
 				ProjectController.class.getName());
 
 		executorService.submit(
-			() -> {
-				try {
-					List<FaroProject> faroProjects = new ArrayList<>();
+			new CompanyInheritableThreadLocalCallable<>(
+				() -> {
+					try {
+						List<FaroProject> faroProjects = new ArrayList<>();
 
-					if (Validator.isNotNull(groupId)) {
-						faroProjects.add(
-							_faroProjectLocalService.fetchFaroProjectByGroupId(
-								groupId));
+						if (Validator.isNotNull(groupId)) {
+							faroProjects.add(
+								_faroProjectLocalService.
+									fetchFaroProjectByGroupId(groupId));
+						}
+						else {
+							faroProjects =
+								_faroProjectLocalService.getFaroProjects(
+									QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+						}
+
+						for (FaroProject faroProject : faroProjects) {
+							_faroProjectLocalService.updateSubscription(
+								faroProject.getFaroProjectId(),
+								JSONUtil.writeValueAsString(
+									_resetProjectUsageDisplays(
+										faroProject.getGroupId(),
+										startDateString)));
+						}
+
+						if (_log.isInfoEnabled()) {
+							_log.info("Finished resetting project usage");
+						}
 					}
-					else {
-						faroProjects = _faroProjectLocalService.getFaroProjects(
-							QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+					catch (Exception exception) {
+						_log.error(exception);
 					}
 
-					for (FaroProject faroProject : faroProjects) {
-						_faroProjectLocalService.updateSubscription(
-							faroProject.getFaroProjectId(),
-							JSONUtil.writeValueAsString(
-								_resetProjectUsageDisplays(
-									faroProject.getGroupId(),
-									startDateString)));
-					}
-
-					if (_log.isInfoEnabled()) {
-						_log.info("Finished resetting project usage");
-					}
-				}
-				catch (Exception exception) {
-					_log.error(exception);
-				}
-			});
+					return null;
+				}));
 	}
 
 	@Path("/{groupId}/send-created-workspace-email")

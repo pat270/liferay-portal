@@ -15,29 +15,28 @@ import com.liferay.headless.asset.library.dto.v1_0.AssetLibrary;
 import com.liferay.headless.asset.library.resource.v1_0.AssetLibraryResource;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.site.cms.site.initializer.internal.display.context.SpacesSectionDisplayContext;
 import com.liferay.taglib.servlet.PageContextFactoryUtil;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import java.util.Locale;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -83,46 +82,52 @@ public class SpacesSectionFragmentRenderer extends BaseSectionFragmentRenderer {
 				(ThemeDisplay)httpServletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
 
-			JSONArray assetLibrariesJSONArray = _jsonFactory.createJSONArray();
-			long assetLibrariesCount = 0;
+			SpacesSectionDisplayContext spacesSectionDisplayContext =
+				new SpacesSectionDisplayContext(
+					_assetLibraryResourceFactory, httpServletRequest);
 
-			try {
-				AssetLibraryResource.Builder builder =
-					_assetLibraryResourceFactory.create();
-
-				AssetLibraryResource assetLibraryResource = builder.user(
-					themeDisplay.getUser()
-				).build();
-
-				Page<AssetLibrary> page =
-					assetLibraryResource.getAssetLibrariesPage(
-						null, null, null, Pagination.of(1, 5), null);
-
-				assetLibrariesJSONArray = JSONUtil.toJSONArray(
-					page.getItems(),
-					assetLibrary -> JSONUtil.put(
-						"id", assetLibrary.getId()
-					).put(
-						"name", assetLibrary.getName()
-					).put(
-						"url",
-						StringBundler.concat(
-							themeDisplay.getPathFriendlyURLPublic(),
-							themeDisplay.getPathCms(), "/e/space/",
-							_portal.getClassNameId(DepotEntry.class),
-							StringPool.SLASH, assetLibrary.getId())
-					));
-				assetLibrariesCount = page.getTotalCount();
+			if (PortalRunMode.isTestMode()) {
+				httpServletRequest.setAttribute(
+					SpacesSectionDisplayContext.class.getName(),
+					spacesSectionDisplayContext);
 			}
-			catch (Exception exception) {
-				_log.error(exception);
-			}
+
+			Page<AssetLibrary> page = spacesSectionDisplayContext.getPage();
 
 			componentTag.setProps(
 				HashMapBuilder.<String, Object>put(
-					"assetLibraries", assetLibrariesJSONArray
+					"allSpacesURL",
+					StringBundler.concat(
+						themeDisplay.getPathFriendlyURLPublic(),
+						GroupConstants.CMS_FRIENDLY_URL, "/all-spaces")
 				).put(
-					"assetLibrariesCount", assetLibrariesCount
+					"assetLibraries",
+					JSONUtil.toJSONArray(
+						page.getItems(),
+						assetLibrary -> JSONUtil.put(
+							"id", assetLibrary.getId()
+						).put(
+							"name", assetLibrary.getName()
+						).put(
+							"settings",
+							_jsonFactory.createJSONObject(
+								_jsonFactory.looseSerialize(
+									assetLibrary.getSettings()))
+						).put(
+							"url",
+							StringBundler.concat(
+								themeDisplay.getPathFriendlyURLPublic(),
+								GroupConstants.CMS_FRIENDLY_URL, "/e/space/",
+								_portal.getClassNameId(DepotEntry.class),
+								StringPool.SLASH, assetLibrary.getId())
+						))
+				).put(
+					"assetLibrariesCount", page.getTotalCount()
+				).put(
+					"newSpaceURL",
+					StringBundler.concat(
+						themeDisplay.getPathFriendlyURLPublic(),
+						GroupConstants.CMS_FRIENDLY_URL, "/new-space")
 				).put(
 					"showAddButton",
 					_portletResourcePermission.contains(
@@ -143,9 +148,6 @@ public class SpacesSectionFragmentRenderer extends BaseSectionFragmentRenderer {
 			throw new RuntimeException(exception);
 		}
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		SpacesSectionFragmentRenderer.class);
 
 	@Reference
 	private AssetLibraryResource.Factory _assetLibraryResourceFactory;

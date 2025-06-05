@@ -16,10 +16,10 @@ import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.PortletResponse;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Iván Zaera Avellón
@@ -44,7 +44,10 @@ public class ClientExtensionAdminDisplayContext {
 		for (String type : _cetFactory.getTypes()) {
 			String key = CETFactory.FEATURE_FLAG_KEYS.get(type);
 
-			if ((key != null) && !FeatureFlagManagerUtil.isEnabled(key)) {
+			if ((key != null) &&
+				!FeatureFlagManagerUtil.isEnabled(
+					PortalUtil.getCompanyId(_liferayPortletRequest), key)) {
+
 				continue;
 			}
 

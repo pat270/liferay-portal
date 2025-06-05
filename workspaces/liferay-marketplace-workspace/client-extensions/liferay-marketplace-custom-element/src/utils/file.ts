@@ -11,6 +11,33 @@
  */
 const base64ToText = (base64: string) => base64.split(',').at(-1);
 
+const downloadFile = async (filename: string, response: Response) => {
+	const blob = await response.blob();
+
+	const contentDisposition = response.headers.get('content-disposition');
+
+	if (contentDisposition) {
+		filename = (
+			contentDisposition
+				.split(';')
+				.find((n) => n.includes('filename=')) ?? ''
+		)
+			.replace('filename=', '')
+			.replaceAll('"', '')
+			.trim();
+	}
+
+	const anchor = document.createElement('a');
+
+	anchor.download = filename;
+	anchor.href = URL.createObjectURL(blob);
+
+	document.body.appendChild(anchor);
+
+	anchor.click();
+	anchor.remove();
+};
+
 const fileToBase64 = (file: File): Promise<ArrayBuffer | null | string> =>
 	new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -20,4 +47,4 @@ const fileToBase64 = (file: File): Promise<ArrayBuffer | null | string> =>
 		reader.onerror = reject;
 	});
 
-export {base64ToText, fileToBase64};
+export {base64ToText, downloadFile, fileToBase64};

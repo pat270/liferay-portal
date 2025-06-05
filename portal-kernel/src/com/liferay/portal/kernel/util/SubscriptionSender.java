@@ -53,8 +53,10 @@ import com.liferay.portal.kernel.service.UserNotificationEventLocalServiceUtil;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
-import java.io.File;
+import jakarta.mail.internet.InternetAddress;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -67,8 +69,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-
-import javax.mail.internet.InternetAddress;
 
 /**
  * @author Brian Wing Shun Chan
@@ -95,12 +95,12 @@ public class SubscriptionSender implements Serializable {
 		}
 	}
 
-	public void addFileAttachment(File file) {
-		addFileAttachment(file, null);
+	public void addFileAttachment(InputStream inputStream) {
+		addFileAttachment(null, inputStream);
 	}
 
-	public void addFileAttachment(File file, String fileName) {
-		if (file == null) {
+	public void addFileAttachment(String fileName, InputStream inputStream) {
+		if (inputStream == null) {
 			return;
 		}
 
@@ -108,7 +108,7 @@ public class SubscriptionSender implements Serializable {
 			fileAttachments = new ArrayList<>();
 		}
 
-		FileAttachment attachment = new FileAttachment(file, fileName);
+		FileAttachment attachment = new FileAttachment(fileName, inputStream);
 
 		fileAttachments.add(attachment);
 	}
@@ -911,7 +911,8 @@ public class SubscriptionSender implements Serializable {
 		if (fileAttachments != null) {
 			for (FileAttachment fileAttachment : fileAttachments) {
 				mailMessage.addFileAttachment(
-					fileAttachment.getFile(), fileAttachment.getFileName());
+					fileAttachment.getFileName(),
+					fileAttachment.getInputStream());
 			}
 		}
 

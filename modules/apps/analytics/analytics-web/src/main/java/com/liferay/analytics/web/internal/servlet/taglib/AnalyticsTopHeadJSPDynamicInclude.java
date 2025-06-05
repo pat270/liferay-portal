@@ -30,14 +30,14 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 import java.util.Map;
 import java.util.Objects;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -86,9 +86,20 @@ public class AnalyticsTopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 		httpServletRequest.setAttribute(
 			AnalyticsWebKeys.ANALYTICS_CLIENT_CONFIG,
 			_serialize(_getAnalyticsCloudClientConfig(analyticsConfiguration)));
-		httpServletRequest.setAttribute(
-			AnalyticsWebKeys.ANALYTICS_CLIENT_GROUP_IDS,
-			_serialize(analyticsConfiguration.syncedGroupIds()));
+
+		if (GetterUtil.getBoolean(
+				PropsUtil.get(PropsKeys.ANALYTICS_CLOUD_MOCK_ENABLED))) {
+
+			httpServletRequest.setAttribute(
+				AnalyticsWebKeys.ANALYTICS_CLIENT_GROUP_IDS,
+				_serialize(new Long[] {themeDisplay.getScopeGroupId()}));
+		}
+		else {
+			httpServletRequest.setAttribute(
+				AnalyticsWebKeys.ANALYTICS_CLIENT_GROUP_IDS,
+				_serialize(analyticsConfiguration.syncedGroupIds()));
+		}
+
 		httpServletRequest.setAttribute(
 			AnalyticsWebKeys.ANALYTICS_COOKIES_EXPLICIT_CONSENT_MODE,
 			_isCookiesExplicitConsentMode(themeDisplay));

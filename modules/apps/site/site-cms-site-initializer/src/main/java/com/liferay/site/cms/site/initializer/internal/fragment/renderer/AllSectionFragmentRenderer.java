@@ -12,16 +12,17 @@ import com.liferay.object.service.ObjectDefinitionService;
 import com.liferay.object.service.ObjectDefinitionSettingLocalService;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.site.cms.site.initializer.internal.display.context.AllSectionDisplayContext;
+
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
 import java.util.Locale;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,7 +59,7 @@ public class AllSectionFragmentRenderer extends BaseSectionFragmentRenderer {
 				new AllSectionDisplayContext(
 					_depotEntryLocalService, _groupLocalService,
 					httpServletRequest, _language, _objectDefinitionService,
-					_objectDefinitionSettingLocalService));
+					_objectDefinitionSettingLocalService, _portal));
 
 			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
@@ -82,6 +83,9 @@ public class AllSectionFragmentRenderer extends BaseSectionFragmentRenderer {
 	@Reference
 	private ObjectDefinitionSettingLocalService
 		_objectDefinitionSettingLocalService;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.site.cms.site.initializer)"

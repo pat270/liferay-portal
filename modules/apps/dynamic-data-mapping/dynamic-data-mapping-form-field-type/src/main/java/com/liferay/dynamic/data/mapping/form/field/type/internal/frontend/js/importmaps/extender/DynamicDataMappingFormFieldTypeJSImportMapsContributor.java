@@ -9,7 +9,7 @@ import com.liferay.frontend.js.importmaps.extender.JSImportMapsContributor;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -32,8 +32,8 @@ public class DynamicDataMappingFormFieldTypeJSImportMapsContributor
 		_importMapsJSONObject = _jsonFactory.createJSONObject();
 
 		_importMapsJSONObject.put(
-			"@liferay/dynamic-data-mapping-form-field-type",
-			_servletContext.getContextPath() + "/__liferay__/index.js");
+			"@liferay/dynamic-data-mapping-form-field-type/api",
+			_servletContext.getContextPath() + "/__liferay__/api.js");
 	}
 
 	private JSONObject _importMapsJSONObject;

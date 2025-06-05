@@ -9,16 +9,16 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.oauth2.provider.model.OAuth2Application;
 import com.liferay.oauth2.provider.service.OAuth2ScopeGrantLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
-import java.util.Collections;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -67,13 +67,21 @@ public class DenyAccessToAdminScopeTononAdminUserTest
 		Assert.assertEquals(400, response.getStatus());
 	}
 
-	public static class
+	@Override
+	protected BundleActivator getBundleActivator() {
+		return new DenyAccessToAdminScopeTononAdminUserTestPreparatorBundleActivator();
+	}
+
+	@Inject
+	private OAuth2ScopeGrantLocalService _oAuth2ScopeGrantLocalService;
+
+	private class
 		DenyAccessToAdminScopeTononAdminUserTestPreparatorBundleActivator
 			extends BaseTestPreparatorBundleActivator {
 
 		@Override
 		protected void prepareTest() throws Exception {
-			long companyId = PortalUtil.getDefaultCompanyId();
+			long companyId = TestPropsValues.getCompanyId();
 
 			OAuth2Application oauth2AdminApp = createOAuth2Application(
 				companyId, UserTestUtil.getAdminUser(companyId),
@@ -105,13 +113,5 @@ public class DenyAccessToAdminScopeTononAdminUserTest
 		}
 
 	}
-
-	@Override
-	protected BundleActivator getBundleActivator() {
-		return new DenyAccessToAdminScopeTononAdminUserTestPreparatorBundleActivator();
-	}
-
-	@Inject
-	private static OAuth2ScopeGrantLocalService _oAuth2ScopeGrantLocalService;
 
 }

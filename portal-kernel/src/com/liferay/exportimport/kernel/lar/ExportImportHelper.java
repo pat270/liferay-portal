@@ -15,12 +15,12 @@ import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.zip.ZipWriter;
 
+import jakarta.portlet.PortletRequest;
+
 import java.io.File;
 
 import java.util.List;
 import java.util.Map;
-
-import javax.portlet.PortletRequest;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -51,6 +51,9 @@ public interface ExportImportHelper {
 	public List<Portlet> getDataSiteLevelPortlets(
 			long companyId, boolean excludeDataAlwaysStaged)
 		throws Exception;
+
+	public List<Portlet> getExportablePortlets(
+		long companyId, boolean excludeDataAlwaysStaged, long groupId);
 
 	public String getExportableRootPortletId(long companyId, String portletId)
 		throws Exception;

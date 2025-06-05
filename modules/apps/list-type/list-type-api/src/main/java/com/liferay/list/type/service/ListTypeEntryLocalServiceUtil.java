@@ -55,11 +55,12 @@ public class ListTypeEntryLocalServiceUtil {
 	public static ListTypeEntry addListTypeEntry(
 			String externalReferenceCode, long userId,
 			long listTypeDefinitionId, String key,
-			Map<java.util.Locale, String> nameMap)
+			Map<java.util.Locale, String> nameMap, boolean system)
 		throws PortalException {
 
 		return getService().addListTypeEntry(
-			externalReferenceCode, userId, listTypeDefinitionId, key, nameMap);
+			externalReferenceCode, userId, listTypeDefinitionId, key, nameMap,
+			system);
 	}
 
 	/**
@@ -369,6 +370,14 @@ public class ListTypeEntryLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getListTypeEntryByUuidAndCompanyId(uuid, companyId);
+	}
+
+	public static ListTypeEntry getOrAddIncompleteListTypeEntry(
+			long userId, long listTypeDefinitionId, String key)
+		throws PortalException {
+
+		return getService().getOrAddIncompleteListTypeEntry(
+			userId, listTypeDefinitionId, key);
 	}
 
 	/**

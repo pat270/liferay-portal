@@ -134,6 +134,10 @@ components:
                             items:
                                 type: string
                             type: array
+                        collectionProvider:
+                            type: boolean
+                        collectionProviderType:
+                            type: string
                         emptySearchEnabled:
                             type: boolean
                         explain:
@@ -401,6 +405,10 @@ components:
                         type: object
                     readOnly: true
                     type: object
+                collectionProviderSubtypeName:
+                    type: string
+                collectionProviderTypeName:
+                    type: string
                 configuration:
                     $ref: "#/components/schemas/Configuration"
                 createDate:
@@ -578,7 +586,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.search.experiences.rest.client', and version '3.0.35'."
+        'com.liferay.search.experiences.rest.client', and version '3.0.36'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html

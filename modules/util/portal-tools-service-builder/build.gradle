@@ -41,7 +41,7 @@ dependencies {
 	api group: "com.liferay", name: "org.freemarker", transitive: false, version: "2.3.33.LIFERAY-PATCHED-2"
 	api group: "com.puppycrawl.tools", name: "checkstyle", version: "8.43"
 	api group: "com.thoughtworks.qdox", name: "qdox", version: "2.0-M5"
-	api group: "commons-io", name: "commons-io", version: "2.15.1"
+	api group: "commons-io", name: "commons-io", version: "2.19.0"
 	api group: "jalopy", name: "jalopy", transitive: false, version: "1.5rc3"
 	api group: "jaxen", name: "jaxen", transitive: false, version: "1.1.1"
 	api group: "org.dom4j", name: "dom4j", transitive: false, version: "2.1.3"
@@ -138,7 +138,7 @@ needed by Service Builder to generate model services.
 }
 
 updateFileVersions {
+	match(/\t\t<dependency name="com.liferay.portal.tools.service.builder" org="com.liferay" rev="(\d.+)" \/>/, "../../../tools/sdk/dependencies/com.liferay.portal.tools.service.builder/ivy.xml")
 	match(/\t\t\t\t<version>(\d.+)<\/version>/, "samples/pom.xml")
 	match(/com\.liferay\.portal\.tools\.service\.builder=(\d.+)/, "../../sdk/gradle-plugins/src/main/resources/com/liferay/gradle/plugins/dependencies/portal-tools.properties")
-	match(/\t\t<dependency name="com.liferay.portal.tools.service.builder" org="com.liferay" rev="(\d.+)" \/>/, "../../../tools/sdk/dependencies/com.liferay.portal.tools.service.builder/ivy.xml")
 }

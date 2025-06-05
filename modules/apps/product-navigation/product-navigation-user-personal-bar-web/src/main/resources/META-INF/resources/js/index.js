@@ -6,64 +6,105 @@
 import {openModal} from 'frontend-js-components-web';
 import {addParams, fetch, navigate} from 'frontend-js-web';
 
-async function fetchModalContent(url) {
-	try {
-		const modalSignInURL = addParams('windowState=exclusive', url);
-
-		const response = await fetch(modalSignInURL);
-		const responseText = await response.text();
-
-		return responseText;
-	}
-	catch (error) {
-		if (process.env.NODE_ENV === 'development') {
-			console.error(error);
-		}
-
-		return '';
-	}
-}
-
 export function signInButtonPropsTransformer({
-	additionalProps: {redirect, signInURL},
+	additionalProps: {redirect: initialRedirect, signInURL},
 	...props
 }) {
-	const onClick = async () => {
-		if (redirect) {
-			navigate(signInURL);
+	const signInButton = document.querySelector('.sign-in > div > button');
+	const modalSignInURL = addParams('windowState=exclusive', signInURL);
+	let loading = false;
+	let modalContentHTML = '';
+	let isModalOpen = false;
+	let shouldRedirect = initialRedirect;
 
+	const updateModalContent = (html) => {
+		const modalBody = document.querySelector('.liferay-modal-body');
+		if (modalBody) {
+			const fragment = document
+				.createRange()
+				.createContextualFragment(html);
+			modalBody.innerHTML = '';
+			modalBody.appendChild(fragment);
+		}
+	};
+
+	const loadModalContent = () => {
+		if (loading || modalContentHTML) {
 			return;
 		}
 
-		const modalContentPromise = fetchModalContent(signInURL);
+		loading = true;
 
-		openModal({
-			bodyHTML: '<span class="loading-animation"></span>',
-			containerProps: {className: ''},
-			onOpen: async () => {
-				const modalBody = document.querySelector('.liferay-modal-body');
-
-				try {
-					const modalContent = await modalContentPromise;
-
-					if (modalBody && modalContent) {
-						modalBody.innerHTML = modalContent;
-					}
-					else {
-						navigate(signInURL);
-					}
+		fetch(modalSignInURL)
+			.then((response) => response.text())
+			.then((responseHTML) => {
+				if (!loading) {
+					return;
 				}
-				catch (error) {
-					navigate(signInURL);
+
+				loading = false;
+
+				if (!responseHTML) {
+					shouldRedirect = true;
+
+					return;
 				}
-			},
-			size: 'md',
-			title: Liferay.Language.get('sign-in'),
-		});
+
+				modalContentHTML = responseHTML;
+
+				if (isModalOpen) {
+					updateModalContent(responseHTML);
+				}
+			})
+			.catch(() => {
+				shouldRedirect = true;
+			});
 	};
 
 	return {
 		...props,
-		onClick,
+		onClick() {
+			loadModalContent();
+
+			if (shouldRedirect) {
+				navigate(signInURL);
+
+				return;
+			}
+
+			if (signInButton) {
+				openModal({
+					bodyHTML:
+						modalContentHTML || '<span class="loading-animation">',
+					containerProps: {
+						className: '',
+					},
+					onClose() {
+						loading = false;
+						shouldRedirect = initialRedirect;
+						modalContentHTML = '';
+						isModalOpen = false;
+					},
+					onOpen() {
+						isModalOpen = true;
+						if (
+							modalContentHTML &&
+							document.querySelector('.loading-animation')
+						) {
+							updateModalContent(modalContentHTML);
+							const signInButton =
+								document.getElementsByClassName(
+									'btn disabled btn-primary'
+								)[0];
+
+							signInButton.classList.remove('disabled');
+							signInButton.disabled = false;
+						}
+					},
+					size: 'md',
+					title: Liferay.Language.get('sign-in'),
+				});
+			}
+		},
 	};
 }

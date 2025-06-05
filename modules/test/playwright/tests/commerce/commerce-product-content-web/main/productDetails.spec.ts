@@ -477,26 +477,22 @@ test(
 
 		await page.goto(`/web/${site.name}/p/productbundle`);
 
-		await expect(
-			await productDetailsPage.optionSelector('Color')
-		).toBeVisible();
-		await expect(
-			await productDetailsPage.optionSelector('Size')
-		).toBeVisible();
-		await (
-			await productDetailsPage.optionSelector('Color')
-		).selectOption({label: 'Choose an Option'});
+		await expect(productDetailsPage.optionSelector('Color')).toBeVisible();
+		await expect(productDetailsPage.optionSelector('Size')).toBeVisible();
+		await productDetailsPage
+			.optionSelector('Color')
+			.selectOption({label: 'Choose an Option'});
 
 		await expect(page.getByText('This field is required.')).toBeVisible();
 
 		await expect(productDetailsPage.addToCartButton).toBeDisabled();
 
-		await (
-			await productDetailsPage.optionSelector('Color')
-		).selectOption({label: 'Black'});
-		await (
-			await productDetailsPage.optionSelector('Size')
-		).selectOption({label: 'XL + $ 10.00'});
+		await productDetailsPage
+			.optionSelector('Color')
+			.selectOption({label: 'Black'});
+		await productDetailsPage
+			.optionSelector('Size')
+			.selectOption({label: 'XL + $ 10.00'});
 
 		await expect(await productDetailsPage.uomTable('Unit')).toBeVisible();
 		await expect(
@@ -636,7 +632,6 @@ test(`LPD-29993 Users can view and download a product's attachments`, async ({
 		name: 'admin',
 		type: 'business',
 	});
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const user =
 		await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
@@ -765,7 +760,6 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 		name: getRandomString(),
 		type: 'business',
 	});
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const user =
 		await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
@@ -909,7 +903,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await performLogout(page);
 
-	await performLoginViaApi(page, 'test');
+	await performLoginViaApi({page, screenName: 'test'});
 
 	await apiHelpers.headlessCommerceAdminPricing.deleteDiscountSku(
 		discount2.discountSkuId
@@ -979,8 +973,6 @@ test('COMMERCE-6364. As a buyer, I want the first selectable quantity of a produ
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const user =
 		await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(

@@ -27,6 +27,9 @@ public class CMSSiteInitializerFDSNames {
 		CMSSiteInitializerConstants.BUNDLE_SYMBOLIC_NAME +
 			"-categorizationTags";
 
+	public static final String CATEGORY_USAGES =
+		CMSSiteInitializerConstants.BUNDLE_SYMBOLIC_NAME + "-categoryUsages";
+
 	public static final String CONTENTS_SECTION =
 		CMSSiteInitializerConstants.BUNDLE_SYMBOLIC_NAME + "-contentsSection";
 
@@ -38,6 +41,12 @@ public class CMSSiteInitializerFDSNames {
 
 	public static final String STRUCTURES_SECTION =
 		CMSSiteInitializerConstants.BUNDLE_SYMBOLIC_NAME + "-structuresSection";
+
+	public static final String TAG_USAGES =
+		CMSSiteInitializerConstants.BUNDLE_SYMBOLIC_NAME + "-tagUsages";
+
+	public static final String VIEW_FOLDER =
+		CMSSiteInitializerConstants.BUNDLE_SYMBOLIC_NAME + "-viewFolder";
 
 	public static final String VOCABULARIES =
 		CMSSiteInitializerConstants.BUNDLE_SYMBOLIC_NAME + "-vocabularies";

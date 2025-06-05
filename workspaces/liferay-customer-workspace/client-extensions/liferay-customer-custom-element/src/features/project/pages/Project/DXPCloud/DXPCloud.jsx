@@ -10,12 +10,12 @@ import {useAppPropertiesContext} from '~/contexts/AppPropertiesContext';
 import {getDXPCloudEnvironment} from '~/services/liferay/graphql/queries';
 import {getOrRequestToken} from '~/services/liferay/security/auth/getOrRequestToken';
 import ActivationStatus from '~/features/project/containers/ActivationStatus/index';
-import {useCustomerPortal} from '~/features/project/context';
+import {useAppContext} from '~/features/project/context';
 import DeveloperKeysLayouts from '~/features/project/layouts/DeveloperKeysLayout';
 import {LIST_TYPES, PRODUCT_TYPES} from '~/features/project/utils/constants';
 
 const DXPCloud = () => {
-	const [{project, subscriptionGroups, userAccount}] = useCustomerPortal();
+	const [{project, subscriptionGroups, userAccount}] = useAppContext();
 	const {setHasSideMenu} = useOutletContext();
 	const [dxpCloudEnvironment, setDxpCloudEnvironment] = useState();
 	const [oAuthToken, setOAuthToken] = useState();
@@ -78,7 +78,7 @@ const DXPCloud = () => {
 						'to-activate-a-local-instance-of-liferay-dxp-download-a-developer-key-for-your-liferay-dxp-version'
 					)}
 					dxpVersion={project.dxpVersion}
-					listType={LIST_TYPES.dxpMajorVersion}
+					listType={LIST_TYPES.developerKeyDXPVersion}
 					oAuthToken={oAuthToken}
 					productName="DXP"
 					projectName={project.name}

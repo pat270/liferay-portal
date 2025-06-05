@@ -16,11 +16,11 @@ import com.liferay.search.experiences.constants.SXPActionKeys;
 import com.liferay.search.experiences.constants.SXPConstants;
 import com.liferay.search.experiences.constants.SXPPortletKeys;
 
+import jakarta.portlet.PortletRequest;
+
+import jakarta.servlet.ServletContext;
+
 import java.util.Map;
-
-import javax.portlet.PortletRequest;
-
-import javax.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -31,7 +31,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	enabled = false,
 	property = {
-		"javax.portlet.name=" + SXPPortletKeys.SXP_BLUEPRINT_ADMIN, "path=-",
+		"jakarta.portlet.name=" + SXPPortletKeys.SXP_BLUEPRINT_ADMIN, "path=-",
 		"path=/sxp_blueprint_admin/view_sxp_blueprints",
 		"path=/sxp_blueprint_admin/view_sxp_elements"
 	},
@@ -69,15 +69,9 @@ public class ImportPortletConfigurationIcon
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		if (_portletResourcePermission.contains(
-				themeDisplay.getPermissionChecker(),
-				themeDisplay.getScopeGroup(),
-				SXPActionKeys.ADD_SXP_BLUEPRINT)) {
-
-			return true;
-		}
-
-		return false;
+		return _portletResourcePermission.contains(
+			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroup(),
+			SXPActionKeys.ADD_SXP_BLUEPRINT);
 	}
 
 	@Override

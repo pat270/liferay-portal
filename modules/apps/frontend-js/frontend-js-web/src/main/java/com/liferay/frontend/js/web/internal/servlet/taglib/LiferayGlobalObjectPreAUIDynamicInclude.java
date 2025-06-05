@@ -51,6 +51,10 @@ import com.liferay.portal.servlet.BrowserSnifferUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.ShutdownUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -63,10 +67,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -115,7 +115,7 @@ public class LiferayGlobalObjectPreAUIDynamicInclude
 
 			String currentURL = _portal.getCurrentURL(httpServletRequest);
 
-			_renderValue("currentURL", sb, currentURL);
+			_renderValue("currentURL", sb, HtmlUtil.escapeJS(currentURL));
 			_renderValue(
 				"currentURLEncoded", sb,
 				HtmlUtil.escapeJS(URLCodec.encodeURL(currentURL)));
@@ -647,6 +647,8 @@ public class LiferayGlobalObjectPreAUIDynamicInclude
 
 	private void _renderLiferayUtil(StringBuilder sb) {
 		sb.append("Util: {\n");
+		sb.append(_TPL_WINDOW_JS);
+		sb.append(StringPool.NEW_LINE);
 
 		_renderStub(
 			"frontend-js-components-web", "openAlertModal", sb,
@@ -663,8 +665,7 @@ public class LiferayGlobalObjectPreAUIDynamicInclude
 			"openSimpleInputModal");
 		_renderStub("frontend-js-components-web", "openToast", sb, "openToast");
 
-		sb.append("Window: {\n_map: {},\ngetById(id) {\nreturn this._map[id];");
-		sb.append("\n},\n},\n},\n");
+		sb.append("},\n");
 	}
 
 	private void _renderMethod(
@@ -676,9 +677,9 @@ public class LiferayGlobalObjectPreAUIDynamicInclude
 		if (value == null) {
 			sb.append("null");
 		}
-		else if (value instanceof String) {
+		else if (value instanceof Number || value instanceof String) {
 			sb.append(StringPool.APOSTROPHE);
-			sb.append((String)value);
+			sb.append(value);
 			sb.append(StringPool.APOSTROPHE);
 		}
 		else {
@@ -729,6 +730,8 @@ public class LiferayGlobalObjectPreAUIDynamicInclude
 
 	private static final String _TPL_LIFERAY_JS;
 
+	private static final String _TPL_WINDOW_JS;
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		LiferayGlobalObjectPreAUIDynamicInclude.class);
 
@@ -738,6 +741,7 @@ public class LiferayGlobalObjectPreAUIDynamicInclude
 	static {
 		_TPL_LANGUAGE_JS = _read("language.js.tpl");
 		_TPL_LIFERAY_JS = _read("liferay.js.tpl");
+		_TPL_WINDOW_JS = _read("window.js.tpl");
 	}
 
 	@Reference

@@ -8,13 +8,13 @@ package com.liferay.search.experiences.rest.client.dto.v1_0;
 import com.liferay.search.experiences.rest.client.function.UnsafeSupplier;
 import com.liferay.search.experiences.rest.client.serdes.v1_0.SXPBlueprintSerDes;
 
+import jakarta.annotation.Generated;
+
 import java.io.Serializable;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.Generated;
 
 /**
  * @author Brian Wing Shun Chan
@@ -48,6 +48,56 @@ public class SXPBlueprint implements Cloneable, Serializable {
 	}
 
 	protected Map<String, Map<String, String>> actions;
+
+	public String getCollectionProviderSubtypeName() {
+		return collectionProviderSubtypeName;
+	}
+
+	public void setCollectionProviderSubtypeName(
+		String collectionProviderSubtypeName) {
+
+		this.collectionProviderSubtypeName = collectionProviderSubtypeName;
+	}
+
+	public void setCollectionProviderSubtypeName(
+		UnsafeSupplier<String, Exception>
+			collectionProviderSubtypeNameUnsafeSupplier) {
+
+		try {
+			collectionProviderSubtypeName =
+				collectionProviderSubtypeNameUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String collectionProviderSubtypeName;
+
+	public String getCollectionProviderTypeName() {
+		return collectionProviderTypeName;
+	}
+
+	public void setCollectionProviderTypeName(
+		String collectionProviderTypeName) {
+
+		this.collectionProviderTypeName = collectionProviderTypeName;
+	}
+
+	public void setCollectionProviderTypeName(
+		UnsafeSupplier<String, Exception>
+			collectionProviderTypeNameUnsafeSupplier) {
+
+		try {
+			collectionProviderTypeName =
+				collectionProviderTypeNameUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String collectionProviderTypeName;
 
 	public Configuration getConfiguration() {
 		return configuration;

@@ -36,14 +36,14 @@ public class WorkflowDefinitionLinkLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.WorkflowDefinitionLinkLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static WorkflowDefinitionLink addWorkflowDefinitionLink(
-			long userId, long companyId, long groupId, String className,
-			long classPK, long typePK, String workflowDefinitionName,
-			int workflowDefinitionVersion)
+			String externalReferenceCode, long userId, long companyId,
+			long groupId, String className, long classPK, long typePK,
+			String workflowDefinitionName, int workflowDefinitionVersion)
 		throws PortalException {
 
 		return getService().addWorkflowDefinitionLink(
-			userId, companyId, groupId, className, classPK, typePK,
-			workflowDefinitionName, workflowDefinitionVersion);
+			externalReferenceCode, userId, companyId, groupId, className,
+			classPK, typePK, workflowDefinitionName, workflowDefinitionVersion);
 	}
 
 	/**
@@ -137,6 +137,12 @@ public class WorkflowDefinitionLinkLocalServiceUtil {
 
 		return getService().deleteWorkflowDefinitionLink(
 			workflowDefinitionLink);
+	}
+
+	public static void deleteWorkflowDefinitionLinks(
+		long companyId, String className) {
+
+		getService().deleteWorkflowDefinitionLinks(companyId, className);
 	}
 
 	public static <T> T dslQuery(DSLQuery dslQuery) {
@@ -401,6 +407,12 @@ public class WorkflowDefinitionLinkLocalServiceUtil {
 
 		return getService().getWorkflowDefinitionLinks(
 			companyId, groupId, className, classPK);
+	}
+
+	public static List<WorkflowDefinitionLink> getWorkflowDefinitionLinks(
+		long companyId, String className) {
+
+		return getService().getWorkflowDefinitionLinks(companyId, className);
 	}
 
 	public static List<WorkflowDefinitionLink> getWorkflowDefinitionLinks(

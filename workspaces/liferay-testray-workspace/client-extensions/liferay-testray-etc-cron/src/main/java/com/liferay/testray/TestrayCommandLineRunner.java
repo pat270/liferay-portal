@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Nilton Vieira
@@ -35,8 +35,7 @@ public class TestrayCommandLineRunner
 		JSONArray jsonArray = new JSONObject(
 			get(
 				_getAuthorization(),
-				_defaultUriBuilderFactory.builder(
-				).path(
+				UriComponentsBuilder.fromPath(
 					"/o/c/builds"
 				).queryParam(
 					"filter",
@@ -46,7 +45,7 @@ public class TestrayCommandLineRunner
 				).queryParam(
 					"pageSize", "-1"
 				).build(
-				).toString())
+				).toUri())
 		).getJSONArray(
 			"items"
 		);
@@ -65,15 +64,16 @@ public class TestrayCommandLineRunner
 			_log.info("Archiving " + jsonArray.length() + " Testray builds");
 		}
 
-		put(_getAuthorization(), jsonArray.toString(), "/o/c/builds/batch");
+		put(
+			_getAuthorization(), jsonArray.toString(),
+			createURI("/o/c/builds/batch"));
 	}
 
 	public void deleteTestrayBuilds() throws Exception {
 		JSONArray jsonArray = new JSONObject(
 			get(
 				_getAuthorization(),
-				_defaultUriBuilderFactory.builder(
-				).path(
+				UriComponentsBuilder.fromPath(
 					"/o/c/builds"
 				).queryParam(
 					"fields", "id"
@@ -84,7 +84,7 @@ public class TestrayCommandLineRunner
 				).queryParam(
 					"pageSize", "-1"
 				).build(
-				).toString())
+				).toUri())
 		).getJSONArray(
 			"items"
 		);
@@ -93,7 +93,9 @@ public class TestrayCommandLineRunner
 			_log.info("Deleting " + jsonArray.length() + " Testray builds");
 		}
 
-		delete(_getAuthorization(), jsonArray.toString(), "/o/c/builds/batch");
+		delete(
+			_getAuthorization(), jsonArray.toString(),
+			createURI("/o/c/builds/batch"));
 	}
 
 	@Override
@@ -116,8 +118,6 @@ public class TestrayCommandLineRunner
 	).truncatedTo(
 		ChronoUnit.SECONDS
 	);
-	private final DefaultUriBuilderFactory _defaultUriBuilderFactory =
-		new DefaultUriBuilderFactory();
 
 	@Autowired
 	private LiferayOAuth2AccessTokenManager _liferayOAuth2AccessTokenManager;
@@ -125,10 +125,10 @@ public class TestrayCommandLineRunner
 	@Value("${liferay.oauth.application.external.reference.codes}")
 	private String _liferayOAuthApplicationExternalReferenceCodes;
 
-	@Value("${liferay.testray.etc.cron.max.days.archived}")
+	@Value("${liferay.testray.max.days.archived}")
 	private Long _maxDaysArchived;
 
-	@Value("${liferay.testray.etc.cron.max.days.opened}")
+	@Value("${liferay.testray.max.days.opened}")
 	private Long _maxDaysOpened;
 
 }

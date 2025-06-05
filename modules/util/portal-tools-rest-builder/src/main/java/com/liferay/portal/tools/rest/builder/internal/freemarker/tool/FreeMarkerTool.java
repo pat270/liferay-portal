@@ -743,10 +743,28 @@ public class FreeMarkerTool {
 		List<JavaMethodSignature> javaMethodSignatures, String parameterName,
 		String schemaName) {
 
+		String parentSchemaName = parameterName;
+
+		if (parentSchemaName.startsWith("parent")) {
+			parentSchemaName = parentSchemaName.substring(6);
+		}
+
+		if (parentSchemaName.endsWith("ExternalReferenceCode")) {
+			parentSchemaName = parentSchemaName.substring(
+				0, parentSchemaName.length() - 21);
+		}
+
+		if (parentSchemaName.endsWith("Id")) {
+			parentSchemaName = parentSchemaName.substring(
+				0, parentSchemaName.length() - 2);
+		}
+
 		for (JavaMethodSignature javaMethodSignature : javaMethodSignatures) {
 			Operation operation = javaMethodSignature.getOperation();
 
-			if (!Objects.equals(getHTTPMethod(operation), "post")) {
+			if (!Objects.equals(getHTTPMethod(operation), "post") ||
+				!hasParameter(javaMethodSignature, parameterName)) {
+
 				continue;
 			}
 
@@ -754,16 +772,7 @@ public class FreeMarkerTool {
 
 			sb.append(getHTTPMethod(operation));
 
-			if (parameterName.startsWith("parent")) {
-				parameterName = parameterName.substring(6);
-			}
-
-			if (parameterName.endsWith("Id")) {
-				parameterName = parameterName.substring(
-					0, parameterName.length() - 2);
-			}
-
-			sb.append(StringUtil.upperCaseFirstLetter(parameterName));
+			sb.append(StringUtil.upperCaseFirstLetter(parentSchemaName));
 
 			sb.append(StringUtil.upperCaseFirstLetter(schemaName));
 
@@ -807,9 +816,10 @@ public class FreeMarkerTool {
 	}
 
 	public String getResourceMethodAnnotations(
-		JavaMethodSignature javaMethodSignature) {
+		ConfigYAML configYAML, JavaMethodSignature javaMethodSignature) {
 
-		return ResourceOpenAPIParser.getMethodAnnotations(javaMethodSignature);
+		return ResourceOpenAPIParser.getMethodAnnotations(
+			configYAML, javaMethodSignature);
 	}
 
 	public String getResourceMethodName(

@@ -17,6 +17,7 @@ import {pageEditorPagesTest} from '../../../../fixtures/pageEditorPagesTest';
 import {pageViewModePagesTest} from '../../../../fixtures/pageViewModePagesTest';
 import {usersAndOrganizationsPagesTest} from '../../../../fixtures/usersAndOrganizationsPagesTest';
 import {liferayConfig} from '../../../../liferay.config';
+import {getRandomInt} from '../../../../utils/getRandomInt';
 import getRandomString from '../../../../utils/getRandomString';
 import performLogin, {
 	performLoginViaApi,
@@ -40,6 +41,143 @@ export const test = mergeTests(
 	pageEditorPagesTest,
 	pageViewModePagesTest,
 	usersAndOrganizationsPagesTest
+);
+
+test(
+	'Orders that have a subtotal less than the minimum order limit rule will trigger a warning',
+	{tag: '@LPD-56179'},
+	async ({apiHelpers, page, pendingOrdersPage, site, widgetPagePage}) => {
+		const layout = await apiHelpers.jsonWebServicesLayout.addLayout({
+			groupId: site.id,
+			title: getRandomString(),
+		});
+
+		const channel =
+			await apiHelpers.headlessCommerceAdminChannel.postChannel({
+				name: 'Edit pending order Channel',
+				siteGroupId: site.id,
+			});
+
+		const catalog =
+			await apiHelpers.headlessCommerceAdminCatalog.postCatalog({
+				name: 'Edit pending order Catalog',
+			});
+
+		await apiHelpers.headlessCommerceAdminOrder.postOrderRule({
+			type: 'minimum-order-amount',
+			typeSettings:
+				'minimum-order-amount-field-amount=' +
+				'50.00' +
+				'\nminimum-order-amount-field-apply-to=' +
+				'minimum-order-amount-field-apply-to-order-total' +
+				'\nminimum-order-amount-field-currency-code=' +
+				'USD\n',
+		});
+
+		const account = await apiHelpers.headlessAdminUser.postAccount({
+			name: getRandomString(),
+			type: 'person',
+		});
+
+		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
+			account.id,
+			['test@liferay.com']
+		);
+
+		const product1 =
+			await apiHelpers.headlessCommerceAdminCatalog.postProduct({
+				catalogId: catalog.id,
+				name: {en_US: 'Product1'},
+				skus: [
+					{
+						cost: 0,
+						price: 0,
+						published: true,
+						purchasable: true,
+						sku: 'Sku' + getRandomInt(),
+					},
+				],
+			});
+
+		const product1Skus = await apiHelpers.headlessCommerceAdminCatalog
+			.getProduct(product1.productId)
+			.then((product) => {
+				return product.skus;
+			});
+
+		const sku1 = product1Skus[0];
+
+		const order = await apiHelpers.headlessCommerceDeliveryCart.postCart(
+			{
+				accountId: account.id,
+				cartItems: [
+					{
+						options: '[]',
+						quantity: 1,
+						replacedSkuId: 0,
+						skuId: sku1.id,
+					},
+				],
+			},
+			channel.id
+		);
+
+		await page.goto(`/web${site.friendlyUrlPath}${layout.friendlyURL}`);
+
+		await widgetPagePage.addPortlet('Open Carts');
+
+		await pendingOrdersPage.viewButton.click();
+
+		await expect(
+			await page.getByText('The minimum order amount is')
+		).toBeVisible();
+
+		const product2 =
+			await apiHelpers.headlessCommerceAdminCatalog.postProduct({
+				catalogId: catalog.id,
+				name: {en_US: 'Product2'},
+				skus: [
+					{
+						cost: 0,
+						price: 50,
+						published: true,
+						purchasable: true,
+						sku: 'Sku' + getRandomInt(),
+					},
+				],
+			});
+
+		const product2Skus = await apiHelpers.headlessCommerceAdminCatalog
+			.getProduct(product2.productId)
+			.then((product) => {
+				return product.skus;
+			});
+
+		const sku2 = product2Skus[0];
+
+		await apiHelpers.headlessCommerceDeliveryCart.patchCart(
+			{
+				accountId: account.id,
+				cartItems: [
+					{
+						options: '[]',
+						quantity: 1,
+						replacedSkuId: 0,
+						skuId: sku2.id,
+					},
+				],
+			},
+			order.id
+		);
+
+		await page.goto(`/web${site.friendlyUrlPath}${layout.friendlyURL}`);
+
+		await pendingOrdersPage.viewButton.click();
+
+		await expect(
+			await page.getByText('The minimum order amount is')
+		).toBeHidden();
+	}
 );
 
 test('LPD-13627 Edit pending order item with UOM', async ({
@@ -86,8 +224,6 @@ test('LPD-13627 Edit pending order item with UOM', async ({
 		name: getRandomString(),
 		type: 'person',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
@@ -160,8 +296,6 @@ test('LPD-13627 Edit pending order item without UOM', async ({
 		type: 'person',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
 		['test@liferay.com']
@@ -209,8 +343,6 @@ test('LPD-4174 Sales agent can receive email notifications for new orders placed
 		name: 'Sales agent can receive email notifications account',
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
@@ -342,8 +474,6 @@ test('COMMERCE-7697 Verify user can download CSV template', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,
 		['test@liferay.com']
@@ -389,8 +519,6 @@ test('LPD-28683 When clicking on order item without visibility the user is not r
 		name: 'admin',
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const {site} = await miniumSetUp(apiHelpers);
 
@@ -506,8 +634,6 @@ test('LPD-26906 As a buyer, I can edit product options from the pending orders p
 	const account = await apiHelpers.headlessAdminUser.postAccount({
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const {site} = await miniumSetUp(apiHelpers);
 
@@ -742,8 +868,6 @@ test('LPD-3259 As a buyer with approval workflow, when I click review order in m
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	const user =
 		await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
 			'demo.unprivileged@liferay.com'
@@ -857,8 +981,6 @@ test('LPD-33783 Pending orders table displays correct fields', async ({
 		type: 'person',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await apiHelpers.headlessCommerceAdminOrder.postOrder({
 		accountId: account.id,
 		channelId: channel.id,
@@ -910,8 +1032,6 @@ test('LPD-3440 As a order manager with buyer approval workflow, I can approve or
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const user =
 		await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
@@ -1028,8 +1148,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const user = await apiHelpers.headlessAdminUser.postUserAccount();
 
 		userData[user.alternateName] = {
@@ -1123,7 +1241,7 @@ test(
 		});
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`web/${site.name}`);
 

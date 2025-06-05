@@ -17,8 +17,27 @@ import getRandomString from '../../../utils/getRandomString';
 import {clientExtensionsPageTest} from './fixtures/clientExtensionsPageTest';
 import {editJSClientExtensionsPageTest} from './fixtures/editJSClientExtensionsPageTest';
 import {ClientExtensionsPage} from './pages/ClientExtensionsPage';
+import {WaitAction} from './pages/EditClientExtensionsPage';
 import {EditJSClientExtensionsPage} from './pages/EditJSClientExtensionsPage';
 import {ViewClientExtensionPage} from './pages/ViewClientExtensionPage';
+
+const test = mergeTests(
+	clientExtensionsPageTest,
+	editJSClientExtensionsPageTest,
+	isolatedSiteTest,
+	loginTest(),
+	pagesAdminPagesTest,
+	siteSettingsPagesTest
+);
+const testSample = mergeTests(loginTest());
+const testSampleInstanceScoped = mergeTests(
+	editJSClientExtensionsPageTest,
+	featureFlagsTest({
+		'LPD-30371': {enabled: true},
+	}),
+	loginTest(),
+	styleBookPageTest
+);
 
 const SAMPLES = [
 	{
@@ -38,89 +57,80 @@ const SAMPLES = [
 	},
 ];
 
-export const testSample = mergeTests(loginTest());
+testSample.describe('Samples', () => {
+	for (const sample of SAMPLES) {
+		testSample(`${sample.name} is registered`, async ({page}) => {
+			const viewClientExtensionPage = new ViewClientExtensionPage(
+				page,
+				sample.erc
+			);
 
-for (const sample of SAMPLES) {
-	testSample(`${sample.name} is registered`, async ({page}) => {
-		const viewClientExtensionPage = new ViewClientExtensionPage(
-			page,
-			sample.erc
-		);
+			await viewClientExtensionPage.goto();
 
-		await viewClientExtensionPage.goto();
+			await expect(viewClientExtensionPage.nameInput).toHaveValue(
+				sample.name
+			);
 
-		expect(viewClientExtensionPage.nameLocator).toHaveValue(sample.name);
+			sample.url = await viewClientExtensionPage
+				.getInputByLabel('JavaScript URL')
+				.inputValue();
 
-		sample.url = await viewClientExtensionPage
-			.fieldLocator(' JavaScript URL ')
-			.inputValue();
+			await expect(
+				viewClientExtensionPage.getInputByLabel('JavaScript URL')
+			).toHaveValue(sample.url);
+		});
 
-		expect(
-			viewClientExtensionPage.fieldLocator('JavaScript URL')
-		).toHaveValue(sample.url);
-	});
+		testSample(
+			`${sample.name}'s .js file can be downloaded`,
+			async ({page}) => {
+				const response = await page.goto(sample.url);
 
-	testSample(
-		`${sample.name}'s .js file can be downloaded`,
-		async ({page}) => {
-			const response = await page.goto(sample.url);
-
-			expect(response.status()).toBe(200);
-		}
-	);
-}
-
-export const testInstanceScoped = mergeTests(
-	editJSClientExtensionsPageTest,
-	featureFlagsTest({
-		'LPD-30371': {enabled: true},
-	}),
-	loginTest(),
-	styleBookPageTest
-);
-
-testInstanceScoped(
-	'Assert that the instance scoped client extensions are injected into site pages, site control panel pages, and instance control panel pages',
-	async ({editJSClientExtensionsPage, page, styleBooksPage}) => {
-		const scriptLocator = page.locator(`script[src="${SAMPLES[2].url}"]`);
-
-		await testInstanceScoped.step(
-			'Assert that the client extension is imported into a site page',
-			async () => {
-				await page.goto('/');
-
-				await expect(scriptLocator).toBeAttached();
-			}
-		);
-
-		await testInstanceScoped.step(
-			'Assert that the client extension is imported into an instance control panel page',
-			async () => {
-				await editJSClientExtensionsPage.goto();
-
-				await expect(scriptLocator).toBeAttached();
-			}
-		);
-
-		await testInstanceScoped.step(
-			'Assert that the client extension is imported into a site control panel page',
-			async () => {
-				await styleBooksPage.goto();
-
-				await expect(scriptLocator).toBeAttached();
+				expect(response.status()).toBe(200);
+				expect(await response.headerValue('Content-Type')).toBe(
+					'application/javascript'
+				);
 			}
 		);
 	}
-);
+});
 
-export const test = mergeTests(
-	clientExtensionsPageTest,
-	editJSClientExtensionsPageTest,
-	isolatedSiteTest,
-	loginTest(),
-	pagesAdminPagesTest,
-	siteSettingsPagesTest
-);
+testSampleInstanceScoped.describe('Samples (instance scoped)', () => {
+	testSampleInstanceScoped(
+		'Assert that the instance scoped client extensions are injected into site pages, site control panel pages, and instance control panel pages',
+		async ({editJSClientExtensionsPage, page, styleBooksPage}) => {
+			const scriptLocator = page.locator(
+				`script[src="${SAMPLES[2].url}"]`
+			);
+
+			await testSampleInstanceScoped.step(
+				'Assert that the client extension is imported into a site page',
+				async () => {
+					await page.goto('/');
+
+					await expect(scriptLocator).toBeAttached();
+				}
+			);
+
+			await testSampleInstanceScoped.step(
+				'Assert that the client extension is imported into an instance control panel page',
+				async () => {
+					await editJSClientExtensionsPage.goto();
+
+					await expect(scriptLocator).toBeAttached();
+				}
+			);
+
+			await testSampleInstanceScoped.step(
+				'Assert that the client extension is imported into a site control panel page',
+				async () => {
+					await styleBooksPage.goto();
+
+					await expect(scriptLocator).toBeAttached();
+				}
+			);
+		}
+	);
+});
 
 test('Create a new JS client extension with a script element attribute', async ({
 	clientExtensionsPage,
@@ -148,7 +158,7 @@ test('Create a new JS client extension with a script element attribute', async (
 		clientExtensionValue
 	);
 
-	await editJSClientExtensionsPage.publish();
+	await editJSClientExtensionsPage.publish(WaitAction.SUCCESS);
 
 	// Apply JS client extension to all pages.
 
@@ -178,9 +188,11 @@ test('JS client extension does not allow "src" as a script element attribute', a
 
 	await editJSClientExtensionsPage.addScriptAttribute('src', 'string', '');
 
-	expect(page.getByText('Use the "JavaScript URL" field.')).toBeVisible();
+	await expect(
+		page.getByText('Use the "JavaScript URL" field.')
+	).toBeVisible();
 
-	expect(editJSClientExtensionsPage.publishButton).toBeDisabled();
+	await expect(editJSClientExtensionsPage.publishButton).toBeDisabled();
 });
 
 test('JS client extension does not allow a script element attribute with an empty name', async ({
@@ -191,9 +203,9 @@ test('JS client extension does not allow a script element attribute with an empt
 
 	await editJSClientExtensionsPage.addScriptAttribute('', 'string', 'value');
 
-	expect(page.getByText('Attribute field is required.')).toBeVisible();
+	await expect(page.getByText('Attribute field is required.')).toBeVisible();
 
-	expect(editJSClientExtensionsPage.publishButton).toBeDisabled();
+	await expect(editJSClientExtensionsPage.publishButton).toBeDisabled();
 });
 
 test('Assert the help link is pointing to the correct url', async ({
@@ -268,7 +280,7 @@ const testJSClientExtensionWithAttributes = async ({
 		await editJSClientExtensionsPage.addScriptAttribute(name, type, value);
 	}
 
-	await editJSClientExtensionsPage.publish();
+	await editJSClientExtensionsPage.publish(WaitAction.SUCCESS);
 
 	// Apply the JS client extension and assert its attributes
 
@@ -502,7 +514,7 @@ test('JS client extension can be created with name translations while having a l
 			'https://www.example.com/script.js'
 		);
 
-		await editJSClientExtensionsPage.publish();
+		await editJSClientExtensionsPage.publish(WaitAction.SUCCESS);
 	});
 
 	await test.step('Assert the name translations for the new JS client extension', async () => {

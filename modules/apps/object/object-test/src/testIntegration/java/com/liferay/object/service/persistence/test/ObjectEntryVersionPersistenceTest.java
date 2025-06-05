@@ -136,9 +136,22 @@ public class ObjectEntryVersionPersistenceTest {
 
 		newObjectEntryVersion.setContent(RandomTestUtil.randomString());
 
+		newObjectEntryVersion.setDisplayDate(RandomTestUtil.nextDate());
+
+		newObjectEntryVersion.setExpirationDate(RandomTestUtil.nextDate());
+
+		newObjectEntryVersion.setReviewDate(RandomTestUtil.nextDate());
+
 		newObjectEntryVersion.setVersion(RandomTestUtil.nextInt());
 
 		newObjectEntryVersion.setStatus(RandomTestUtil.nextInt());
+
+		newObjectEntryVersion.setStatusByUserId(RandomTestUtil.nextLong());
+
+		newObjectEntryVersion.setStatusByUserName(
+			RandomTestUtil.randomString());
+
+		newObjectEntryVersion.setStatusDate(RandomTestUtil.nextDate());
 
 		_objectEntryVersions.add(_persistence.update(newObjectEntryVersion));
 
@@ -181,11 +194,30 @@ public class ObjectEntryVersionPersistenceTest {
 			existingObjectEntryVersion.getContent(),
 			newObjectEntryVersion.getContent());
 		Assert.assertEquals(
+			Time.getShortTimestamp(existingObjectEntryVersion.getDisplayDate()),
+			Time.getShortTimestamp(newObjectEntryVersion.getDisplayDate()));
+		Assert.assertEquals(
+			Time.getShortTimestamp(
+				existingObjectEntryVersion.getExpirationDate()),
+			Time.getShortTimestamp(newObjectEntryVersion.getExpirationDate()));
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingObjectEntryVersion.getReviewDate()),
+			Time.getShortTimestamp(newObjectEntryVersion.getReviewDate()));
+		Assert.assertEquals(
 			existingObjectEntryVersion.getVersion(),
 			newObjectEntryVersion.getVersion());
 		Assert.assertEquals(
 			existingObjectEntryVersion.getStatus(),
 			newObjectEntryVersion.getStatus());
+		Assert.assertEquals(
+			existingObjectEntryVersion.getStatusByUserId(),
+			newObjectEntryVersion.getStatusByUserId());
+		Assert.assertEquals(
+			existingObjectEntryVersion.getStatusByUserName(),
+			newObjectEntryVersion.getStatusByUserName());
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingObjectEntryVersion.getStatusDate()),
+			Time.getShortTimestamp(newObjectEntryVersion.getStatusDate()));
 	}
 
 	@Test
@@ -257,8 +289,10 @@ public class ObjectEntryVersionPersistenceTest {
 			"ObjectEntryVersion", "mvccVersion", true, "uuid", true,
 			"objectEntryVersionId", true, "companyId", true, "userId", true,
 			"userName", true, "createDate", true, "modifiedDate", true,
-			"objectDefinitionId", true, "objectEntryId", true, "version", true,
-			"status", true);
+			"objectDefinitionId", true, "objectEntryId", true, "displayDate",
+			true, "expirationDate", true, "reviewDate", true, "version", true,
+			"status", true, "statusByUserId", true, "statusByUserName", true,
+			"statusDate", true);
 	}
 
 	@Test
@@ -574,9 +608,21 @@ public class ObjectEntryVersionPersistenceTest {
 
 		objectEntryVersion.setContent(RandomTestUtil.randomString());
 
+		objectEntryVersion.setDisplayDate(RandomTestUtil.nextDate());
+
+		objectEntryVersion.setExpirationDate(RandomTestUtil.nextDate());
+
+		objectEntryVersion.setReviewDate(RandomTestUtil.nextDate());
+
 		objectEntryVersion.setVersion(RandomTestUtil.nextInt());
 
 		objectEntryVersion.setStatus(RandomTestUtil.nextInt());
+
+		objectEntryVersion.setStatusByUserId(RandomTestUtil.nextLong());
+
+		objectEntryVersion.setStatusByUserName(RandomTestUtil.randomString());
+
+		objectEntryVersion.setStatusDate(RandomTestUtil.nextDate());
 
 		_objectEntryVersions.add(_persistence.update(objectEntryVersion));
 

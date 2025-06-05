@@ -19,7 +19,6 @@ import com.liferay.commerce.exception.GuestCartItemMaxAllowedException;
 import com.liferay.commerce.exception.NoSuchOrderItemException;
 import com.liferay.commerce.exception.ProductBundleException;
 import com.liferay.commerce.internal.context.CommerceContextFactoryImpl;
-import com.liferay.commerce.internal.search.CommerceOrderItemIndexer;
 import com.liferay.commerce.internal.util.CommercePriceConverterUtil;
 import com.liferay.commerce.inventory.constants.CommerceInventoryConstants;
 import com.liferay.commerce.inventory.exception.CommerceInventoryWarehouseItemUnitOfMeasureKeyException;
@@ -144,7 +143,7 @@ public class CommerceOrderItemLocalServiceImpl
 		throws PortalException {
 
 		if (Validator.isBlank(json)) {
-			json = _getCPInstanceOptionValueRelsJSONString(cpInstanceId);
+			json = _getCPInstanceOptionValueRelsJSON(cpInstanceId);
 		}
 
 		CommerceOrderLocalService commerceOrderLocalService =
@@ -247,6 +246,16 @@ public class CommerceOrderItemLocalServiceImpl
 
 			commerceOrderItemPersistence.update(childCommerceOrderItem);
 		}
+
+		if (commerceOrder.isManuallyAdjusted() && commerceOrder.isOpen()) {
+			commerceOrder.setManuallyAdjusted(false);
+		}
+
+		if (!commerceOrder.isShippable() && commerceOrderItem.isShippable()) {
+			commerceOrder.setShippable(true);
+		}
+
+		commerceOrderLocalService.updateCommerceOrder(commerceOrder);
 
 		commerceOrderLocalService.recalculatePrice(
 			commerceOrderItem.getCommerceOrderId(), commerceContext);
@@ -373,7 +382,8 @@ public class CommerceOrderItemLocalServiceImpl
 			commerceOrderItemPersistence.findByCPInstanceId(cpInstanceId);
 
 		for (CommerceOrderItem commerceOrderItem : commerceOrderItems) {
-			deleteCommerceOrderItem(userId, commerceOrderItem);
+			commerceOrderItemLocalService.deleteCommerceOrderItem(
+				userId, commerceOrderItem);
 		}
 	}
 
@@ -627,11 +637,15 @@ public class CommerceOrderItemLocalServiceImpl
 	public CommerceOrderItem importCommerceOrderItem(
 			long userId, String externalReferenceCode, long commerceOrderItemId,
 			long commerceOrderId, long cpInstanceId,
-			String cpMeasurementUnitKey, BigDecimal quantity,
+			String cpMeasurementUnitKey, String json, BigDecimal quantity,
 			BigDecimal shippedQuantity,
 			BigDecimal unitOfMeasureIncrementalOrderQuantity,
 			String unitOfMeasureKey, ServiceContext serviceContext)
 		throws PortalException {
+
+		if (Validator.isBlank(json)) {
+			json = _getCPInstanceOptionValueRelsJSON(cpInstanceId);
+		}
 
 		CommerceOrderLocalService commerceOrderLocalService =
 			_commerceOrderLocalServiceSnapshot.get();
@@ -659,14 +673,14 @@ public class CommerceOrderItemLocalServiceImpl
 		if (commerceOrderItem == null) {
 			commerceOrderItem = _createCommerceOrderItem(
 				commerceOrder.getGroupId(), user, commerceOrder, null,
-				cpInstance, 0, null, quantity, shippedQuantity,
+				cpInstance, 0, json, quantity, shippedQuantity,
 				unitOfMeasureIncrementalOrderQuantity, unitOfMeasureKey, false,
 				serviceContext);
 		}
 		else {
 			commerceOrderItem = _updateCommerceOrderItem(
 				commerceOrderItem, externalReferenceCode, user, commerceOrder,
-				cpInstance, quantity, shippedQuantity,
+				cpInstance, json, quantity, shippedQuantity,
 				unitOfMeasureIncrementalOrderQuantity, unitOfMeasureKey,
 				serviceContext);
 		}
@@ -741,8 +755,8 @@ public class CommerceOrderItemLocalServiceImpl
 			commerceOrderId, null, start, end, sort);
 
 		searchContext.setAndSearch(andOperator);
-		searchContext.setAttribute(CommerceOrderItemIndexer.FIELD_SKU, sku);
 		searchContext.setAttribute(Field.NAME, name);
+		searchContext.setAttribute("sku", sku);
 
 		return _searchCommerceOrderItems(searchContext);
 	}
@@ -1347,13 +1361,11 @@ public class CommerceOrderItemLocalServiceImpl
 		CommerceOrder commerceOrder =
 			commerceOrderLocalService.getCommerceOrder(commerceOrderId);
 
-		searchContext.setAttribute(
-			CommerceOrderItemIndexer.FIELD_COMMERCE_ORDER_ID, commerceOrderId);
+		searchContext.setAttribute("commerceOrderId", commerceOrderId);
 
 		if (parentCommerceOrderItemId != null) {
 			searchContext.setAttribute(
-				CommerceOrderItemIndexer.FIELD_PARENT_COMMERCE_ORDER_ITEM_ID,
-				parentCommerceOrderItemId);
+				"parentCommerceOrderItemId", parentCommerceOrderItemId);
 		}
 
 		searchContext.setCompanyId(commerceOrder.getCompanyId());
@@ -1591,7 +1603,7 @@ public class CommerceOrderItemLocalServiceImpl
 			_commerceTaxCalculation);
 	}
 
-	private String _getCPInstanceOptionValueRelsJSONString(long cpInstanceId)
+	private String _getCPInstanceOptionValueRelsJSON(long cpInstanceId)
 		throws PortalException {
 
 		JSONArray jsonArray = CPJSONUtil.toJSONArray(
@@ -2375,7 +2387,7 @@ public class CommerceOrderItemLocalServiceImpl
 	private CommerceOrderItem _updateCommerceOrderItem(
 			CommerceOrderItem commerceOrderItem, String externalReferenceCode,
 			User user, CommerceOrder commerceOrder, CPInstance cpInstance,
-			BigDecimal quantity, BigDecimal shippedQuantity,
+			String json, BigDecimal quantity, BigDecimal shippedQuantity,
 			BigDecimal unitOfMeasureIncrementalOrderQuantity,
 			String unitOfMeasureKey, ServiceContext serviceContext)
 		throws PortalException {
@@ -2385,7 +2397,7 @@ public class CommerceOrderItemLocalServiceImpl
 
 		_validate(
 			serviceContext.getLocale(), commerceOrder, cpDefinition, cpInstance,
-			commerceOrderItem.getJson(), quantity, unitOfMeasureKey,
+			json, quantity, unitOfMeasureKey,
 			commerceOrderItem.hasParentCommerceOrderItem(),
 			GetterUtil.getBoolean(
 				serviceContext.getAttribute("validateOrder"), true));
@@ -2400,6 +2412,7 @@ public class CommerceOrderItemLocalServiceImpl
 		commerceOrderItem.setCPInstanceId(cpInstance.getCPInstanceId());
 		commerceOrderItem.setCProductId(cpDefinition.getCProductId());
 		commerceOrderItem.setFreeShipping(cpDefinition.isFreeShipping());
+		commerceOrderItem.setJson(json);
 		commerceOrderItem.setManuallyAdjusted(false);
 		commerceOrderItem.setNameMap(cpDefinition.getNameMap());
 		commerceOrderItem.setQuantity(quantity);
@@ -2422,8 +2435,8 @@ public class CommerceOrderItemLocalServiceImpl
 			CommerceProductPrice commerceProductPrice =
 				_getCommerceProductPrice(
 					commerceOrder, cpInstance.getCPDefinitionId(),
-					cpInstance.getCPInstanceId(), commerceOrderItem.getJson(),
-					quantity, unitOfMeasureKey, null);
+					cpInstance.getCPInstanceId(), json, quantity,
+					unitOfMeasureKey, null);
 
 			_setCommerceOrderItemPrice(commerceOrderItem, commerceProductPrice);
 

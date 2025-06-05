@@ -14,6 +14,7 @@ import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.MasterPage;
 import com.liferay.headless.admin.site.dto.v1_0.PageSpecification;
 import com.liferay.headless.admin.site.dto.v1_0.Scope;
+import com.liferay.headless.admin.site.internal.resource.v1_0.util.FileEntryUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.GroupUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.LayoutUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.ServiceContextUtil;
@@ -27,8 +28,6 @@ import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.GroupService;
@@ -231,7 +230,8 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 			return _addMasterPage(groupId, masterPage);
 		}
 
-		long previewFileEntryId = _getPreviewFileEntryId(groupId, masterPage);
+		long previewFileEntryId = FileEntryUtil.getPreviewFileEntryId(
+			groupId, masterPage.getThumbnail());
 
 		if (previewFileEntryId !=
 				layoutPageTemplateEntry.getPreviewFileEntryId()) {
@@ -247,8 +247,8 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 
 		layout = LayoutUtil.updateContentLayout(
 			layout, layout.getNameMap(), layout.getTitleMap(),
-			layout.getDescriptionMap(), layout.getFriendlyURLMap(),
-			masterPage.getPageSpecifications(),
+			layout.getDescriptionMap(), layout.getRobotsMap(),
+			layout.getFriendlyURLMap(), masterPage.getPageSpecifications(),
 			_getServiceContext(groupId, masterPage));
 
 		if (!layoutPageTemplateEntry.isApproved() && layout.isPublished()) {
@@ -347,7 +347,9 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 				masterPage.getKey(), 0, 0, masterPage.getName(),
 				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
-				_getPreviewFileEntryId(groupId, masterPage), defaultTemplate, 0,
+				FileEntryUtil.getPreviewFileEntryId(
+					groupId, masterPage.getThumbnail()),
+				defaultTemplate, 0,
 				_getLayoutPlid(groupId, masterPage, serviceContext), 0, status,
 				serviceContext));
 	}
@@ -440,7 +442,7 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 
 		Layout layout = LayoutUtil.addContentLayout(
 			groupId, masterPage.getPageSpecifications(), true, nameMap, nameMap,
-			nameMap, LayoutConstants.TYPE_CONTENT, true, true,
+			nameMap, null, LayoutConstants.TYPE_CONTENT, null, true, true,
 			Collections.emptyMap(), WorkflowConstants.STATUS_APPROVED,
 			serviceContext);
 
@@ -449,25 +451,6 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 		}
 
 		return layout.getPlid();
-	}
-
-	private long _getPreviewFileEntryId(long groupId, MasterPage masterPage)
-		throws Exception {
-
-		ItemExternalReference itemExternalReference = masterPage.getThumbnail();
-
-		if ((itemExternalReference == null) ||
-			Validator.isNull(
-				itemExternalReference.getExternalReferenceCode())) {
-
-			return 0;
-		}
-
-		FileEntry fileEntry =
-			_portletFileRepository.getPortletFileEntryByExternalReferenceCode(
-				itemExternalReference.getExternalReferenceCode(), groupId);
-
-		return fileEntry.getFileEntryId();
 	}
 
 	private ServiceContext _getServiceContext(
@@ -539,8 +522,5 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortletFileRepository _portletFileRepository;
 
 }

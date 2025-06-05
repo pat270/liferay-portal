@@ -1,0 +1,16 @@
+@import 'cadmin-variables';
+
+.marketplace-button--notification:after {
+	background-color: $cadmin-primary;
+	border: 2px $cadmin-white solid;
+	border-radius: 50%;
+	content: '';
+	padding: 3px;
+	position: absolute;
+	transform: translate(7px, -7px);
+	z-index: 1;
+}
+
+div:has(.marketplace-modal-trigger) {
+	flex-shrink: 0;
+}

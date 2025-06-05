@@ -10,22 +10,22 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.test.util.ConfigurationTemporarySwapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.remote.cors.configuration.PortalCORSConfiguration;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
 
-import java.util.Collections;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -57,7 +57,7 @@ public class CORSApplicationClientTest extends BaseClientTestCase {
 		formData.add("client_secret", "oauthTestApplicationSecret");
 		formData.add("grant_type", "password");
 		formData.add("password", PropsValues.DEFAULT_ADMIN_PASSWORD);
-		formData.add("username", "test@liferay.com");
+		formData.add("username", _user.getEmailAddress());
 
 		tokenInvocationBuilder.header("Origin", _TEST_CORS_URI);
 
@@ -75,7 +75,7 @@ public class CORSApplicationClientTest extends BaseClientTestCase {
 		String tokenString = getToken(
 			"oauthTestApplicationRO", null,
 			getResourceOwnerPasswordBiFunction(
-				"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD),
+				_user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD),
 			this::parseTokenString);
 
 		Invocation.Builder invocationBuilder = authorize(
@@ -129,7 +129,7 @@ public class CORSApplicationClientTest extends BaseClientTestCase {
 		String tokenString = getToken(
 			"oauthTestApplicationRO", null,
 			getResourceOwnerPasswordBiFunction(
-				"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD),
+				_user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD),
 			this::parseTokenString);
 
 		Invocation.Builder invocationBuilder = authorize(
@@ -159,27 +159,29 @@ public class CORSApplicationClientTest extends BaseClientTestCase {
 		}
 	}
 
-	public static class CORSApplicationTestPreparatorBundleActivator
-		extends BaseTestPreparatorBundleActivator {
-
-		@Override
-		protected void prepareTest() throws Exception {
-			long defaultCompanyId = PortalUtil.getDefaultCompanyId();
-
-			User user = UserTestUtil.getAdminUser(defaultCompanyId);
-
-			createOAuth2Application(
-				defaultCompanyId, user, "oauthTestApplicationRO",
-				Collections.singletonList("everything.read"));
-		}
-
-	}
-
 	@Override
 	protected BundleActivator getBundleActivator() {
 		return new CORSApplicationTestPreparatorBundleActivator();
 	}
 
 	private static final String _TEST_CORS_URI = "http://test-cors.com";
+
+	private User _user;
+
+	private class CORSApplicationTestPreparatorBundleActivator
+		extends BaseTestPreparatorBundleActivator {
+
+		@Override
+		protected void prepareTest() throws Exception {
+			long companyId = TestPropsValues.getCompanyId();
+
+			_user = UserTestUtil.getAdminUser(companyId);
+
+			createOAuth2Application(
+				companyId, _user, "oauthTestApplicationRO",
+				Collections.singletonList("everything.read"));
+		}
+
+	}
 
 }

@@ -18,7 +18,17 @@
 			StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHelper();
 			%>
 
-			<c:if test="<%= !cmd.equals(Constants.EXPORT) && !stagingGroupHelper.isCompanyGroup(group) %>">
+			<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPD-44771") && !cmd.equals(Constants.EXPORT) && !stagingGroupHelper.isCompanyGroup(group) %>'>
+				<c:if test="<%= cmd.equals(Constants.IMPORT) %>">
+					<clay:alert
+						cssClass="hide"
+						displayType="warning"
+						id='<%= liferayPortletResponse.getNamespace() + "deletePortletDataAlert" %>'
+						message="this-option-does-not-apply-to-object-entries"
+						title="delete-application-data-before-importing"
+					/>
+				</c:if>
+
 				<liferay-staging:checkbox
 					checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_PORTLET_DATA, false) %>"
 					disabled="<%= disableInputs %>"

@@ -5,6 +5,7 @@
 
 package com.liferay.portal.search.elasticsearch7.internal.sidecar;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.SystemProperties;
 
@@ -54,9 +55,9 @@ public class ElasticsearchInstaller {
 			_createTemporaryDownloadDirectory();
 
 			try {
-				_downloadAndInstallElasticsearch();
+				_installElasticsearch();
 
-				_downloadAndInstallPlugins();
+				_installPlugins();
 			}
 			catch (IOException ioException) {
 				throw new RuntimeException(ioException);
@@ -144,9 +145,9 @@ public class ElasticsearchInstaller {
 		PathUtil.deleteDir(_temporaryDirectoryPath);
 	}
 
-	private void _downloadAndInstallElasticsearch() throws IOException {
+	private void _installElasticsearch() throws IOException {
 		String rootArchiveName = UncompressUtil.unarchive(
-			_getFilePath(_distribution.getElasticsearchDistributable()),
+			_resolveOrDownload(_distribution.getElasticsearchDistributable()),
 			_temporaryDirectoryPath);
 
 		PathUtil.copyDirectory(
@@ -154,10 +155,10 @@ public class ElasticsearchInstaller {
 			_installationDirectoryPath);
 	}
 
-	private void _downloadAndInstallPlugin(Distributable distributable)
+	private void _installPlugin(Distributable distributable)
 		throws IOException {
 
-		Path filePath = _getFilePath(distributable);
+		Path filePath = _resolveOrDownload(distributable);
 
 		String pluginName = StringUtils.substringBeforeLast(
 			String.valueOf(filePath.getFileName()), StringPool.DASH);
@@ -179,27 +180,11 @@ public class ElasticsearchInstaller {
 			extractedDirectoryPath, pluginDestinationDirectoryPath);
 	}
 
-	private void _downloadAndInstallPlugins() throws IOException {
+	private void _installPlugins() throws IOException {
 		for (Distributable distributable :
 				_distribution.getPluginDistributables()) {
 
-			_downloadAndInstallPlugin(distributable);
-		}
-	}
-
-	private Path _getFilePath(Distributable distributable) throws IOException {
-		Path filePath = _locateOrDownload(distributable);
-
-		_guardChecksum(filePath, distributable.getChecksum());
-
-		return filePath;
-	}
-
-	private void _guardChecksum(Path filePath, String checksum)
-		throws IOException {
-
-		if (!checksum.equals(getChecksum(filePath))) {
-			throw new RuntimeException("Checksum mismatch");
+			_installPlugin(distributable);
 		}
 	}
 
@@ -207,7 +192,7 @@ public class ElasticsearchInstaller {
 		return Files.exists(_installationDirectoryPath);
 	}
 
-	private Path _locateOrDownload(Distributable distributable)
+	private Path _resolveOrDownload(Distributable distributable)
 		throws IOException {
 
 		String downloadURLString = distributable.getDownloadURLString();
@@ -219,6 +204,10 @@ public class ElasticsearchInstaller {
 			fileName);
 
 		if (Files.exists(distributableFilePath)) {
+			_validateChecksum(
+				getChecksum(distributableFilePath), distributable.getChecksum(),
+				fileName);
+
 			return distributableFilePath;
 		}
 
@@ -226,7 +215,23 @@ public class ElasticsearchInstaller {
 
 		PathUtil.download(new URL(downloadURLString), downloadedFilePath);
 
+		_validateChecksum(
+			getChecksum(downloadedFilePath), distributable.getChecksum(),
+			fileName);
+
 		return downloadedFilePath;
+	}
+
+	private void _validateChecksum(
+			String checksum, String distributableChecksum, String fileName)
+		throws IOException {
+
+		if (!checksum.equals(distributableChecksum)) {
+			throw new RuntimeException(
+				StringBundler.concat(
+					"Checksum mismatch for ", fileName, StringPool.COLON,
+					StringPool.SPACE, checksum));
+		}
 	}
 
 	private static final Path _temporaryDirectoryPath =

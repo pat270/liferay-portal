@@ -24,6 +24,9 @@ export const test = mergeTests(
 	apiHelpersTest,
 	applicationsMenuPageTest,
 	dataApiHelpersTest,
+	featureFlagsTest({
+		'LPD-47858': {enabled: true},
+	}),
 	loginTest(),
 	usersAndOrganizationsPagesTest,
 	serverAdministrationPageTest
@@ -53,15 +56,10 @@ test(
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account1.id, type: 'account'});
-
 		const account2 = await apiHelpers.headlessAdminUser.postAccount({
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account2.id, type: 'account'});
 
 		let address = {
 			city: getRandomString(),
@@ -137,12 +135,12 @@ test(
 		editAccountPage,
 		page,
 	}) => {
+		test.setTimeout(120000);
+
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const addresses: {name: string}[] = [];
 
@@ -156,7 +154,11 @@ test(
 		await editAccountPage.addressesTab.click();
 
 		for (const address of addresses) {
-			await accountAddressesPage.addressesTable.newButton.click();
+			await expect(async () => {
+				await accountAddressesPage.addressesTable.newButton.click();
+
+				await expect(editAccountAddressPage.nameInput).toBeVisible();
+			}).toPass();
 
 			await editAccountAddressPage.addAddress(address);
 		}
@@ -208,8 +210,6 @@ test(
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		let address = {
 			city: getRandomString(),
@@ -305,8 +305,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const address = {
 			name: getRandomString(),
 		};
@@ -351,8 +349,6 @@ test(
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const addresses = [
 			{
@@ -429,8 +425,6 @@ test(
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		let address = {
 			city: getRandomString(),
@@ -567,8 +561,6 @@ test(
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const addresses = [
 			{
@@ -714,8 +706,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const addresses = [
 			{
 				name: getRandomString(),
@@ -743,11 +733,14 @@ test(
 		}
 
 		await editAccountPage.detailsTab.click();
-		await editAccountPage.setBillingDefaultAddressButton.click();
-		await accountDefaultAddressSelectorPage.setDefaultAddress(
-			addresses[0].name,
-			'Billing'
-		);
+
+		await expect(async () => {
+			await editAccountPage.setBillingDefaultAddressButton.click();
+			await accountDefaultAddressSelectorPage.setDefaultAddress(
+				addresses[0].name,
+				'Billing'
+			);
+		}).toPass();
 
 		await expect(
 			editAccountPage.defaultBillingAddress(addresses[0].name)
@@ -801,8 +794,6 @@ test(
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const addresses = [
 			{
@@ -905,8 +896,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const addresses = [
 			{
 				name: getRandomString(),
@@ -1003,8 +992,6 @@ test(
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		let address = {
 			city: getRandomString(),
@@ -1119,12 +1106,12 @@ testWithAddressSubtypeEnabled(
 		editAccountPage,
 		page,
 	}) => {
+		test.setTimeout(120000);
+
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			description: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const {
 			billingAndShippingListTypeDefinition,
@@ -1313,8 +1300,6 @@ test(
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await accountsPage.goto();
 
 		await accountsPage.accountsTable.valueLink(account.name).click();
@@ -1348,5 +1333,35 @@ test(
 		await expect(editAccountAddressPage.regionSelector).not.toHaveClass(
 			/error-field/
 		);
+	}
+);
+
+test(
+	'Can search an account address and view its status',
+	{tag: '@LPD-56111'},
+	async ({
+		accountAddressesPage,
+		accountsPage,
+		apiHelpers,
+		editAccountPage,
+	}) => {
+		const account = await apiHelpers.headlessAdminUser.postAccount();
+
+		const address =
+			await apiHelpers.headlessCommerceAdminAccount.postAddress(
+				account.id
+			);
+
+		await accountsPage.goto();
+		await accountsPage.accountsTable.valueLink(account.name).click();
+		await editAccountPage.addressesTab.click();
+		await accountAddressesPage.addressesTable.search(address.name);
+
+		await expect(
+			accountAddressesPage.addressesTable.cell(address.name)
+		).toHaveCount(1);
+		await expect(
+			accountAddressesPage.addressesTable.cell('Approved')
+		).toBeVisible();
 	}
 );

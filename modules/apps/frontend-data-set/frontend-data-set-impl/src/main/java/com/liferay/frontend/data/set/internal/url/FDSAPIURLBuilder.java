@@ -18,10 +18,10 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Daniel Sanz
@@ -48,6 +48,14 @@ public class FDSAPIURLBuilder {
 		return this;
 	}
 
+	public FDSAPIURLBuilder addQueryString(String queryString) {
+		if (Validator.isNotNull(queryString)) {
+			_queryStringItems.add(queryString);
+		}
+
+		return this;
+	}
+
 	public String build() {
 		StringBundler sb = new StringBundler(
 			3 + (_queryStringItems.size() * 2));
@@ -58,17 +66,35 @@ public class FDSAPIURLBuilder {
 				_restApplication, "/v1.0", StringPool.BLANK));
 		sb.append(_restEndpoint);
 
-		_appendParameters(sb);
+		_appendParameters(true, sb);
 
 		return _interpolate(_resolveParameters(sb.toString()));
 	}
 
-	private void _appendParameters(StringBundler sb) {
+	public String buildQueryString() {
+		StringBundler sb = new StringBundler(_queryStringItems.size() * 2);
+
+		_appendParameters(false, sb);
+
+		String query = sb.toString();
+
+		if (Validator.isNull(query)) {
+			return null;
+		}
+
+		return _interpolate(_resolveParameters(query));
+	}
+
+	private void _appendParameters(
+		boolean includeQuestionMark, StringBundler sb) {
+
 		if (_queryStringItems.isEmpty()) {
 			return;
 		}
 
-		sb.append(CharPool.QUESTION);
+		if (includeQuestionMark) {
+			sb.append(CharPool.QUESTION);
+		}
 
 		int count = 0;
 

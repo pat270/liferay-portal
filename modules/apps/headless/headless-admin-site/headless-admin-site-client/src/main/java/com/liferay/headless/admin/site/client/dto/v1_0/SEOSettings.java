@@ -8,12 +8,12 @@ package com.liferay.headless.admin.site.client.dto.v1_0;
 import com.liferay.headless.admin.site.client.function.UnsafeSupplier;
 import com.liferay.headless.admin.site.client.serdes.v1_0.SEOSettingsSerDes;
 
+import jakarta.annotation.Generated;
+
 import java.io.Serializable;
 
 import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.Generated;
 
 /**
  * @author Rubén Pulido
@@ -139,27 +139,27 @@ public class SEOSettings implements Cloneable, Serializable {
 
 	protected Map<String, String> seoKeywords_i18n;
 
-	public SiteMapSettings getSiteMapSettings() {
-		return siteMapSettings;
+	public SitemapSettings getSitemapSettings() {
+		return sitemapSettings;
 	}
 
-	public void setSiteMapSettings(SiteMapSettings siteMapSettings) {
-		this.siteMapSettings = siteMapSettings;
+	public void setSitemapSettings(SitemapSettings sitemapSettings) {
+		this.sitemapSettings = sitemapSettings;
 	}
 
-	public void setSiteMapSettings(
-		UnsafeSupplier<SiteMapSettings, Exception>
-			siteMapSettingsUnsafeSupplier) {
+	public void setSitemapSettings(
+		UnsafeSupplier<SitemapSettings, Exception>
+			sitemapSettingsUnsafeSupplier) {
 
 		try {
-			siteMapSettings = siteMapSettingsUnsafeSupplier.get();
+			sitemapSettings = sitemapSettingsUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected SiteMapSettings siteMapSettings;
+	protected SitemapSettings sitemapSettings;
 
 	@Override
 	public SEOSettings clone() throws CloneNotSupportedException {

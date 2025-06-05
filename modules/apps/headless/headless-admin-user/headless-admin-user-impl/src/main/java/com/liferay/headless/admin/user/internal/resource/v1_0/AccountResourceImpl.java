@@ -8,20 +8,29 @@ package com.liferay.headless.admin.user.internal.resource.v1_0;
 import com.liferay.account.constants.AccountActionKeys;
 import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.constants.AccountListTypeConstants;
+import com.liferay.account.exception.DuplicateAccountGroupRelException;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.model.AccountGroup;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryOrganizationRelLocalService;
 import com.liferay.account.service.AccountEntryService;
 import com.liferay.account.service.AccountEntryUserRelLocalService;
+import com.liferay.account.service.AccountGroupRelService;
 import com.liferay.account.service.AccountGroupService;
+import com.liferay.account.service.AccountRoleLocalService;
+import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.asset.kernel.service.AssetCategoryService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.headless.admin.user.dto.v1_0.Account;
 import com.liferay.headless.admin.user.dto.v1_0.AccountContactInformation;
+import com.liferay.headless.admin.user.dto.v1_0.AccountGroupBrief;
+import com.liferay.headless.admin.user.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.dto.v1_0.PostalAddress;
+import com.liferay.headless.admin.user.dto.v1_0.TaxonomyCategoryBrief;
+import com.liferay.headless.admin.user.dto.v1_0.TaxonomyCategoryReference;
 import com.liferay.headless.admin.user.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.PostalAddressUtil;
@@ -35,10 +44,14 @@ import com.liferay.headless.admin.user.resource.v1_0.AccountResource;
 import com.liferay.headless.common.spi.odata.entity.EntityFieldsUtil;
 import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.EmailAddress;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Phone;
 import com.liferay.portal.kernel.model.Website;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -53,12 +66,14 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.AddressLocalService;
 import com.liferay.portal.kernel.service.ContactService;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ListTypeLocalService;
 import com.liferay.portal.kernel.service.OrganizationService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
-import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.RoleService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.File;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -83,14 +98,14 @@ import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
 
+import jakarta.ws.rs.core.MultivaluedMap;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -540,6 +555,55 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 		return putAccount(accountEntry.getAccountEntryId(), account);
 	}
 
+	private AccountEntry _addAccountGroupRel(
+			AccountEntry accountEntry, AccountGroupBrief accountGroupBrief)
+		throws Exception {
+
+		String externalReferenceCode =
+			accountGroupBrief.getExternalReferenceCode();
+
+		if (Validator.isNull(externalReferenceCode)) {
+			return accountEntry;
+		}
+
+		try {
+			AccountGroup accountGroup =
+				_accountGroupService.getOrAddIncompleteAccountGroup(
+					externalReferenceCode, accountGroupBrief.getName());
+
+			_accountGroupRelService.addAccountGroupRel(
+				accountGroup.getAccountGroupId(), AccountEntry.class.getName(),
+				accountEntry.getAccountEntryId());
+		}
+		catch (DuplicateAccountGroupRelException
+					duplicateAccountGroupRelException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(duplicateAccountGroupRelException);
+			}
+		}
+
+		return accountEntry;
+	}
+
+	private AccountEntry _addAccountRole(
+			AccountEntry accountEntry, AccountRole accountRole)
+		throws Exception {
+
+		String externalReferenceCode = accountRole.getExternalReferenceCode();
+
+		if (Validator.isNull(externalReferenceCode)) {
+			return accountEntry;
+		}
+
+		_accountRoleLocalService.getOrAddIncompleteAccountRole(
+			externalReferenceCode, contextCompany.getCompanyId(),
+			contextUser.getUserId(), accountEntry.getAccountEntryId(),
+			accountRole.getName());
+
+		return accountEntry;
+	}
+
 	private void _addAddresses(Long accountId, Account account)
 		throws Exception {
 
@@ -599,6 +663,10 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 
 		ServiceContext serviceContext = ServiceContextBuilder.create(
 			contextCompany.getGroupId(), contextHttpServletRequest, null
+		).assetCategoryIds(
+			_getAssetCategoryIds(account)
+		).assetTagNames(
+			account.getKeywords()
 		).expandoBridgeAttributes(
 			CustomFieldsUtil.toMap(
 				AccountEntry.class.getName(), contextCompany.getCompanyId(),
@@ -610,6 +678,50 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 		serviceContext.setUserId(contextUser.getUserId());
 
 		return serviceContext;
+	}
+
+	private Long[] _getAssetCategoryIds(Account account) {
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-47858")) {
+			return null;
+		}
+
+		TaxonomyCategoryBrief[] taxonomyCategoryBriefs =
+			account.getTaxonomyCategoryBriefs();
+
+		if (ArrayUtil.isEmpty(taxonomyCategoryBriefs)) {
+			return null;
+		}
+
+		return transform(
+			taxonomyCategoryBriefs,
+			taxonomyCategoryBrief -> {
+				TaxonomyCategoryReference taxonomyCategoryReference =
+					taxonomyCategoryBrief.getTaxonomyCategoryReference();
+
+				String externalReferenceCode =
+					taxonomyCategoryReference.getExternalReferenceCode();
+
+				if (Validator.isNull(externalReferenceCode) ||
+					Validator.isNull(taxonomyCategoryReference.getSiteKey())) {
+
+					return null;
+				}
+
+				Group group = _groupLocalService.fetchGroup(
+					contextCompany.getCompanyId(),
+					taxonomyCategoryReference.getSiteKey());
+
+				if (group == null) {
+					return null;
+				}
+
+				AssetCategory assetCategory =
+					_assetCategoryService.getOrAddIncompleteCategory(
+						externalReferenceCode, group.getGroupId());
+
+				return assetCategory.getCategoryId();
+			},
+			Long.class);
 	}
 
 	private List<Address> _getContactAddresses(
@@ -643,7 +755,20 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 	}
 
 	private long _getDefaultBillingAddressId(
-		Account account, long defaultBillingAddressId) {
+			Account account, long accountEntryId, long defaultBillingAddressId)
+		throws Exception {
+
+		if (FeatureFlagManagerUtil.isEnabled("LPD-47858") &&
+			Validator.isNotNull(
+				account.getDefaultBillingAddressExternalReferenceCode())) {
+
+			Address address = _addressLocalService.getOrAddIncompleteAddress(
+				account.getDefaultBillingAddressExternalReferenceCode(),
+				contextCompany.getCompanyId(), contextUser.getUserId(),
+				AccountEntry.class.getName(), accountEntryId);
+
+			return address.getAddressId();
+		}
 
 		long billingAddressId = GetterUtil.getLong(
 			account.getDefaultBillingAddressId());
@@ -665,7 +790,20 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 	}
 
 	private long _getDefaultShippingAddressId(
-		Account account, long defaultShippingAddressId) {
+			Account account, long accountEntryId, long defaultShippingAddressId)
+		throws Exception {
+
+		if (FeatureFlagManagerUtil.isEnabled("LPD-47858") &&
+			Validator.isNotNull(
+				account.getDefaultShippingAddressExternalReferenceCode())) {
+
+			Address address = _addressLocalService.getOrAddIncompleteAddress(
+				account.getDefaultShippingAddressExternalReferenceCode(),
+				contextCompany.getCompanyId(), contextUser.getUserId(),
+				AccountEntry.class.getName(), accountEntryId);
+
+			return address.getAddressId();
+		}
 
 		long shippingAddressId = GetterUtil.getLong(
 			account.getDefaultShippingAddressId());
@@ -817,6 +955,12 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 			boolean useAccountEntryDefault)
 		throws Exception {
 
+		String logoBase64 = account.getLogoBase64();
+
+		if (Validator.isNotNull(logoBase64)) {
+			return Base64.decode(logoBase64);
+		}
+
 		Long logoId = GetterUtil.getLong(account.getLogoId());
 
 		if (logoId == 0) {
@@ -876,14 +1020,21 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 			return null;
 		}
 
-		if (ArrayUtil.isNotEmpty(organizationIds)) {
-			return ArrayUtil.toArray(organizationIds);
-		}
-
 		if (ArrayUtil.isNotEmpty(organizationExternalReferenceCodes)) {
 			organizationIds = transformToArray(
 				Arrays.asList(organizationExternalReferenceCodes),
 				externalReferenceCode -> {
+					if (FeatureFlagManagerUtil.isEnabled("LPD-47858")) {
+						com.liferay.portal.kernel.model.Organization
+							organization =
+								_organizationService.
+									getOrAddIncompleteOrganization(
+										externalReferenceCode,
+										StringPool.BLANK);
+
+						return organization.getOrganizationId();
+					}
+
 					com.liferay.portal.kernel.model.Organization organization =
 						_organizationService.
 							fetchOrganizationByExternalReferenceCode(
@@ -901,12 +1052,29 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 			return ArrayUtil.toArray(organizationIds);
 		}
 
+		if (ArrayUtil.isNotEmpty(organizationIds)) {
+			return ArrayUtil.toArray(organizationIds);
+		}
+
 		return new long[0];
 	}
 
 	private long _getParentAccountId(
 			Account account, long defaultParentAccountId)
 		throws Exception {
+
+		if (FeatureFlagManagerUtil.isEnabled("LPD-47858") &&
+			Validator.isNotNull(
+				account.getParentAccountExternalReferenceCode())) {
+
+			AccountEntry accountEntry =
+				_accountEntryService.getOrAddIncompleteAccountEntry(
+					account.getParentAccountExternalReferenceCode(),
+					account.getParentAccountExternalReferenceCode(),
+					AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS);
+
+			return accountEntry.getAccountEntryId();
+		}
 
 		Long parentAccountId = GetterUtil.getLong(account.getParentAccountId());
 
@@ -1060,12 +1228,14 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 		accountEntry = _accountEntryLocalService.updateDefaultBillingAddressId(
 			accountId,
 			_getDefaultBillingAddressId(
-				account, accountEntry.getDefaultBillingAddressId()));
+				account, accountEntry.getAccountEntryId(),
+				accountEntry.getDefaultBillingAddressId()));
 
 		accountEntry = _accountEntryLocalService.updateDefaultShippingAddressId(
 			accountId,
 			_getDefaultShippingAddressId(
-				account, accountEntry.getDefaultShippingAddressId()));
+				account, accountEntry.getAccountEntryId(),
+				accountEntry.getDefaultShippingAddressId()));
 
 		long[] organizationIds = _getOrganizationIds(account);
 
@@ -1146,11 +1316,32 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 			return accountEntry;
 		}
 
+		AccountGroupBrief[] accountGroupBriefs =
+			account.getAccountGroupBriefs();
+
+		if (ArrayUtil.isNotEmpty(accountGroupBriefs)) {
+			for (AccountGroupBrief accountGroupBrief : accountGroupBriefs) {
+				accountEntry = _addAccountGroupRel(
+					accountEntry, accountGroupBrief);
+			}
+		}
+
+		AccountRole[] accountRoles = account.getAccountRoles();
+
+		if (ArrayUtil.isNotEmpty(accountRoles)) {
+			for (AccountRole accountRole : accountRoles) {
+				accountEntry = _addAccountRole(accountEntry, accountRole);
+			}
+		}
+
 		return ResourcePermissionUtil.setResourcePermissions(
 			accountEntry, accountEntry.getCompanyId(), account.getPermissions(),
-			_resourcePermissionLocalService, _roleLocalService,
-			_roleTypeContributorProvider, contextUser.getUserId());
+			_resourcePermissionLocalService, _roleService,
+			_roleTypeContributorProvider);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		AccountResourceImpl.class);
 
 	@Reference
 	private AccountEntryLocalService _accountEntryLocalService;
@@ -1174,13 +1365,22 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 	private AccountEntryUserRelLocalService _accountEntryUserRelLocalService;
 
 	@Reference
+	private AccountGroupRelService _accountGroupRelService;
+
+	@Reference
 	private AccountGroupService _accountGroupService;
 
 	@Reference(target = DTOConverterConstants.ACCOUNT_RESOURCE_DTO_CONVERTER)
 	private DTOConverter<AccountEntry, Account> _accountResourceDTOConverter;
 
 	@Reference
+	private AccountRoleLocalService _accountRoleLocalService;
+
+	@Reference
 	private AddressLocalService _addressLocalService;
+
+	@Reference
+	private AssetCategoryService _assetCategoryService;
 
 	@Reference
 	private ContactService _contactService;
@@ -1204,6 +1404,9 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 	private File _file;
 
 	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
 	private ListTypeLocalService _listTypeLocalService;
 
 	@Reference(
@@ -1223,7 +1426,7 @@ public class AccountResourceImpl extends BaseAccountResourceImpl {
 	private ResourcePermissionLocalService _resourcePermissionLocalService;
 
 	@Reference
-	private RoleLocalService _roleLocalService;
+	private RoleService _roleService;
 
 	@Reference
 	private RoleTypeContributorProvider _roleTypeContributorProvider;

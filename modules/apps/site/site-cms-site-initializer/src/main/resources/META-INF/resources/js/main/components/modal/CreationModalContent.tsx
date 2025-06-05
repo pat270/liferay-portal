@@ -9,28 +9,23 @@ import {FormikHelpers, useFormik} from 'formik';
 import {navigate, sub} from 'frontend-js-web';
 import React from 'react';
 
+import {AssetLibrary} from '../../../types/AssetLibrary';
 import {AssetData} from '../../FDSPropsTransformer/actions/createAssetAction';
 import {FolderData} from '../../FDSPropsTransformer/actions/createFolderAction';
-import {SpaceData} from '../../FDSPropsTransformer/actions/createSpaceAction';
 import {FieldPicker, FieldText} from '../forms';
 import {required, validate} from '../forms/validations';
 
-export type AssetLibrary = {
-	groupId: string;
-	name: string;
-};
-
 type Props = {
-	action: AssetData['action'] | FolderData['action'] | SpaceData['action'];
+	action: AssetData['action'] | FolderData['action'];
 	assetLibraries: AssetLibrary[];
 	closeModal: () => void;
 	onSubmit?: (
 		values: {
-			groupId: string;
+			groupId: number;
 			name: string;
 		},
 		formikHelpers: FormikHelpers<{
-			groupId: string;
+			groupId: number;
 			name: string;
 		}>
 	) => Promise<any> | void;
@@ -46,42 +41,47 @@ export default function CreationModalContent({
 	redirect,
 	title,
 }: Props) {
-	const {errors, handleChange, handleSubmit, setFieldValue, touched, values} =
-		useFormik({
-			initialValues: {
-				groupId:
-					assetLibraries.length === 1
-						? assetLibraries[0].groupId
-						: '',
-				name: '',
-			},
-			onSubmit: async (values, formikHelpers) => {
-				if (redirect) {
-					const {groupId, name} = values;
+	const {
+		errors,
+		handleChange,
+		handleSubmit,
+		isSubmitting,
+		setFieldValue,
+		touched,
+		values,
+	} = useFormik({
+		initialValues: {
+			groupId:
+				assetLibraries.length === 1 ? assetLibraries[0].groupId : 0,
+			name: '',
+		},
+		onSubmit: async (values, formikHelpers) => {
+			if (redirect) {
+				const {groupId, name} = values;
 
-					const url = new URL(redirect);
+				const url = new URL(redirect);
 
-					url.searchParams.set('name', name);
-					url.searchParams.set('groupId', groupId);
+				url.searchParams.set('name', name);
+				url.searchParams.set('groupId', String(groupId));
 
-					navigate(url.pathname + url.search);
+				navigate(url.pathname + url.search);
 
-					return;
-				}
+				return;
+			}
 
-				if (onSubmit) {
-					await onSubmit(values, formikHelpers);
-				}
-			},
-			validate: (values) =>
-				validate(
-					{
-						groupId: [required],
-						name: action === 'createFolder' ? [required] : [],
-					},
-					values
-				),
-		});
+			if (onSubmit) {
+				await onSubmit(values, formikHelpers);
+			}
+		},
+		validate: (values) =>
+			validate(
+				{
+					groupId: [required],
+					name: action === 'createFolder' ? [required] : [],
+				},
+				values
+			),
+	});
 
 	return (
 		<form onSubmit={handleSubmit}>
@@ -135,7 +135,11 @@ export default function CreationModalContent({
 							{Liferay.Language.get('cancel')}
 						</ClayButton>
 
-						<ClayButton displayType="primary" type="submit">
+						<ClayButton
+							disabled={isSubmitting}
+							displayType="primary"
+							type="submit"
+						>
 							{Liferay.Language.get('save')}
 						</ClayButton>
 					</ClayButton.Group>

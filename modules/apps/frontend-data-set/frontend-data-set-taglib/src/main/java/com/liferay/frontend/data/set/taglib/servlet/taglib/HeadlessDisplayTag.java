@@ -23,13 +23,13 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.PageContext;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.PageContext;
 
 /**
  * @author Marco Leo
@@ -155,8 +155,10 @@ public class HeadlessDisplayTag extends BaseDisplayTag {
 		_apiURL = apiURL;
 	}
 
-	public void setBulkActionDropdownItems(List<DropdownItem> bulkActions) {
-		_bulkActionDropdownItems = bulkActions;
+	public void setBulkActionDropdownItems(
+		List<DropdownItem> bulkActionDropdownItems) {
+
+		_bulkActionDropdownItems = bulkActionDropdownItems;
 	}
 
 	public void setCreationMenu(CreationMenu creationMenu) {

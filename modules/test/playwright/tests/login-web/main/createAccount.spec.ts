@@ -12,6 +12,8 @@ import {liferayConfig} from '../../../liferay.config';
 import getRandomString from '../../../utils/getRandomString';
 import performLogin, {performLogout} from '../../../utils/performLogin';
 
+let captchaConfigurationResetRequired: boolean = false;
+
 export const test = mergeTests(
 	captchaConfigPageTest,
 	instanceSettingsPagesTest,
@@ -30,23 +32,27 @@ test.beforeEach(
 		await captchaConfigPage.goTo();
 
 		await captchaConfigPage.disableCreateAccountCaptcha();
+
+		captchaConfigurationResetRequired = true;
 	}
 );
 
 test.afterEach(
 	'Reset CAPTCHA configuration',
 	async ({captchaConfigPage, page}) => {
-		await page.goto(liferayConfig.environment.baseUrl);
+		if (captchaConfigurationResetRequired) {
+			await page.goto(liferayConfig.environment.baseUrl);
 
-		if (await page.getByRole('button', {name: 'Sign In'}).isVisible()) {
-			await performLogin(page, 'test');
+			if (await page.getByRole('button', {name: 'Sign In'}).isVisible()) {
+				await performLogin(page, 'test');
+			}
+
+			await captchaConfigPage.goTo();
+
+			await captchaConfigPage.resetCaptchaConfiguration();
+
+			await page.goto(liferayConfig.environment.baseUrl);
 		}
-
-		await captchaConfigPage.goTo();
-
-		await captchaConfigPage.resetCaptchaConfiguration();
-
-		await page.goto(liferayConfig.environment.baseUrl);
 	}
 );
 
@@ -150,4 +156,51 @@ test('LPD-44960 Create account using duplicate email address with email address 
 	await expect(strangersVerify).not.toBeChecked();
 
 	await instanceSettingsPage.saveAndWaitForAlert();
+});
+
+test('LPD-52901 Check CAPTCHA section title', async ({
+	captchaConfigPage,
+	page,
+}) => {
+	await performLogout(page);
+
+	await page.goto(liferayConfig.environment.baseUrl);
+
+	await page.getByRole('button', {name: 'Sign In'}).click();
+
+	await page.getByText('Create Account').click();
+
+	await expect(page.getByLabel('Screen Name')).toBeVisible();
+
+	await expect(
+		page.getByRole('heading', {name: 'Verification'})
+	).not.toBeVisible();
+
+	await expect(page.getByText('Refresh CAPTCHA Text')).not.toBeVisible();
+
+	await page.goto(liferayConfig.environment.baseUrl);
+
+	await performLogin(page, 'test');
+
+	await captchaConfigPage.goTo();
+
+	await captchaConfigPage.resetCaptchaConfiguration();
+
+	captchaConfigurationResetRequired = false;
+
+	await performLogout(page);
+
+	await page.goto(liferayConfig.environment.baseUrl);
+
+	await page.getByRole('button', {name: 'Sign In'}).click();
+
+	await page.getByText('Create Account').click();
+
+	await expect(page.getByLabel('Screen Name')).toBeVisible();
+
+	await expect(
+		page.getByRole('heading', {name: 'Verification'})
+	).toBeVisible();
+
+	await expect(page.getByText('Refresh CAPTCHA Text')).toBeVisible();
 });

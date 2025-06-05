@@ -1,0 +1,277 @@
+{
+	"configuration": {
+		"className": "com.liferay.headless.admin.list.type.dto.v1_0.ListTypeDefinition",
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"onErrorFail": "false",
+			"taskItemDelegateName": "DEFAULT",
+			"updateStrategy": "UPDATE"
+		}
+	},
+	"items": [
+		{
+			"externalReferenceCode": "U3A2_ANNUAL_PURCHASE_VOLUMES",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "FIRST_TIER",
+					"key": "firstTier",
+					"name": "$50,000 - $100,000 USD"
+				},
+				{
+					"externalReferenceCode": "FOURTH_TIER",
+					"key": "fourthTier",
+					"name": "$1M+ USD"
+				},
+				{
+					"externalReferenceCode": "SECOND_TIER",
+					"key": "secondTier",
+					"name": "$200,000 - $500,000 USD"
+				},
+				{
+					"externalReferenceCode": "THIRD_TIER",
+					"key": "thirdTier",
+					"name": "$500,000 - $1M USD"
+				}
+			],
+			"name": "U3A2 Annual Purchase Volumes"
+		},
+		{
+			"externalReferenceCode": "U3A2_APPLICATION_STATES",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "APPROVED",
+					"key": "approved",
+					"name": "Approved"
+				},
+				{
+					"externalReferenceCode": "DENIED",
+					"key": "denied",
+					"name": "Denied"
+				},
+				{
+					"externalReferenceCode": "ON_HOLD",
+					"key": "onHold",
+					"name": "On Hold"
+				},
+				{
+					"externalReferenceCode": "OPEN",
+					"key": "open",
+					"name": "Open"
+				},
+				{
+					"externalReferenceCode": "UNDER_REVIEW",
+					"key": "underReview",
+					"name": "Under Review"
+				},
+				{
+					"externalReferenceCode": "WITHDRAWN",
+					"key": "withdrawn",
+					"name": "Withdrawn"
+				}
+			],
+			"name": "U3A2 Application States"
+		},
+		{
+			"externalReferenceCode": "U3A2_ASSESSMENT_SCORES",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "AVERAGE",
+					"key": "average",
+					"name": "Average"
+				},
+				{
+					"externalReferenceCode": "EXCELLENT",
+					"key": "excellent",
+					"name": "Excellent"
+				},
+				{
+					"externalReferenceCode": "FAIR",
+					"key": "fair",
+					"name": "Fair"
+				},
+				{
+					"externalReferenceCode": "GOOD",
+					"key": "good",
+					"name": "Good"
+				},
+				{
+					"externalReferenceCode": "POOR",
+					"key": "poor",
+					"name": "Poor"
+				}
+			],
+			"name": "U3A2 Assessment Scores"
+		},
+		{
+			"externalReferenceCode": "U3A2_DECISIONS",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "APPROVED",
+					"key": "approved",
+					"name": "Approved"
+				},
+				{
+					"externalReferenceCode": "APPROVED_WITH_CONDITIONS",
+					"key": "approvedWithConditions",
+					"name": "Approved With Conditions"
+				},
+				{
+					"externalReferenceCode": "HOLD_FOR_FUTURE_CONSIDERATION",
+					"key": "holdForFutureConsideration",
+					"name": "Hold for Future Consideration"
+				},
+				{
+					"externalReferenceCode": "REJECTED",
+					"key": "rejected",
+					"name": "Rejected"
+				},
+				{
+					"externalReferenceCode": "WITHDRAWN",
+					"key": "withdrawn",
+					"name": "Withdrawn"
+				}
+			],
+			"name": "U3A2 Decisions"
+		},
+		{
+			"externalReferenceCode": "U3A2_DISTRIBUTION_CHANNELS",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "E_COMMERCE",
+					"key": "eCommerce",
+					"name": "E-Commerce"
+				},
+				{
+					"externalReferenceCode": "OTHER_RETAILERS",
+					"key": "otherRetailers",
+					"name": "Distribute to Other Retailers"
+				},
+				{
+					"externalReferenceCode": "OWN_RETAIL",
+					"key": "ownRetail",
+					"name": "Sell Through Own Retail"
+				}
+			],
+			"name": "U3A2 Distribution Channels"
+		},
+		{
+			"externalReferenceCode": "U3A2_DISTRIBUTION_REGIONS",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "AFRICA",
+					"key": "africa",
+					"name": "Africa"
+				},
+				{
+					"externalReferenceCode": "ASIA_PACIFIC_RIM",
+					"key": "asiaPacificRim",
+					"name": "Asia & Pacific Rim"
+				},
+				{
+					"externalReferenceCode": "CARIBBEAN",
+					"key": "caribbean",
+					"name": "Caribbean"
+				},
+				{
+					"externalReferenceCode": "CENTRAL_ASIA",
+					"key": "centralAsia",
+					"name": "Central Asia"
+				},
+				{
+					"externalReferenceCode": "EASTERN_EUROPE",
+					"key": "easternEurope",
+					"name": "Eastern Europe"
+				},
+				{
+					"externalReferenceCode": "INDIA",
+					"key": "india",
+					"name": "India"
+				},
+				{
+					"externalReferenceCode": "LATIN_AMERICA",
+					"key": "latinAmerica",
+					"name": "Latin America"
+				},
+				{
+					"externalReferenceCode": "MIDDLE_EAST",
+					"key": "middleEast",
+					"name": "Middle East"
+				},
+				{
+					"externalReferenceCode": "NORTH_AMERICA",
+					"key": "northAmerica",
+					"name": "North America"
+				},
+				{
+					"externalReferenceCode": "WESTERN_EUROPE",
+					"key": "westernEurope",
+					"name": "Western Europe"
+				}
+			],
+			"name": "U3A2 Distribution Regions"
+		},
+		{
+			"externalReferenceCode": "U3A2_PRODUCT_TYPES",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "PRODUCT_TYPE_CONTACTS",
+					"key": "contacts",
+					"name": "Contacts"
+				},
+				{
+					"externalReferenceCode": "PRODUCT_TYPE_EYEGLASSES",
+					"key": "eyeglasses",
+					"name": "Eyeglasses"
+				},
+				{
+					"externalReferenceCode": "PRODUCT_TYPE_LENSES",
+					"key": "lenses",
+					"name": "Lenses"
+				},
+				{
+					"externalReferenceCode": "PRODUCT_TYPE_SUNGLASSES",
+					"key": "sunglasses",
+					"name": "Sunglasses"
+				}
+			],
+			"name": "U3A2 Product Types"
+		},
+		{
+			"externalReferenceCode": "U3A2_RECOMMENDATIONS",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "DECLINE_APPLICATION",
+					"key": "declineApplication",
+					"name": "Decline Application"
+				},
+				{
+					"externalReferenceCode": "PROPOSE_APPROVAL",
+					"key": "proposeApproval",
+					"name": "Propose Approval"
+				},
+				{
+					"externalReferenceCode": "PROPOSE_CONDITIONAL_APPROVAL",
+					"key": "proposeConditionalApproval",
+					"name": "Propose Conditional Approval"
+				},
+				{
+					"externalReferenceCode": "REQUEST_ADDITIONAL_DOCUMENTS",
+					"key": "requestAdditionalDocuments",
+					"name": "Request Additional Documents"
+				},
+				{
+					"externalReferenceCode": "SCHEDULE_FOLLOWUP_INTERVIEW",
+					"key": "scheduleFollowupInterview",
+					"name": "Schedule Follow-up Interview"
+				},
+				{
+					"externalReferenceCode": "SEEK_LEGAL_REVIEW",
+					"key": "seekLegalReview",
+					"name": "Seek Legal Review"
+				}
+			],
+			"name": "U3A2 Recommendations"
+		}
+	]
+}

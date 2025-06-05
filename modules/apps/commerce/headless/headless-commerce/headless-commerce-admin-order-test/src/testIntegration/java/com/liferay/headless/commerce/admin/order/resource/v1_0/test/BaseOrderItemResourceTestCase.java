@@ -59,6 +59,16 @@ import com.liferay.portal.vulcan.crud.VulcanCRUDItemDelegate;
 import com.liferay.portal.vulcan.crud.VulcanCRUDItemDelegateBuilderRegistry;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import jakarta.annotation.Generated;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.PathSegment;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
+
 import java.lang.reflect.Method;
 
 import java.net.URI;
@@ -76,16 +86,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.annotation.Generated;
-
-import javax.servlet.http.HttpServletRequest;
-
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -1607,12 +1607,61 @@ public abstract class BaseOrderItemResourceTestCase {
 
 	@Test
 	public void testPatchOrderItem() throws Exception {
-		Assert.assertTrue(false);
+		OrderItem postOrderItem = testPatchOrderItem_addOrderItem();
+
+		OrderItem randomPatchOrderItem = randomPatchOrderItem();
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		OrderItem patchOrderItem = orderItemResource.patchOrderItem(
+			postOrderItem.getId(), randomPatchOrderItem);
+
+		OrderItem expectedPatchOrderItem = postOrderItem.clone();
+
+		BeanTestUtil.copyProperties(
+			randomPatchOrderItem, expectedPatchOrderItem);
+
+		OrderItem getOrderItem = orderItemResource.getOrderItem(
+			patchOrderItem.getId());
+
+		assertEquals(expectedPatchOrderItem, getOrderItem);
+		assertValid(getOrderItem);
+	}
+
+	protected OrderItem testPatchOrderItem_addOrderItem() throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
 	public void testPatchOrderItemByExternalReferenceCode() throws Exception {
-		Assert.assertTrue(false);
+		OrderItem postOrderItem =
+			testPatchOrderItemByExternalReferenceCode_addOrderItem();
+
+		OrderItem randomPatchOrderItem = randomPatchOrderItem();
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		OrderItem patchOrderItem =
+			orderItemResource.patchOrderItemByExternalReferenceCode(
+				postOrderItem.getExternalReferenceCode(), randomPatchOrderItem);
+
+		OrderItem expectedPatchOrderItem = postOrderItem.clone();
+
+		BeanTestUtil.copyProperties(
+			randomPatchOrderItem, expectedPatchOrderItem);
+
+		OrderItem getOrderItem =
+			orderItemResource.getOrderItemByExternalReferenceCode(
+				patchOrderItem.getExternalReferenceCode());
+
+		assertEquals(expectedPatchOrderItem, getOrderItem);
+		assertValid(getOrderItem);
+	}
+
+	protected OrderItem testPatchOrderItemByExternalReferenceCode_addOrderItem()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

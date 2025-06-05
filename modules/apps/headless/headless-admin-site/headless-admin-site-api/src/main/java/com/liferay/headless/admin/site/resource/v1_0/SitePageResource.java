@@ -20,17 +20,17 @@ import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTa
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
+import jakarta.annotation.Generated;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import jakarta.ws.rs.core.UriInfo;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.annotation.Generated;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -56,11 +56,6 @@ public interface SitePageResource {
 			String sitePageExternalReferenceCode)
 		throws Exception;
 
-	public Page<com.liferay.portal.vulcan.permission.Permission>
-			getSiteSiteByExternalReferenceCodeSitePagePermissionsPage(
-				String siteExternalReferenceCode, String roleNames)
-		throws Exception;
-
 	public Page<SitePage> getSiteSiteByExternalReferenceCodeSitePagesPage(
 			String siteExternalReferenceCode, String search,
 			com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
@@ -70,7 +65,7 @@ public interface SitePageResource {
 		throws Exception;
 
 	public Page<com.liferay.portal.vulcan.permission.Permission>
-			getSiteSiteExternalReferenceCodeSitePagePermissionsPage(
+			getSiteSitePagePermissionsPage(
 				String siteExternalReferenceCode,
 				String sitePageExternalReferenceCode, String roleNames)
 		throws Exception;
@@ -97,13 +92,7 @@ public interface SitePageResource {
 		throws Exception;
 
 	public Page<com.liferay.portal.vulcan.permission.Permission>
-			putSiteSiteByExternalReferenceCodeSitePagePermissionsPage(
-				String siteExternalReferenceCode,
-				com.liferay.portal.vulcan.permission.Permission[] permissions)
-		throws Exception;
-
-	public Page<com.liferay.portal.vulcan.permission.Permission>
-			putSiteSiteExternalReferenceCodeSitePagePermissionsPage(
+			putSiteSitePagePermissionsPage(
 				String siteExternalReferenceCode,
 				String sitePageExternalReferenceCode,
 				com.liferay.portal.vulcan.permission.Permission[] permissions)

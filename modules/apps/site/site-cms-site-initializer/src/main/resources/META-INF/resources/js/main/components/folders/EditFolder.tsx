@@ -8,7 +8,8 @@ import ClayForm from '@clayui/form';
 import {Item} from '@clayui/multi-select/lib/types';
 import ClayToolbar from '@clayui/toolbar';
 import {useFormik} from 'formik';
-import {navigate} from 'frontend-js-web';
+import {openToast} from 'frontend-js-components-web';
+import {navigate, sub} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
 import FolderService, {TFolder} from '../../../services/FolderService';
@@ -51,13 +52,46 @@ const EditFolder: React.FC<EditFolderProps> = ({backURL, folderId}) => {
 		? [{label: folderData.scopeKey, value: folderData.scopeKey}]
 		: [];
 
-	const {errors, handleChange, handleSubmit, setValues, values} = useFormik({
+	const {
+		errors,
+		handleChange,
+		handleSubmit,
+		isSubmitting,
+		setValues,
+		values,
+	} = useFormik({
 		initialValues: {
 			folderDescription: folderData.description,
 			folderName: folderData.title,
 			folderSpace: folderData.scopeKey,
 		},
-		onSubmit: () => {},
+		onSubmit: async (formValues) => {
+			const newFolderValues: TFolder = {
+				description: formValues.folderDescription,
+				id: parseInt(folderId, 10),
+				title: formValues.folderName,
+			};
+
+			const {error} = await FolderService.updateFolder(newFolderValues);
+
+			if (!error) {
+				navigate(backURL);
+
+				openToast({
+					message: sub(
+						Liferay.Language.get('x-was-updated-successfully'),
+						`<strong>${formValues.folderName}</strong>`
+					),
+					type: 'success',
+				});
+			}
+			else {
+				openToast({
+					message: error,
+					type: 'danger',
+				});
+			}
+		},
 		validate: (values) =>
 			validate(
 				{
@@ -117,11 +151,21 @@ const EditFolder: React.FC<EditFolderProps> = ({backURL, folderId}) => {
 
 					<ClayToolbar.Item>
 						<ClayButton
+							disabled={isSubmitting}
 							displayType="primary"
 							form="formEditFolder"
 							size="sm"
 							type="submit"
 						>
+							{isSubmitting && (
+								<span className="inline-item inline-item-before">
+									<span
+										aria-hidden="true"
+										className="loading-animation"
+									></span>
+								</span>
+							)}
+
 							{Liferay.Language.get('save')}
 						</ClayButton>
 					</ClayToolbar.Item>
@@ -145,10 +189,10 @@ const EditFolder: React.FC<EditFolderProps> = ({backURL, folderId}) => {
 					/>
 
 					<FieldPicker
-						disabled
 						items={spaceItems}
 						label={Liferay.Language.get('space')}
 						name="folderSpace"
+						readOnly
 						required
 						selectedKey={values.folderSpace}
 					/>

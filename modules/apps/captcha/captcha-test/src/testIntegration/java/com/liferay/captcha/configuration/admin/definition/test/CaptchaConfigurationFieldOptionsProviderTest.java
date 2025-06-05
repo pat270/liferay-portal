@@ -12,10 +12,13 @@ import com.liferay.configuration.admin.definition.ConfigurationFieldOptionsProvi
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.captcha.Captcha;
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -38,6 +41,7 @@ import org.osgi.framework.ServiceRegistration;
 /**
  * @author Pedro Victor Silvestre
  */
+@FeatureFlag("LPD-36464")
 @RunWith(Arquillian.class)
 public class CaptchaConfigurationFieldOptionsProviderTest {
 
@@ -61,9 +65,19 @@ public class CaptchaConfigurationFieldOptionsProviderTest {
 			"com.liferay.captcha.internal.configuration." +
 				"FunctionCaptchaImplConfiguration",
 			HashMapDictionaryBuilder.<String, Object>put(
-				"captchaName", "ClientExtensionCaptcha"
+				"captchaName", RandomTestUtil.randomString()
 			).put(
-				"customElementExternalReferenceCode", "test"
+				"captchaResponseParameterName", RandomTestUtil.randomString()
+			).put(
+				"companyId", TestPropsValues.getCompanyId()
+			).put(
+				"customElementExternalReferenceCode",
+				RandomTestUtil.randomString()
+			).put(
+				"oAuth2ApplicationExternalReferenceCode",
+				RandomTestUtil.randomString()
+			).put(
+				"resourcePath", RandomTestUtil.randomString()
 			).build());
 	}
 

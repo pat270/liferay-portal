@@ -106,8 +106,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
 		const displayPageTemplateName = getRandomString();
@@ -184,8 +182,6 @@ test(
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
@@ -350,8 +346,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
 		const displayPageTemplateName = getRandomString();
@@ -492,8 +486,6 @@ test(
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
@@ -688,8 +680,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const address =
 			await apiHelpers.headlessCommerceAdminAccount.postAddress(
 				account.id,
@@ -877,8 +867,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const address =
 			await apiHelpers.headlessCommerceAdminAccount.postAddress(
 				account.id,
@@ -1002,8 +990,6 @@ test(
 			name: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 			account.id,
@@ -1196,7 +1182,7 @@ test(
 		).toBeVisible();
 
 		await performLogout(page);
-		await performLoginViaApi(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(
 			liferayConfig.environment.baseUrl +
@@ -1248,17 +1234,12 @@ test(
 	}) => {
 		test.setTimeout(180000);
 
-		const {catalog, channel, site} = await classicCommerceSetUp(
-			apiHelpers,
-			getRandomString()
-		);
+		const {catalog, channel, site} = await classicCommerceSetUp(apiHelpers);
 
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			name: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 			account.id,
@@ -1315,7 +1296,7 @@ test(
 		await displayPageTemplatesPage.publishTemplate();
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		const cart1 = await apiHelpers.headlessCommerceDeliveryCart.postCart(
 			{
@@ -1355,7 +1336,10 @@ test(
 
 		await commerceLayoutsPage.orderActionDropDownButton.click();
 
-		await commerceLayoutsPage.expectOrderActionButtons({checkoutCount: 1});
+		await commerceLayoutsPage.expectOrderActionButtons({
+			checkoutCount: 1,
+			submitCount: 1,
+		});
 		await commerceLayoutsPage.orderActionsButton('Checkout').click();
 
 		await checkoutPage.performCheckout({
@@ -1378,10 +1362,13 @@ test(
 			page.getByRole('heading', {name: String(cart1.id)}).first()
 		).toBeVisible();
 
-		await commerceLayoutsPage.expectOrderActionButtons({reorderCount: 1});
+		await commerceLayoutsPage.expectOrderActionButtons({
+			reorderCount: 1,
+			submitCount: 1,
+		});
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await commerceAdminChannelsPage.changeCommerceChannelBuyerOrderApprovalWorkflow(
 			'Single Approver (Version 1)',
@@ -1394,7 +1381,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		const cart2 = await apiHelpers.headlessCommerceDeliveryCart.postCart(
 			{
@@ -1428,7 +1415,7 @@ test(
 		await commerceLayoutsPage.expectOrderActionButtons({});
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await page.goto(
 			liferayConfig.environment.baseUrl +
@@ -1452,7 +1439,7 @@ test(
 		await commerceLayoutsPage.expectOrderActionButtons({checkoutCount: 1});
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		await page.goto(
 			liferayConfig.environment.baseUrl +
@@ -1463,7 +1450,10 @@ test(
 			page.getByRole('heading', {name: String(cart2.id)}).first()
 		).toBeVisible();
 
-		await commerceLayoutsPage.expectOrderActionButtons({checkoutCount: 1});
+		await commerceLayoutsPage.expectOrderActionButtons({
+			checkoutCount: 1,
+			submitCount: 1,
+		});
 		await commerceLayoutsPage.orderActionsButton('Checkout').click();
 
 		await checkoutPage.performCheckout(
@@ -1485,7 +1475,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await page.goto(
 			liferayConfig.environment.baseUrl +
@@ -1500,6 +1490,7 @@ test(
 			approveCount: 1,
 			rejectCount: 1,
 			reorderCount: 1,
+			submitCount: 1,
 		});
 		await commerceLayoutsPage.orderActionsButton('Approve').click();
 
@@ -1507,10 +1498,12 @@ test(
 			page.getByRole('heading', {name: String(cart2.id)}).first()
 		).toBeVisible();
 
-		await commerceLayoutsPage.expectOrderActionButtons({reorderCount: 1});
+		await commerceLayoutsPage.expectOrderActionButtons({
+			reorderCount: 1,
+			submitCount: 1,
+		});
 
 		await performLogout(page);
-
 		await performLogin(page, 'demo.unprivileged');
 
 		await page.goto(
@@ -1522,7 +1515,10 @@ test(
 			page.getByRole('heading', {name: String(cart2.id)}).first()
 		).toBeVisible();
 
-		await commerceLayoutsPage.expectOrderActionButtons({reorderCount: 1});
+		await commerceLayoutsPage.expectOrderActionButtons({
+			reorderCount: 1,
+			submitCount: 1,
+		});
 		await commerceLayoutsPage.orderActionsButton('Reorder').click();
 
 		await expect(
@@ -1548,8 +1544,6 @@ test(
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
@@ -1696,8 +1690,6 @@ test(
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 			account.id,
@@ -1914,10 +1906,11 @@ test(
 
 test(
 	'Order Data Sets and header fragments',
-	{tag: '@LPD-35558'},
+	{tag: ['@LPD-35558', '@LPD-48375']},
 	async ({
 		apiHelpers,
 		commerceLayoutsPage,
+		commerceThemeClassicOrdersPage,
 		displayPageTemplatesPage,
 		page,
 		pageEditorPage,
@@ -1928,8 +1921,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const channel =
 			await apiHelpers.headlessCommerceAdminChannel.postChannel({
 				siteGroupId: site.id,
@@ -1939,9 +1930,7 @@ test(
 			await apiHelpers.headlessCommerceAdminCatalog.postCatalog();
 
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
-
 		const displayPageTemplateName = getRandomString();
-
 		await displayPageTemplatesPage.createTemplate({
 			contentType: 'Order',
 			name: displayPageTemplateName,
@@ -2004,9 +1993,61 @@ test(
 		);
 
 		await expect(
-			page.getByRole('link', {name: cart.id.toString()})
+			(await commerceThemeClassicOrdersPage.tableRow(1, cart.id)).row
 		).toBeVisible();
-		await expect(page.getByText(sku.sku.toString())).toBeVisible();
+		await expect(
+			(
+				await commerceThemeClassicOrdersPage.orderItemsTableRow(
+					2,
+					sku.sku
+				)
+			).row
+		).toBeVisible();
+
+		const cart2 = await apiHelpers.headlessCommerceDeliveryCart.postCart(
+			{
+				accountId: account.id,
+				cartItems: [],
+			},
+			channel.id
+		);
+
+		await apiHelpers.headlessCommerceDeliveryCart.postCart(
+			{
+				accountId: account.id,
+				cartItems: [],
+			},
+			channel.id
+		);
+
+		page.on('dialog', async (dialog) => {
+			await dialog.accept();
+		});
+
+		await (await commerceThemeClassicOrdersPage.tableRow(11, 'Actions')).row
+			.getByRole('button')
+			.click();
+		await commerceThemeClassicOrdersPage
+			.orderTableMenuItem('Delete')
+			.click();
+
+		await waitForAlert(page);
+
+		await expect(
+			page.getByRole('link', {name: cart.id.toString()})
+		).not.toBeVisible();
+
+		await commerceThemeClassicOrdersPage.orderTableItemsSelector.click();
+		await commerceThemeClassicOrdersPage.orderTableItemsSelectorDropdown.click();
+		await commerceThemeClassicOrdersPage
+			.orderTableMenuItem('Delete')
+			.click();
+
+		await waitForAlert(page);
+
+		await expect(
+			page.getByRole('link', {name: cart2.id.toString()})
+		).not.toBeVisible();
 	}
 );
 
@@ -2029,8 +2070,6 @@ test(
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
@@ -2299,8 +2338,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		const cart = await apiHelpers.headlessCommerceDeliveryCart.postCart(
 			{
 				accountId: account.id,
@@ -2403,8 +2440,6 @@ test(
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
@@ -2777,8 +2812,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await displayPageTemplatesPage.goto(site.friendlyUrlPath);
 
 		const displayPageTemplateName = getRandomString();
@@ -2899,8 +2932,6 @@ test(
 			type: 'person',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
-
 		await apiHelpers.headlessDelivery.createSitePage({
 			pageDefinition: getPageDefinition([
 				getFragmentDefinition({
@@ -2956,7 +2987,7 @@ test(
 
 test(
 	'Placed Order Shipments Data Set fragment',
-	{tag: '@LPD-32242'},
+	{tag: ['@LPD-32242', '@LPD-53485']},
 	async ({apiHelpers, displayPageTemplatesPage, page, pageEditorPage}) => {
 		test.setTimeout(180000);
 
@@ -2969,8 +3000,6 @@ test(
 			name: getRandomString(),
 			type: 'business',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const address =
 			await apiHelpers.headlessCommerceAdminAccount.postAddress(
@@ -2989,7 +3018,7 @@ test(
 			channelId: channel.id,
 			orderItems: [
 				{
-					quantity: 1,
+					quantity: 2,
 					skuId: sku.id,
 				},
 			],
@@ -2999,7 +3028,26 @@ test(
 			orderStatus: ORDER_WORKFLOW_STATUS_CODE.PROCESSING,
 		});
 
-		const shipment =
+		const now = new Date();
+		const expectedDate = new Date(
+			now.getFullYear() + 1,
+			now.getMonth(),
+			now.getDate()
+		);
+
+		const shipment1 =
+			await apiHelpers.headlessCommerceAdminShipment.postShipment({
+				expectedDate: expectedDate.toISOString(),
+				orderId: order.id,
+				shipmentItems: [
+					{
+						orderItemId: order.orderItems[0].id,
+						quantity: 1,
+					},
+				],
+				shippingAddressId: address.id,
+			});
+		const shipment2 =
 			await apiHelpers.headlessCommerceAdminShipment.postShipment({
 				orderId: order.id,
 				shipmentItems: [
@@ -3040,7 +3088,22 @@ test(
 				.getByRole('columnheader', {name: 'Shipment ID'})
 				.getByRole('button')
 		).toBeVisible();
-		await expect(page.getByText(String(shipment.id))).toBeVisible();
+		await expect(page.getByText(String(shipment1.id))).toBeVisible();
+		await expect(page.getByText(String(shipment2.id))).toBeVisible();
+
+		await page.getByRole('button', {exact: true, name: 'Filter'}).click();
+		await page
+			.getByRole('menuitem', {exact: true, name: 'Delivery Date Range'})
+			.click();
+		await page
+			.getByLabel('To', {exact: true})
+			.fill(expectedDate.toISOString().replace(/T.*/, ''));
+		await page
+			.getByRole('button', {exact: true, name: 'Add Filter'})
+			.click();
+
+		await expect(page.getByText(String(shipment1.id))).toBeVisible();
+		await expect(page.getByText(String(shipment2.id))).toHaveCount(0);
 	}
 );
 
@@ -3048,10 +3111,7 @@ test(
 	'When there is no site associated with the channel, inform the user',
 	{tag: '@LPD-51595'},
 	async ({apiHelpers, commerceLayoutsPage, page}) => {
-		const {channel, site} = await classicCommerceSetUp(
-			apiHelpers,
-			getRandomString()
-		);
+		const {channel, site} = await classicCommerceSetUp(apiHelpers);
 
 		await page.goto(`/web/${site.name}`);
 
@@ -3091,8 +3151,6 @@ test(
 			name: getRandomString(),
 			type: 'person',
 		});
-
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		await apiHelpers.headlessDelivery.createSitePage({
 			pageDefinition: getPageDefinition([

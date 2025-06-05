@@ -152,7 +152,7 @@ public class JiraRestController extends BaseRestController {
 			return new JSONObject(
 				get(
 					"Bearer " + jwt.getTokenValue(),
-					"/o/headless-admin-user/v1.0/my-user-account"));
+					createURI("/o/headless-admin-user/v1.0/my-user-account")));
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -186,11 +186,7 @@ public class JiraRestController extends BaseRestController {
 	private boolean _hasAdministrator(Jwt jwt) throws Exception {
 		List<String> userRoleNames = _getUserRoleNames(jwt);
 
-		if (userRoleNames.contains(RoleConstants.NAME_ADMINISTRATOR)) {
-			return true;
-		}
-
-		return false;
+		return userRoleNames.contains(RoleConstants.NAME_ADMINISTRATOR);
 	}
 
 	private boolean _hasEarlyPublishAccess(Jwt jwt) throws Exception {

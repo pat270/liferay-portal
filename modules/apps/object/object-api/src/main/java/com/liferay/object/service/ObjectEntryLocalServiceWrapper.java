@@ -302,6 +302,16 @@ public class ObjectEntryLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.object.model.ObjectEntry expireObjectEntry(
+			long userId, long objectEntryId, int version,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.expireObjectEntry(
+			userId, objectEntryId, version, serviceContext);
+	}
+
+	@Override
 	public com.liferay.object.model.ObjectEntry fetchManyToOneObjectEntry(
 			long groupId, long objectRelationshipId, long primaryKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -588,6 +598,15 @@ public class ObjectEntryLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.List<com.liferay.object.model.ObjectEntry>
+		getObjectEntryFolderObjectEntries(
+			long groupId, long objectEntryFolderId, int start, int end) {
+
+		return _objectEntryLocalService.getObjectEntryFolderObjectEntries(
+			groupId, objectEntryFolderId, start, end);
+	}
+
+	@Override
 	public int getObjectEntryFolderObjectEntriesCount(
 		long groupId, long objectEntryFolderId) {
 
@@ -727,6 +746,17 @@ public class ObjectEntryLocalServiceWrapper
 
 		_objectEntryLocalService.insertIntoOrUpdateExtensionTable(
 			userId, objectDefinitionId, primaryKey, values);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectEntry partialUpdateObjectEntry(
+			long userId, long objectEntryId,
+			java.util.Map<String, java.io.Serializable> values,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.partialUpdateObjectEntry(
+			userId, objectEntryId, values, serviceContext);
 	}
 
 	@Override

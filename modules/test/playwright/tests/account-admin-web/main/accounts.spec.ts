@@ -51,8 +51,6 @@ test('LPD-18485 Update account contact information fields', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await (await accountsPage.accountsTable.cellLink(account.name)).click();
@@ -90,8 +88,6 @@ test('LPD-18484 Add account contact address', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await (await accountsPage.accountsTable.cellLink(account.name)).click();
@@ -128,8 +124,6 @@ test('LPD-18482 Add account phone', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await (await accountsPage.accountsTable.cellLink(account.name)).click();
@@ -158,8 +152,6 @@ test('LPD-18483 Add account email address', async ({
 		name: 'test',
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await accountsPage.goto();
 
@@ -194,8 +186,6 @@ test('LPD-18484 Add account website', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await (await accountsPage.accountsTable.cellLink(account.name)).click();
@@ -224,8 +214,6 @@ test('LPD-28161 Can view role and organization name escaped', async ({
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const roleName = 'My title<script>confirm("compromised")</script>';
 
@@ -280,22 +268,14 @@ test('LPD-32045 All account entry can be seen by admin user', async ({
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account1.id, type: 'account'});
-
 	const account2 = await apiHelpers.headlessAdminUser.postAccount({
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account2.id, type: 'account'});
-
 	const account3 = await apiHelpers.headlessAdminUser.postAccount({
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account3.id, type: 'account'});
 
 	const userAccount = await apiHelpers.headlessAdminUser.postUserAccount();
 
@@ -345,8 +325,6 @@ test('LPD-33636 Email address is not deleted by saving in the UI', async ({
 }) => {
 	const account = await apiHelpers.headlessAdminUser.postAccount();
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await applicationsMenuPage.goToServerAdministration();
 
 	const emailAddress = getRandomString() + '@liferay.com';
@@ -395,8 +373,6 @@ test('LPD-44526 Can activate and deactivate an account', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await expect(async () => {
@@ -442,7 +418,6 @@ test('LPD-44526 Can deactivate and activate accounts in bulk', async ({
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
 		accounts.push(account);
 	}
 
@@ -514,11 +489,16 @@ test('LPD-45897 Can delete an account', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
-	await (await accountsPage.accountsTable.rowActions(account.name)).click();
+	await expect(async () => {
+		await (
+			await accountsPage.accountsTable.rowActions(account.name)
+		).click();
+
+		await expect(accountsPage.deleteButton).toBeVisible({timeout: 300});
+	}).toPass();
+
 	await accountsPage.deleteButton.click();
 
 	await waitForAlert(page);
@@ -545,8 +525,6 @@ test('LPD-45897 Can delete an inactive account', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await expect(async () => {
@@ -554,7 +532,7 @@ test('LPD-45897 Can delete an inactive account', async ({
 			await accountsPage.accountsTable.rowActions(account.name)
 		).click();
 
-		await expect(accountsPage.deactivateButton).toBeVisible({timeout: 300});
+		await expect(accountsPage.deactivateButton).toBeVisible({timeout: 500});
 	}).toPass();
 
 	await accountsPage.deactivateButton.click();
@@ -586,19 +564,16 @@ test('LPD-45897 Can delete accounts in bulk', async ({
 
 	for (let i = 1; i < 7; i++) {
 		if (i < 4) {
-			const account = await apiHelpers.headlessAdminUser.postAccount({
+			await apiHelpers.headlessAdminUser.postAccount({
 				name: `Account ${i}`,
 				type: 'business',
 			});
-
-			apiHelpers.data.push({id: account.id, type: 'account'});
 		}
 		else {
-			const account = await apiHelpers.headlessAdminUser.postAccount({
+			await apiHelpers.headlessAdminUser.postAccount({
 				name: `Account ${i}`,
 				type: 'person',
 			});
-			apiHelpers.data.push({id: account.id, type: 'account'});
 		}
 	}
 
@@ -672,8 +647,6 @@ test('LPS-195988 The account external reference code should be unique', async ({
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await accountsPage.goto();
 
@@ -950,7 +923,6 @@ test('LPS-101893 Account list should be paginated', async ({
 			type: 'business',
 		});
 
-		apiHelpers.data.push({id: account.id, type: 'account'});
 		accounts.push(account);
 	}
 
@@ -1021,8 +993,6 @@ test('LPS-195988 An account can be updated', async ({
 		type: 'business',
 	});
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await accountsPage.accountNameLink(account.name).click();
@@ -1081,8 +1051,6 @@ test('LPS-101221 An inactive account can be updated', async ({
 		description: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await accountsPage.goto();
 
@@ -1163,15 +1131,10 @@ test('LPS-101221 Can search an account', async ({
 		description: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account1.id, type: 'account'});
-
 	const account2 = await apiHelpers.headlessAdminUser.postAccount({
 		description: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account2.id, type: 'account'});
 
 	await accountsPage.goto();
 
@@ -1230,8 +1193,6 @@ test('LPD-47225 Can edit account custom fields', async ({
 
 	const account = await apiHelpers.headlessAdminUser.postAccount();
 
-	apiHelpers.data.push({id: account.id, type: 'account'});
-
 	await accountsPage.goto();
 
 	await accountsPage.accountNameLink(account.name).click();
@@ -1281,8 +1242,6 @@ test('LPD-47225 Can add and remove categories to an account', async ({
 	});
 
 	const account = await apiHelpers.headlessAdminUser.postAccount();
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await accountsPage.goto();
 
@@ -1603,8 +1562,6 @@ test('LPD-47589 Check delete and deactivate permissions work independently', asy
 		name: getRandomString(),
 		type: 'business',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	const companyId = await page.evaluate(() => {
 		return Liferay.ThemeDisplay.getCompanyId();

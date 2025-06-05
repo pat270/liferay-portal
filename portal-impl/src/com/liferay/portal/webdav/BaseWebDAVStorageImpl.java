@@ -15,7 +15,7 @@ import com.liferay.portal.kernel.webdav.WebDAVException;
 import com.liferay.portal.kernel.webdav.WebDAVRequest;
 import com.liferay.portal.kernel.webdav.WebDAVStorage;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * @author Brian Wing Shun Chan
@@ -144,11 +144,7 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	protected boolean isAddGroupPermissions(long groupId) throws Exception {
 		Group group = GroupLocalServiceUtil.getGroup(groupId);
 
-		if (!group.isUser()) {
-			return true;
-		}
-
-		return false;
+		return !group.isUser();
 	}
 
 	private String _rootPath;

@@ -44,8 +44,10 @@ export enum OrderWorkflowStatusCode {
 
 export enum PaymentStatus {
 	PAID = 0,
+	PENDING = 1,
 	PAYMENT_PENDING = 2,
 }
+
 export const orderTypeLabel = {
 	[OrderTypes.ADDONS]: 'Add-Ons',
 	[OrderTypes.CLIENT_EXTENSION]: 'Client Extension',
@@ -56,4 +58,28 @@ export const orderTypeLabel = {
 	[OrderTypes.OTHER]: 'Other',
 	[OrderTypes.SOLUTIONS7]: 'Solutions 7',
 	[OrderTypes.SOLUTIONS30]: 'Solutions 30',
+} as const;
+
+export const orderWorkflowDisplayType = {
+	[OrderWorkflowStatusCode.COMPLETED]: 'success',
+	[OrderWorkflowStatusCode.CANCELLED]: 'warning',
+	[OrderWorkflowStatusCode.IN_PROGRESS]: 'info',
+	[OrderWorkflowStatusCode.ON_HOLD]: 'secondary',
+	[OrderWorkflowStatusCode.PENDING]: 'warning',
+	[OrderWorkflowStatusCode.PROCESSING]: 'secondary',
+} as const;
+
+export const orderWorkflowStatusCodeLabels = {
+	[OrderWorkflowStatusCode.CANCELLED]: 'Canceled',
+	[OrderWorkflowStatusCode.COMPLETED]: 'Completed',
+	[OrderWorkflowStatusCode.IN_PROGRESS]: 'In Progress',
+	[OrderWorkflowStatusCode.ON_HOLD]: 'On Hold',
+	[OrderWorkflowStatusCode.PENDING]: 'Pending',
+	[OrderWorkflowStatusCode.PROCESSING]: 'Processing',
+} as const;
+
+export const paymentWorkflowDisplayType = {
+	[PaymentStatus.PAID]: 'success',
+	[PaymentStatus.PENDING]: 'secondary',
+	[PaymentStatus.PAYMENT_PENDING]: 'warning',
 } as const;

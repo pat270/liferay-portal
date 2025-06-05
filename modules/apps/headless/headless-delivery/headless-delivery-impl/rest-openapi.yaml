@@ -3573,8 +3573,13 @@ components:
                     # @review
                     description:
                         The navigation menu item's type.
-                    readOnly: true
                     type: string
+                typeSettings:
+                    additionalProperties:
+                        type: string
+                    description:
+                        The navigation menu item's type settings.
+                    type: object
                 url:
                     # @review
                     description:
@@ -3582,6 +3587,8 @@ components:
                     type: string
                 useCustomName:
                     type: boolean
+            required:
+                -   typeSettings
         NoneActionExecutionResult:
             # @review
             description:
@@ -6123,7 +6130,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.delivery.client', and version '4.0.94'."
+        'com.liferay.headless.delivery.client', and version '4.0.95'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -15619,6 +15626,10 @@ paths:
                     schema:
                         type: string
                 -   in: query
+                    name: filter
+                    schema:
+                        type: string
+                -   in: query
                     name: nestedFields
                     schema:
                         type: integer
@@ -15632,6 +15643,14 @@ paths:
                         type: integer
                 -   in: query
                     name: restrictFields
+                    schema:
+                        type: string
+                -   in: query
+                    name: search
+                    schema:
+                        type: string
+                -   in: query
+                    name: sort
                     schema:
                         type: string
             responses:

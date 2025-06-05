@@ -6,35 +6,41 @@
 package com.liferay.search.experiences.internal.info.collection.provider;
 
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.service.DDMStructureService;
 import com.liferay.info.collection.provider.CollectionQuery;
 import com.liferay.info.collection.provider.FilteredInfoCollectionProvider;
 import com.liferay.info.collection.provider.SingleFormVariationInfoCollectionProvider;
 import com.liferay.info.pagination.InfoPage;
-import com.liferay.info.pagination.Pagination;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleService;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.GroupService;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.search.asset.AssetSubtypeIdentifier;
+import com.liferay.portal.search.asset.AssetSubtypeIdentifierBuilder;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.hits.SearchHits;
-import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.SearchResponse;
 import com.liferay.portal.search.searcher.Searcher;
 import com.liferay.search.experiences.model.SXPBlueprint;
+import com.liferay.search.experiences.rest.dto.v1_0.Configuration;
+import com.liferay.search.experiences.rest.dto.v1_0.GeneralConfiguration;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @author David Nebinger
  * @author Petteri Karttunen
+ * @author Joshua Cords
  */
 public class JournalArticleSXPBlueprintInfoCollectionProvider
 	extends SXPBlueprintInfoCollectionProvider<JournalArticle>
@@ -42,13 +48,20 @@ public class JournalArticleSXPBlueprintInfoCollectionProvider
 			   SingleFormVariationInfoCollectionProvider<JournalArticle> {
 
 	public JournalArticleSXPBlueprintInfoCollectionProvider(
-		AssetHelper assetHelper, JournalArticleService journalArticleService,
-		Searcher searcher,
+		AssetHelper assetHelper,
+		AssetSubtypeIdentifierBuilder assetSubtypeIdentifierBuilder,
+		ClassNameLocalService classNameLocalService,
+		DDMStructureService ddmStructureService, GroupService groupService,
+		JournalArticleService journalArticleService, Searcher searcher,
 		SearchRequestBuilderFactory searchRequestBuilderFactory,
 		SXPBlueprint sxpBlueprint) {
 
 		super(assetHelper, searcher, searchRequestBuilderFactory, sxpBlueprint);
 
+		_assetSubtypeIdentifierBuilder = assetSubtypeIdentifierBuilder;
+		_classNameLocalService = classNameLocalService;
+		_ddmStructureService = ddmStructureService;
+		_groupService = groupService;
 		_journalArticleService = journalArticleService;
 	}
 
@@ -57,13 +70,8 @@ public class JournalArticleSXPBlueprintInfoCollectionProvider
 		CollectionQuery collectionQuery) {
 
 		try {
-			Pagination pagination = collectionQuery.getPagination();
-
-			SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(
-				collectionQuery, pagination);
-
-			SearchResponse searchResponse = searcher.search(
-				searchRequestBuilder.build());
+			SearchResponse searchResponse = getCollectionQuerySearchResponse(
+				collectionQuery);
 
 			return InfoPage.of(
 				_getJournalArticles(searchResponse.getSearchHits()),
@@ -79,54 +87,62 @@ public class JournalArticleSXPBlueprintInfoCollectionProvider
 
 	@Override
 	public String getFormVariationKey() {
-		long ddmStructureId = 0;
+		Configuration configuration = Configuration.unsafeToDTO(
+			sxpBlueprint.getConfigurationJSON());
 
-		CollectionQuery collectionQuery = new CollectionQuery();
+		GeneralConfiguration generalConfiguration =
+			configuration.getGeneralConfiguration();
 
-		collectionQuery.setPagination(Pagination.of(1, 0));
+		AssetSubtypeIdentifier assetSubtypeIdentifier =
+			_assetSubtypeIdentifierBuilder.searchableAssetType(
+				generalConfiguration.getCollectionProviderType()
+			).build();
 
-		SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(
-			collectionQuery, collectionQuery.getPagination());
+		if (Validator.isBlank(
+				assetSubtypeIdentifier.getSubtypeExternalReferenceCode())) {
 
-		SearchResponse searchResponse = searcher.search(
-			searchRequestBuilder.build());
+			return "0";
+		}
 
-		SearchHits searchHits = searchResponse.getSearchHits();
+		Group group;
 
 		try {
-			List<JournalArticle> journalArticles = _getJournalArticles(
-				searchHits);
-
-			if (!journalArticles.isEmpty()) {
-				JournalArticle journalArticle = journalArticles.get(0);
-
-				ddmStructureId = journalArticle.getDDMStructureId();
-			}
+			group = _groupService.fetchGroupByExternalReferenceCode(
+				assetSubtypeIdentifier.getGroupExternalReferenceCode(),
+				sxpBlueprint.getCompanyId());
 		}
 		catch (PortalException portalException) {
-			_log.error(portalException);
+			_log.error(
+				"Unable to get group with external reference code " +
+					assetSubtypeIdentifier.getGroupExternalReferenceCode(),
+				portalException);
+
+			return "0";
 		}
 
-		return String.valueOf(ddmStructureId);
+		String subtypeExternalReferenceCode =
+			assetSubtypeIdentifier.getSubtypeExternalReferenceCode();
+
+		try {
+			DDMStructure ddmStructure =
+				_ddmStructureService.fetchStructureByExternalReferenceCode(
+					subtypeExternalReferenceCode, group.getGroupId(),
+					_classNameLocalService.getClassNameId(
+						JournalArticle.class));
+
+			return String.valueOf(ddmStructure.getStructureId());
+		}
+		catch (PortalException portalException) {
+			_log.error(
+				"Unable to get dynamic data mapping structure with external " +
+					"reference code " + subtypeExternalReferenceCode,
+				portalException);
+		}
+
+		return "0";
 	}
 
-	@Override
-	public String getKey() {
-		return StringBundler.concat(
-			JournalArticleSXPBlueprintInfoCollectionProvider.class.getName(),
-			StringPool.UNDERLINE, sxpBlueprint.getCompanyId(),
-			StringPool.UNDERLINE, sxpBlueprint.getExternalReferenceCode(),
-			StringPool.UNDERLINE, JournalArticle.class.getName());
-	}
-
-	@Override
-	public String getLabel(Locale locale) {
-		return sxpBlueprint.getTitle(locale);
-	}
-
-	private List<JournalArticle> _getJournalArticles(SearchHits searchHits)
-		throws PortalException {
-
+	private List<JournalArticle> _getJournalArticles(SearchHits searchHits) {
 		return TransformUtil.transform(
 			searchHits.getSearchHits(),
 			searchHit -> {
@@ -140,6 +156,10 @@ public class JournalArticleSXPBlueprintInfoCollectionProvider
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleSXPBlueprintInfoCollectionProvider.class);
 
+	private final AssetSubtypeIdentifierBuilder _assetSubtypeIdentifierBuilder;
+	private final ClassNameLocalService _classNameLocalService;
+	private final DDMStructureService _ddmStructureService;
+	private final GroupService _groupService;
 	private final JournalArticleService _journalArticleService;
 
 }

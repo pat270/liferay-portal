@@ -63,7 +63,13 @@ CalendarResource calendarResource = (CalendarResource)request.getAttribute(Calen
 				align="center"
 				name="color"
 			>
-				<span class="calendar-portlet-color-box" style="background-color: <%= ColorUtil.toHexString(calendar.getColor()) %>;">&nbsp;</span>
+				<aui:style type="text/css">
+					.calendar-portlet-color-box {
+						background-color: <%= ColorUtil.toHexString(calendar.getColor()) %>;
+					}
+				</aui:style>
+
+				<span class="calendar-portlet-color-box">&nbsp;</span>
 			</liferay-ui:search-container-column-text>
 
 			<liferay-ui:search-container-column-text
@@ -117,13 +123,11 @@ CalendarResource calendarResource = (CalendarResource)request.getAttribute(Calen
 		'<portlet:namespace />importCalendar',
 		(url) => {
 			function hideMessage(messageElement) {
-				messageElement.style.display = 'none';
 				messageElement.hidden = true;
 				messageElement.classList.add('hide');
 			}
 
 			function showMessage(messageElement) {
-				messageElement.style.display = 'block';
 				messageElement.hidden = false;
 				messageElement.classList.remove('hide');
 			}

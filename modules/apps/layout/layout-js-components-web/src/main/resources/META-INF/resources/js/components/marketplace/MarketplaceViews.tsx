@@ -5,7 +5,9 @@
 
 import ClayButton from '@clayui/button';
 import {
+	AppsPermissions,
 	Marketplace,
+	MarketplaceProduct,
 	MarketplaceRest,
 	MarketplaceView,
 	Product,
@@ -44,18 +46,19 @@ async function getProductVirtualEntryBlob(
 		new URLSearchParams({nestedFields: 'placedOrderItems'})
 	);
 
-	const hasPlacedOrderItems = placedOrder.placedOrderItems.some(
+	const placedOrderItem = placedOrder.placedOrderItems.find(
 		(placedOrderItem) => placedOrderItem?.virtualItems?.length
 	);
 
-	if (!hasPlacedOrderItems) {
+	const virtualItem = placedOrderItem?.virtualItems?.find(
+		(virtualItem) => virtualItem.url
+	);
+
+	if (!virtualItem) {
 		throw new Error('Product has no virtual entries.');
 	}
 
-	const [virtualItemURL] =
-		placedOrder.placedOrderItems[0].virtualItemURLs ?? [];
-
-	return fetchFragmentBlob(marketplaceRest, virtualItemURL);
+	return fetchFragmentBlob(marketplaceRest, virtualItem.url);
 }
 
 interface MarketplaceViewsProps {
@@ -72,6 +75,7 @@ export default function MarketplaceViews({
 	const {
 		marketplaceRest,
 		modal: {onOpenChange},
+		permissions,
 		product,
 		setProduct,
 		setView,
@@ -96,6 +100,14 @@ export default function MarketplaceViews({
 							});
 						}
 						else {
+							openToast({
+								message: Liferay.Language.get(
+									'your-request-completed-successfully'
+								),
+								title: Liferay.Language.get('success'),
+								type: 'success',
+							});
+
 							window.location.reload();
 						}
 					},
@@ -106,7 +118,9 @@ export default function MarketplaceViews({
 				});
 			}
 			catch (error) {
-				console.error('Import failed:', error);
+				if (process.env.NODE_ENV === 'development') {
+					console.error('Import failed:', error);
+				}
 			}
 		},
 		[fragmentsImportURL, fragmentPortletNamespace]
@@ -124,7 +138,7 @@ export default function MarketplaceViews({
 				);
 
 				if (!blob) {
-					return;
+					throw new Error('Product has no response blob.');
 				}
 
 				const file = new File(
@@ -134,17 +148,11 @@ export default function MarketplaceViews({
 				);
 
 				await handleImportFile(file);
-
-				openToast({
-					message: Liferay.Language.get(
-						'your-request-completed-successfully'
-					),
-					title: Liferay.Language.get('success'),
-					type: 'success',
-				});
 			}
 			catch (error) {
-				console.error('Installation failed:', error);
+				if (process.env.NODE_ENV === 'development') {
+					console.error('Installation failed:', error);
+				}
 				openToast({
 					message: Liferay.Language.get(
 						'an-unexpected-error-occurred'
@@ -152,6 +160,8 @@ export default function MarketplaceViews({
 					title: Liferay.Language.get('danger'),
 					type: 'danger',
 				});
+			}
+			finally {
 				onOpenChange(false);
 			}
 		},
@@ -168,12 +178,12 @@ export default function MarketplaceViews({
 					}}
 				>
 					{(product) => (
-						<ClayButton
+						<MarketplaceInstallButton
 							className="w-100"
-							onClick={() => handleInstallProduct(product)}
-						>
-							{Liferay.Language.get('install')}
-						</ClayButton>
+							handleInstallProduct={handleInstallProduct}
+							permissions={permissions}
+							product={product}
+						/>
 					)}
 				</Marketplace.Products>
 			)}
@@ -186,12 +196,12 @@ export default function MarketplaceViews({
 							: () => setView(MarketplaceView.PRODUCTS)
 					}
 					primaryButton={
-						<ClayButton
+						<MarketplaceInstallButton
 							className="ml-auto mt-3 rounded"
-							onClick={() => handleInstallProduct(product)}
-						>
-							{Liferay.Language.get('install')}
-						</ClayButton>
+							handleInstallProduct={handleInstallProduct}
+							permissions={permissions}
+							product={product}
+						/>
 					}
 				/>
 			)}
@@ -203,4 +213,33 @@ export default function MarketplaceViews({
 			)}
 		</>
 	);
+}
+
+interface MarketplaceInstallButtonProps {
+	className: string;
+	handleInstallProduct: (product: Product) => void;
+	permissions?: AppsPermissions;
+	product: Product;
+}
+
+function MarketplaceInstallButton({
+	className,
+	handleInstallProduct,
+	permissions,
+	product,
+}: MarketplaceInstallButtonProps) {
+	const marketplaceProduct = new MarketplaceProduct(product);
+
+	if (permissions && marketplaceProduct.hasPermissionToInstall(permissions)) {
+		return (
+			<ClayButton
+				className={className}
+				onClick={() => handleInstallProduct(product)}
+			>
+				{Liferay.Language.get('install')}
+			</ClayButton>
+		);
+	}
+
+	return null;
 }

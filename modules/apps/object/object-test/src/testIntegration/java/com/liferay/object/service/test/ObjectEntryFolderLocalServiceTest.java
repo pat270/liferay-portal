@@ -12,6 +12,7 @@ import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.entry.folder.util.ObjectEntryFolderThreadLocal;
 import com.liferay.object.exception.DuplicateObjectEntryFolderExternalReferenceCodeException;
 import com.liferay.object.exception.ObjectEntryFolderNameException;
+import com.liferay.object.exception.ObjectEntryFolderParentObjectEntryFolderIdException;
 import com.liferay.object.exception.ObjectEntryFolderScopeException;
 import com.liferay.object.exception.RequiredObjectEntryFolderException;
 import com.liferay.object.field.util.ObjectFieldUtil;
@@ -137,7 +138,7 @@ public class ObjectEntryFolderLocalServiceTest {
 				_group.getGroupId(),
 				ObjectEntryFolderConstants.
 					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
-				null, StringUtil.randomString(),
+				RandomTestUtil.randomString(), null, StringUtil.randomString(),
 				ServiceContextTestUtil.getServiceContext());
 
 		AssertUtils.assertEquals(
@@ -252,6 +253,7 @@ public class ObjectEntryFolderLocalServiceTest {
 					TestPropsValues.getUserId(),
 					objectEntryFolder.getObjectEntryFolderId(),
 					objectEntryFolder.getParentObjectEntryFolderId(),
+					objectEntryFolder.getDescription(),
 					objectEntryFolder.getLabelMap(), name,
 					new ServiceContext());
 			});
@@ -269,6 +271,7 @@ public class ObjectEntryFolderLocalServiceTest {
 					TestPropsValues.getUserId(),
 					objectEntryFolder.getObjectEntryFolderId(),
 					objectEntryFolder.getParentObjectEntryFolderId(),
+					objectEntryFolder.getDescription(),
 					objectEntryFolder.getLabelMap(), null,
 					new ServiceContext());
 			});
@@ -296,6 +299,7 @@ public class ObjectEntryFolderLocalServiceTest {
 					TestPropsValues.getUserId(),
 					objectEntryFolder.getObjectEntryFolderId(),
 					parentObjectEntryFolder.getObjectEntryFolderId(),
+					objectEntryFolder.getDescription(),
 					objectEntryFolder.getLabelMap(),
 					objectEntryFolder.getName(), new ServiceContext());
 			});
@@ -315,20 +319,55 @@ public class ObjectEntryFolderLocalServiceTest {
 				objectEntryFolder1.getObjectEntryFolderId(),
 				ObjectEntryFolderConstants.
 					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
-				null, objectEntryFolder1.getName(), new ServiceContext());
+				objectEntryFolder1.getDescription(), null,
+				objectEntryFolder1.getName(), new ServiceContext());
 
 		AssertUtils.assertEquals(
 			HashMapBuilder.put(
 				LocaleUtil.getSiteDefault(), objectEntryFolder2.getName()
 			).build(),
 			objectEntryFolder2.getLabelMap());
+
+		AssertUtils.assertFailure(
+			ObjectEntryFolderParentObjectEntryFolderIdException.class,
+			StringBundler.concat(
+				"Object entry folder ",
+				objectEntryFolder1.getObjectEntryFolderId(),
+				" cannot have one of its children or itself as a parent"),
+			() -> _objectEntryFolderLocalService.updateObjectEntryFolder(
+				TestPropsValues.getUserId(),
+				objectEntryFolder1.getObjectEntryFolderId(),
+				objectEntryFolder1.getObjectEntryFolderId(),
+				objectEntryFolder1.getDescription(),
+				objectEntryFolder1.getLabelMap(), objectEntryFolder1.getName(),
+				new ServiceContext()));
+		AssertUtils.assertFailure(
+			ObjectEntryFolderParentObjectEntryFolderIdException.class,
+			StringBundler.concat(
+				"Object entry folder ",
+				objectEntryFolder1.getObjectEntryFolderId(),
+				" cannot have one of its children or itself as a parent"),
+			() -> {
+				ObjectEntryFolder objectEntryFolder = _addObjectEntryFolder(
+					StringUtil.randomString(), _group.getGroupId(),
+					StringUtil.randomString(),
+					objectEntryFolder1.getObjectEntryFolderId());
+
+				_objectEntryFolderLocalService.updateObjectEntryFolder(
+					TestPropsValues.getUserId(),
+					objectEntryFolder1.getObjectEntryFolderId(),
+					objectEntryFolder.getObjectEntryFolderId(),
+					objectEntryFolder1.getDescription(),
+					objectEntryFolder1.getLabelMap(),
+					objectEntryFolder1.getName(), new ServiceContext());
+			});
 	}
 
 	private ObjectDefinition _addObjectDefinition() throws Exception {
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(), 0, null, false, false, false,
-				false, false, false,
+				false, false, false, null,
 				LocalizedMapUtil.getLocalizedMap(StringUtil.randomString()),
 				"A" + StringUtil.randomString(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -366,7 +405,7 @@ public class ObjectEntryFolderLocalServiceTest {
 
 		return _objectEntryFolderLocalService.addObjectEntryFolder(
 			externalReferenceCode, TestPropsValues.getUserId(), groupId,
-			parentObjectEntryFolderId,
+			parentObjectEntryFolderId, RandomTestUtil.randomString(),
 			HashMapBuilder.put(
 				LocaleUtil.getDefault(), StringUtil.randomString()
 			).build(),

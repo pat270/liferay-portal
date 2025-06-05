@@ -68,7 +68,7 @@ public class ListTypeEntryCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(27);
+		StringBundler sb = new StringBundler(31);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -94,8 +94,12 @@ public class ListTypeEntryCacheModel
 		sb.append(key);
 		sb.append(", name=");
 		sb.append(name);
+		sb.append(", system=");
+		sb.append(system);
 		sb.append(", type=");
 		sb.append(type);
+		sb.append(", status=");
+		sb.append(status);
 		sb.append("}");
 
 		return sb.toString();
@@ -162,12 +166,16 @@ public class ListTypeEntryCacheModel
 			listTypeEntryImpl.setName(name);
 		}
 
+		listTypeEntryImpl.setSystem(system);
+
 		if (type == null) {
 			listTypeEntryImpl.setType("");
 		}
 		else {
 			listTypeEntryImpl.setType(type);
 		}
+
+		listTypeEntryImpl.setStatus(status);
 
 		listTypeEntryImpl.resetOriginalValues();
 
@@ -192,7 +200,11 @@ public class ListTypeEntryCacheModel
 		listTypeDefinitionId = objectInput.readLong();
 		key = objectInput.readUTF();
 		name = objectInput.readUTF();
+
+		system = objectInput.readBoolean();
 		type = objectInput.readUTF();
+
+		status = objectInput.readInt();
 	}
 
 	@Override
@@ -245,12 +257,16 @@ public class ListTypeEntryCacheModel
 			objectOutput.writeUTF(name);
 		}
 
+		objectOutput.writeBoolean(system);
+
 		if (type == null) {
 			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(type);
 		}
+
+		objectOutput.writeInt(status);
 	}
 
 	public long mvccVersion;
@@ -265,6 +281,8 @@ public class ListTypeEntryCacheModel
 	public long listTypeDefinitionId;
 	public String key;
 	public String name;
+	public boolean system;
 	public String type;
+	public int status;
 
 }

@@ -7,8 +7,12 @@ import ClayAlert from '@clayui/alert';
 import {LanguagePicker, Provider} from '@clayui/core';
 import ClayForm, {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
+import ClayLayout from '@clayui/layout';
 import {sub} from 'frontend-js-web';
 import React, {useState} from 'react';
+
+import {IPermissionItem} from '../../../components/forms/PermissionsTable';
+import PermissionsFormGroup from '../../components/PermissionsFormGroup';
 
 interface Props {
 	category: TaxonomyCategory;
@@ -16,7 +20,9 @@ interface Props {
 	locales: any[];
 	nameInputError: string;
 	setCategory: Function;
+	setCategoryPermissions: Function;
 	setNameInputError: Function;
+	showPermissions: boolean;
 	spritemap: string;
 }
 
@@ -26,7 +32,9 @@ const EditCategoryGeneralInfoTab = ({
 	locales,
 	nameInputError,
 	setCategory,
+	setCategoryPermissions,
 	setNameInputError,
+	showPermissions,
 	spritemap,
 }: Props) => {
 	const [languageId, setLanguageId] = useState<string>(defaultLanguageId);
@@ -74,8 +82,8 @@ const EditCategoryGeneralInfoTab = ({
 	return (
 		<div className="vertical-nav-content-wrapper">
 			<ClayForm.Group className="c-gap-4 d-flex flex-column p-4">
-				<div className="d-flex">
-					<div className="autofit-col autofit-col-expand form-title">
+				<ClayLayout.Row className="form-title" justify="between">
+					<div className="form-title">
 						{Liferay.Language.get('basic-info')}
 					</div>
 
@@ -94,7 +102,7 @@ const EditCategoryGeneralInfoTab = ({
 							/>
 						</Provider>
 					</div>
-				</div>
+				</ClayLayout.Row>
 
 				<div className={nameInputError ? 'has-error' : ''}>
 					<label>
@@ -148,6 +156,14 @@ const EditCategoryGeneralInfoTab = ({
 					/>
 				</div>
 			</ClayForm.Group>
+
+			{showPermissions && (
+				<PermissionsFormGroup
+					onChange={(newPermissions: IPermissionItem[]) => {
+						setCategoryPermissions(newPermissions);
+					}}
+				/>
+			)}
 		</div>
 	);
 };

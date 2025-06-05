@@ -105,6 +105,7 @@
 		<column name="enableObjectEntryDraft" type="boolean" />
 		<column name="enableObjectEntryHistory" type="boolean" />
 		<column name="enableObjectEntryVersioning" type="boolean" />
+		<column name="friendlyURLSeparator" type="String" />
 		<column localized="true" name="label" type="String" />
 		<column name="modifiable" type="boolean" />
 		<column name="name" type="String" />
@@ -152,7 +153,7 @@
 			<finder-column name="companyId" />
 			<finder-column name="className" />
 		</finder>
-		<finder name="C_N" return-type="ObjectDefinition">
+		<finder name="C_N" pretouch="true" return-type="ObjectDefinition">
 			<finder-column name="companyId" />
 			<finder-column name="name" />
 		</finder>
@@ -247,6 +248,9 @@
 		<column name="objectEntryFolderId" type="long" />
 		<column name="rootObjectEntryId" type="long" />
 		<column name="defaultLanguageId" type="String" />
+		<column name="displayDate" type="Date" />
+		<column name="expirationDate" type="Date" />
+		<column name="reviewDate" type="Date" />
 		<column name="treePath" type="String" />
 		<column name="version" type="int" />
 		<column name="lastPublishDate" type="Date" />
@@ -280,6 +284,10 @@
 		</finder>
 		<finder name="ODI_NotS" return-type="Collection">
 			<finder-column name="objectDefinitionId" />
+			<finder-column comparator="!=" name="status" />
+		</finder>
+		<finder name="ROEI_NotS" return-type="Collection">
+			<finder-column name="rootObjectEntryId" />
 			<finder-column comparator="!=" name="status" />
 		</finder>
 		<finder name="ERC_G_C" return-type="ObjectEntry" unique="true">
@@ -328,6 +336,7 @@
 		<!-- Other fields -->
 
 		<column name="parentObjectEntryFolderId" parent-container-model="true" type="long" />
+		<column name="description" type="String" />
 		<column localized="true" name="label" type="String" />
 		<column name="name" type="String" />
 		<column name="treePath" type="String" />
@@ -375,8 +384,14 @@
 		<column name="objectDefinitionId" type="long" />
 		<column name="objectEntryId" type="long" />
 		<column name="content" type="String" />
+		<column name="displayDate" type="Date" />
+		<column name="expirationDate" type="Date" />
+		<column name="reviewDate" type="Date" />
 		<column name="version" type="int" />
 		<column name="status" type="int" />
+		<column name="statusByUserId" type="long" />
+		<column name="statusByUserName" type="String" />
+		<column name="statusDate" type="Date" />
 
 		<!-- Finder methods -->
 
@@ -1208,6 +1223,7 @@
 		<exception>ObjectDefinitionEnableObjectEntryHistory</exception>
 		<exception>ObjectDefinitionEnableObjectEntryVersioning</exception>
 		<exception>ObjectDefinitionExternalReferenceCode</exception>
+		<exception>ObjectDefinitionFriendlyURLSeparator</exception>
 		<exception>ObjectDefinitionLabel</exception>
 		<exception>ObjectDefinitionModifiable</exception>
 		<exception>ObjectDefinitionName</exception>
@@ -1224,7 +1240,9 @@
 		<exception>ObjectEntryCount</exception>
 		<exception>ObjectEntryDefaultLanguageId</exception>
 		<exception>ObjectEntryFolderName</exception>
+		<exception>ObjectEntryFolderParentObjectEntryFolderId</exception>
 		<exception>ObjectEntryFolderScope</exception>
+		<exception>ObjectEntryReviewDate</exception>
 		<exception>ObjectEntryValues</exception>
 		<exception>ObjectFieldBusinessType</exception>
 		<exception>ObjectFieldDBType</exception>
@@ -1266,6 +1284,7 @@
 		<exception>ObjectViewSortColumnObjectFieldName</exception>
 		<exception>RequiredObjectDefinition</exception>
 		<exception>RequiredObjectEntryFolder</exception>
+		<exception>RequiredObjectEntryVersion</exception>
 		<exception>RequiredObjectField</exception>
 		<exception>RequiredObjectRelationship</exception>
 		<exception>RequiredObjectValidationRuleSetting</exception>

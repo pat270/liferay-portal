@@ -14,6 +14,11 @@ export class CommerceThemeClassicOrdersPage extends CommerceDNDTablePage {
 		value: number | string,
 		strictEqual?: boolean
 	) => Promise<{column: Locator; row: Locator}>;
+	readonly orderTableItemsSelectorDropdown: Locator;
+	readonly orderTableItemsSelector: Locator;
+	readonly orderTableMenuItem: (value: string) => Locator;
+	readonly orderTabs: (tabName: string) => Locator;
+
 	readonly page: Page;
 
 	constructor(page: Page) {
@@ -37,6 +42,14 @@ export class CommerceThemeClassicOrdersPage extends CommerceDNDTablePage {
 				strictEqual
 			);
 		};
+		this.orderTableItemsSelectorDropdown = page.getByLabel('Actions');
+		this.orderTableItemsSelector = page.locator(
+			'#fnsd___table-id input[name="items-selector"]'
+		);
+		this.orderTableMenuItem = (value) =>
+			page.getByRole('menuitem', {exact: true, name: value});
+		this.orderTabs = (tabName) =>
+			page.getByRole('tab', {exact: true, name: tabName});
 	}
 
 	searchTableRowByValue = async function (

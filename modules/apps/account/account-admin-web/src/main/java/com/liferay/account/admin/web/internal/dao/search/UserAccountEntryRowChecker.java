@@ -9,7 +9,7 @@ import com.liferay.account.admin.web.internal.display.AccountEntryDisplay;
 import com.liferay.account.service.AccountEntryUserRelLocalServiceUtil;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 
-import javax.portlet.PortletResponse;
+import jakarta.portlet.PortletResponse;
 
 /**
  * @author Stefano Motta
@@ -34,11 +34,7 @@ public class UserAccountEntryRowChecker extends EmptyOnClickRowChecker {
 
 	@Override
 	public boolean isDisabled(Object object) {
-		if (isChecked(object)) {
-			return true;
-		}
-
-		return false;
+		return isChecked(object);
 	}
 
 	private final long _userId;

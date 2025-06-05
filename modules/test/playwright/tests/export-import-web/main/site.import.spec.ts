@@ -22,14 +22,18 @@ import {objectPagesTest} from '../../../fixtures/objectPagesTest';
 import {pageTemplatesPagesTest} from '../../../fixtures/pageTemplatesPagesTest';
 import {pageViewModePagesTest} from '../../../fixtures/pageViewModePagesTest';
 import {productMenuPageTest} from '../../../fixtures/productMenuPageTest';
+import {uiElementsPageTest} from '../../../fixtures/uiElementsTest';
 import {usersAndOrganizationsPagesTest} from '../../../fixtures/usersAndOrganizationsPagesTest';
 import {wikiPagesTest} from '../../../fixtures/wikiPagesTest';
 import {HomePage} from '../../../pages/portal-web/HomePage';
 import getRandomString from '../../../utils/getRandomString';
+import {openFieldset} from '../../../utils/openFieldset';
 import {getTempDir} from '../../../utils/temp';
+import {readFileFromZip} from '../../../utils/zip';
 import {companyExportImportPageTest} from './fixtures/companyExportImportPagesTest';
 import {exportImportPagesTest} from './fixtures/exportImportPagesTest';
 import {stagingPageTest} from './fixtures/stagingPageTest';
+import {objectDefitionRequestData} from './utils/objectDefitionRequestData';
 import {openImportFieldset} from './utils/openImportFieldset';
 
 export const test = mergeTests(
@@ -44,6 +48,7 @@ export const test = mergeTests(
 	featureFlagsTest({
 		'LPD-35013': {enabled: true},
 		'LPD-35914': {enabled: false, system: true},
+		'LPD-44771': {enabled: true},
 	}),
 	isolatedSiteTest,
 	loginTest(),
@@ -63,7 +68,41 @@ export const testWithExportImportAtInstanceLevelFF = mergeTests(
 	dataApiHelpersTest,
 	featureFlagsTest({
 		'LPD-35914': {enabled: true, system: true},
+		'LPD-44771': {enabled: true},
 	}),
+	loginTest(),
+	uiElementsPageTest
+);
+
+const testWithDeleteApplicationDataBeforeImportingFFDisabled = mergeTests(
+	exportImportPagesTest,
+	dataApiHelpersTest,
+	featureFlagsTest({
+		'LPD-35914': {enabled: true, system: true},
+		'LPD-44771': {enabled: false},
+	}),
+	loginTest(),
+	uiElementsPageTest
+);
+
+const testWithDeleteApplicationDataBeforeImportingFF = mergeTests(
+	exportImportPagesTest,
+	dataApiHelpersTest,
+	featureFlagsTest({
+		'LPD-35914': {enabled: true, system: true},
+		'LPD-44771': {enabled: true},
+	}),
+	loginTest(),
+	uiElementsPageTest
+);
+
+const testDataDeletionHiddenDeprecationFF = mergeTests(
+	dataApiHelpersTest,
+	exportImportPagesTest,
+	featureFlagsTest({
+		'LPD-44771': {enabled: false},
+	}),
+	isolatedSiteTest,
 	loginTest()
 );
 
@@ -95,8 +134,8 @@ async function getSiteHomePageScreenshot(
 }
 
 testWithExportImportAtInstanceLevelFF(
-	'cannot import an instance scoped lar file',
-	async ({apiHelpers, companyExportImportPage, exportImportPage, page}) => {
+	'can export and import custom object entries at site level',
+	async ({apiHelpers, exportImportPage}) => {
 		const objectActionAPIClient =
 			await apiHelpers.buildRestClient(ObjectDefinitionAPI);
 
@@ -125,11 +164,85 @@ testWithExportImportAtInstanceLevelFF(
 					en_US: 'Tests',
 				},
 				portlet: true,
-				scope: 'company',
+				scope: 'site',
 				status: {
 					code: 0,
 				},
 			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		const objectEntry = await apiHelpers.objectEntry.postObjectEntry(
+			{externalReferenceCode: '', name: 'test'},
+			'c/tests/scopes/Guest'
+		);
+
+		await exportImportPage.goToExport();
+
+		const exportName = 'MyExport-' + getRandomString();
+
+		await exportImportPage.export(exportName, 'Tests');
+
+		await expect(
+			exportImportPage.page
+				.locator('//h2[span[normalize-space()="' + exportName + '"]]')
+				.first()
+				.locator('../..')
+				.getByText('Successful')
+		).toBeVisible();
+
+		const exportFilePath =
+			await exportImportPage.downloadExportProcess(exportName);
+
+		const content = await readFileFromZip('C_Test.json', exportFilePath);
+
+		const json = JSON.parse(content);
+
+		expect(json.length).toBe(1);
+
+		expect(
+			await apiHelpers.delete(
+				`${apiHelpers.baseUrl}c/tests/${objectEntry.id}`
+			)
+		).toBeOK();
+
+		await exportImportPage.goToImport();
+
+		await exportImportPage.import(exportFilePath);
+
+		await expect(
+			exportImportPage.page
+				.getByText(exportName)
+				.locator('../../..')
+				.getByText('Successful')
+		).toBeVisible();
+
+		expect(
+			await apiHelpers.get(
+				`${apiHelpers.baseUrl}c/tests/scopes/Guest/by-external-reference-code/${objectEntry.externalReferenceCode}`
+			)
+		).toEqual(
+			expect.objectContaining({
+				externalReferenceCode: objectEntry.externalReferenceCode,
+				name: objectEntry.name,
+			})
+		);
+	}
+);
+
+testWithExportImportAtInstanceLevelFF(
+	'cannot import an instance scoped lar file',
+	async ({apiHelpers, companyExportImportPage, exportImportPage, page}) => {
+		const objectActionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionAPI);
+
+		const {body: objectDefinition} =
+			await objectActionAPIClient.postObjectDefinition(
+				objectDefitionRequestData()
+			);
 
 		apiHelpers.data.push({
 			id: objectDefinition.id,
@@ -373,35 +486,9 @@ test('can see corresponding elements at site level', async ({
 		await apiHelpers.buildRestClient(ObjectDefinitionAPI);
 
 	const {body: objectDefinition} =
-		await objectActionAPIClient.postObjectDefinition({
-			active: true,
-			externalReferenceCode: 'test',
-			label: {
-				en_US: 'Test',
-			},
-			name: 'Test',
-			objectFields: [
-				{
-					DBType: 'String',
-					businessType: 'Text',
-					indexed: true,
-					indexedAsKeyword: true,
-					label: {
-						en_US: 'Name',
-					},
-					name: 'name',
-					required: true,
-				},
-			],
-			pluralLabel: {
-				en_US: 'Tests',
-			},
-			portlet: true,
-			scope: 'company',
-			status: {
-				code: 0,
-			},
-		});
+		await objectActionAPIClient.postObjectDefinition(
+			objectDefitionRequestData()
+		);
 
 	apiHelpers.data.push({id: objectDefinition.id, type: 'objectDefinition'});
 
@@ -433,9 +520,7 @@ test('can see corresponding elements at site level', async ({
 		exportImportPage.page.getByRole('group', {name: 'Pages'})
 	).toBeVisible();
 
-	await expect(
-		exportImportPage.page.getByLabel('Delete Application Data')
-	).toBeVisible();
+	await expect(exportImportPage.deleteApplicationDataCheckbox).toBeVisible();
 
 	await openImportFieldset({
 		name: 'Update Data',
@@ -454,3 +539,305 @@ test('can see corresponding elements at site level', async ({
 
 	await expect(exportImportPage.page.getByText('Copy as New:')).toBeVisible();
 });
+
+testDataDeletionHiddenDeprecationFF(
+	"hides 'Delete Application Data' checkbox when deprecation FF is false",
+	{tag: ['@LPD-44771']},
+	async ({apiHelpers, exportImportPage}) => {
+		const objectActionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionAPI);
+
+		const {body: objectDefinition} =
+			await objectActionAPIClient.postObjectDefinition(
+				objectDefitionRequestData()
+			);
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		await exportImportPage.goToExport();
+
+		const exportName = 'MyExport-' + getRandomString();
+
+		await exportImportPage.export(exportName);
+
+		await expect(
+			exportImportPage.page
+				.getByText(exportName)
+				.locator('../..')
+				.getByText('Successful')
+		).toBeVisible();
+
+		const exportFilePath =
+			await exportImportPage.downloadExportProcess(exportName);
+
+		await exportImportPage.goToImportOptions(exportFilePath);
+
+		await expect(
+			exportImportPage.page.getByLabel('Delete Application Data')
+		).not.toBeVisible();
+	}
+);
+
+testWithDeleteApplicationDataBeforeImportingFF(
+	'show modal warning at site level',
+	{tag: ['@LPD-54835', '@LPD-54836']},
+	async ({apiHelpers, exportImportPage, page, uiElementsPage}) => {
+		const objectActionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionAPI);
+
+		const {body: objectDefinition} =
+			await objectActionAPIClient.postObjectDefinition(
+				objectDefitionRequestData({scope: 'site'})
+			);
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		await exportImportPage.goToExport();
+
+		const exportName = 'MyExport-' + getRandomString();
+
+		await exportImportPage.export(exportName, 'Tests');
+
+		await expect(
+			page.getByText(exportName).locator('../..').getByText('Successful')
+		).toBeVisible();
+
+		const exportFilePath =
+			await exportImportPage.downloadExportProcess(exportName);
+
+		await exportImportPage.goToImport();
+
+		await exportImportPage.goToImportOptions(exportFilePath);
+
+		await openFieldset(page, 'Update Data');
+
+		await testWithDeleteApplicationDataBeforeImportingFF.step(
+			'object entry selected and "Delete Application Data Before Importing" checked',
+			async () => {
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).not.toBeVisible();
+				await expect(
+					exportImportPage.updateDataAlert
+				).not.toBeVisible();
+
+				await exportImportPage.deleteApplicationDataCheckbox.check();
+
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).toBeVisible();
+
+				await exportImportPage.importButton.click();
+
+				await expect(exportImportPage.warningHeader).toBeVisible();
+				await expect(
+					exportImportPage.deleteApplicationDataBeforeImportingWarningLabel
+				).toBeVisible();
+				await expect(
+					exportImportPage.updateDataMirrorWarningLabel
+				).not.toBeVisible();
+
+				await uiElementsPage.cancelButton.click();
+			}
+		);
+
+		await testWithExportImportAtInstanceLevelFF.step(
+			'object entry selected and "Mirror with overwriting" checked',
+			async () => {
+				await exportImportPage.deleteApplicationDataCheckbox.uncheck();
+				await exportImportPage.mirrorWithOverwritingRadioButton.click();
+
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).not.toBeVisible();
+				await expect(exportImportPage.updateDataAlert).toBeVisible();
+
+				await exportImportPage.importButton.click();
+
+				await expect(
+					exportImportPage.deleteApplicationDataBeforeImportingWarningLabel
+				).not.toBeVisible();
+				await expect(
+					exportImportPage.updateDataMirrorWarningLabel
+				).toBeVisible();
+
+				await uiElementsPage.cancelButton.click();
+			}
+		);
+
+		await testWithExportImportAtInstanceLevelFF.step(
+			'object entry selected and "Copy as new" checked',
+			async () => {
+				await exportImportPage.copyAsNewRadioButton.click();
+
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).not.toBeVisible();
+				await expect(exportImportPage.updateDataAlert).toBeVisible();
+
+				await exportImportPage.importButton.click();
+
+				await expect(
+					exportImportPage.deleteApplicationDataBeforeImportingWarningLabel
+				).not.toBeVisible();
+				await expect(
+					exportImportPage.updateDataMirrorWarningLabel
+				).toBeVisible();
+
+				await uiElementsPage.cancelButton.click();
+				await exportImportPage.copyAsNewRadioButton.click();
+			}
+		);
+
+		await testWithDeleteApplicationDataBeforeImportingFF.step(
+			'object entry is selected and "Delete Application Data Before Importing" and "Copy as new" checked',
+			async () => {
+				await exportImportPage.copyAsNewRadioButton.click();
+				await exportImportPage.deleteApplicationDataCheckbox.check();
+
+				await expect(exportImportPage.updateDataAlert).toBeVisible();
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).toBeVisible();
+
+				await exportImportPage.importButton.click();
+
+				await expect(
+					exportImportPage.deleteApplicationDataBeforeImportingWarningLabel
+				).toBeVisible();
+				await expect(
+					exportImportPage.updateDataMirrorWarningLabel
+				).toBeVisible();
+
+				await uiElementsPage.cancelButton.click();
+			}
+		);
+
+		await testWithDeleteApplicationDataBeforeImportingFF.step(
+			'object entry is selected and "Delete Application Data Before Importing" and "Mirror with overwriting" checked',
+			async () => {
+				await exportImportPage.deleteApplicationDataCheckbox.check();
+				await exportImportPage.mirrorWithOverwritingRadioButton.click();
+
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).toBeVisible();
+				await expect(exportImportPage.updateDataAlert).toBeVisible();
+
+				await exportImportPage.importButton.click();
+
+				await expect(
+					exportImportPage.deleteApplicationDataBeforeImportingWarningLabel
+				).toBeVisible();
+				await expect(
+					exportImportPage.updateDataMirrorWarningLabel
+				).toBeVisible();
+
+				await uiElementsPage.cancelButton.click();
+			}
+		);
+
+		await testWithDeleteApplicationDataBeforeImportingFF.step(
+			'can import from modal',
+			async () => {
+				page.on('dialog', (dialog) => dialog.accept());
+
+				await exportImportPage.deleteApplicationDataCheckbox.check();
+				await exportImportPage.importButton.click();
+				await exportImportPage.importModalButton.click();
+				await expect(
+					page
+						.getByText(exportName)
+						.locator('../../..')
+						.getByText('Successful')
+				).toBeVisible();
+			}
+		);
+	}
+);
+
+testWithDeleteApplicationDataBeforeImportingFFDisabled(
+	'show modal warning at site level - FF disabled',
+	{tag: ['@LPD-54835', '@LPD-54836']},
+	async ({apiHelpers, exportImportPage, page, uiElementsPage}) => {
+		const objectActionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionAPI);
+
+		const {body: objectDefinition} =
+			await objectActionAPIClient.postObjectDefinition(
+				objectDefitionRequestData({scope: 'site'})
+			);
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		await exportImportPage.goToExport();
+
+		const exportName = 'MyExport-' + getRandomString();
+
+		await exportImportPage.export(exportName, 'Tests');
+
+		await expect(
+			page.getByText(exportName).locator('../..').getByText('Successful')
+		).toBeVisible();
+
+		const exportFilePath =
+			await exportImportPage.downloadExportProcess(exportName);
+
+		await exportImportPage.goToImport();
+
+		await exportImportPage.goToImportOptions(exportFilePath);
+
+		await openFieldset(page, 'Update Data');
+
+		await testWithDeleteApplicationDataBeforeImportingFFDisabled.step(
+			'object entry selected and “Mirror with overwriting” checked',
+			async () => {
+				await exportImportPage.mirrorWithOverwritingRadioButton.click();
+
+				await expect(exportImportPage.updateDataAlert).toBeVisible();
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).not.toBeVisible();
+
+				await exportImportPage.importButton.click();
+
+				await expect(exportImportPage.warningHeader).toBeVisible();
+				await expect(
+					exportImportPage.updateDataMirrorWarningLabel
+				).toBeVisible();
+
+				await uiElementsPage.cancelButton.click();
+			}
+		);
+
+		await testWithDeleteApplicationDataBeforeImportingFFDisabled.step(
+			'object entry selected and "Copy as new" checked',
+			async () => {
+				await exportImportPage.copyAsNewRadioButton.click();
+
+				await expect(exportImportPage.updateDataAlert).toBeVisible();
+				await expect(
+					exportImportPage.deleteApplicationDataAlert
+				).not.toBeVisible();
+
+				await exportImportPage.importButton.click();
+
+				await expect(exportImportPage.warningHeader).toBeVisible();
+				await expect(
+					exportImportPage.updateDataMirrorWarningLabel
+				).toBeVisible();
+
+				await uiElementsPage.cancelButton.click();
+			}
+		);
+	}
+);

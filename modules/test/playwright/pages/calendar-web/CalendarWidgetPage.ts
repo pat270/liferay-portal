@@ -11,7 +11,9 @@ import {ModalRecurrencePage} from './ModalRecurrencePage';
 type RecurrenceOption = 'Entire Series' | 'Following Events' | 'Single Event';
 
 export class CalendarWidgetPage {
+	readonly addCalendarMenuItem: Locator;
 	readonly addEventButton: Locator;
+	readonly addEventMenuItem: Locator;
 	readonly allDayCheckbox: Locator;
 	readonly calendarWidget: Locator;
 	readonly calendarColumns: Locator;
@@ -20,8 +22,10 @@ export class CalendarWidgetPage {
 	readonly configurationMenuItem: Locator;
 	readonly endDate: Locator;
 	readonly endTime: Locator;
+	readonly hideSidebarIcon: Locator;
 	readonly invitations: Locator;
 	readonly inviteResource: Locator;
+	readonly manageCalendarsMenuItem: Locator;
 	readonly modalRecurrencePage: ModalRecurrencePage;
 	readonly miniCalendarBase: Locator;
 	readonly miniCalendarGrid: Locator;
@@ -39,12 +43,15 @@ export class CalendarWidgetPage {
 	readonly successAlert: Locator;
 	readonly timeZoneDropdown: Locator;
 	readonly title: Locator;
-	readonly toggleSideBarButton: Locator;
-	readonly untoggleSideBarButton: Locator;
+	readonly unhideSidebarIcon: Locator;
 	readonly useGlobalTimeZoneCheckBox: Locator;
 
 	constructor(page: Page) {
+		this.addCalendarMenuItem = page.getByRole('menuitem', {
+			name: 'Add Calendar',
+		});
 		this.addEventButton = page.getByRole('button', {name: 'Add Event'});
+		this.addEventMenuItem = page.getByRole('menuitem', {name: 'Add Event'});
 		this.allDayCheckbox = page
 			.frameLocator('iframe')
 			.getByRole('checkbox', {
@@ -75,12 +82,18 @@ export class CalendarWidgetPage {
 			.frameLocator('iframe')
 			.locator('input[type="time"]')
 			.last();
+		this.hideSidebarIcon = page.locator(
+			'.calendar-portlet-column-toggler .lexicon-icon-caret-left'
+		);
 		this.invitations = page
 			.frameLocator('iframe')
 			.getByText('Invitations', {exact: true});
 		this.inviteResource = page
 			.frameLocator('iframe')
 			.getByTitle('Invite Resource', {exact: true});
+		this.manageCalendarsMenuItem = page.getByRole('menuitem', {
+			name: 'Manage Calendars',
+		});
 		this.modalRecurrencePage = new ModalRecurrencePage(page);
 		this.miniCalendarBase = page.locator('.yui3-calendarbase');
 		this.miniCalendarGrid = page.locator('.yui3-calendar-grid');
@@ -126,10 +139,7 @@ export class CalendarWidgetPage {
 		this.title = page
 			.frameLocator('iframe')
 			.getByLabel('Title', {exact: true});
-		this.toggleSideBarButton = page.locator(
-			'.calendar-portlet-column-toggler .lexicon-icon-caret-left'
-		);
-		this.untoggleSideBarButton = page.locator(
+		this.unhideSidebarIcon = page.locator(
 			'.calendar-portlet-column-toggler .lexicon-icon-caret-right'
 		);
 		this.useGlobalTimeZoneCheckBox = page
@@ -144,14 +154,24 @@ export class CalendarWidgetPage {
 		allDay,
 		dateEnd,
 		publishEvent,
+		throughCalendarActionMenu,
 		title,
 	}: {
 		allDay: boolean;
 		dateEnd?: string;
 		publishEvent?: boolean;
+		throughCalendarActionMenu?: {calendarName: string};
 		title?: string;
 	}) {
-		await this.clickAddEventButton();
+		if (throughCalendarActionMenu) {
+			await this.openCalendarActionsDropdownMenu(
+				throughCalendarActionMenu.calendarName
+			);
+			await this.clickAddEventMenuitem();
+		}
+		else {
+			await this.clickAddEventButton();
+		}
 
 		await this.allDayCheckbox.hover();
 		await this.allDayCheckbox.setChecked(allDay);
@@ -182,6 +202,13 @@ export class CalendarWidgetPage {
 			.frameLocator('iframe')
 			.getByRole('option', {name: userName})
 			.click();
+	}
+
+	async hideSidebar() {
+		if (await this.hideSidebarIcon.isVisible()) {
+			await this.page.waitForLoadState('networkidle');
+			await this.hideSidebarIcon.click();
+		}
 	}
 
 	async openInvitations() {
@@ -222,6 +249,16 @@ export class CalendarWidgetPage {
 		await this.page.waitForLoadState('networkidle');
 	}
 
+	async clickAddEventMenuitem() {
+		await this.addEventMenuItem.click();
+
+		await this.page.waitForLoadState('networkidle');
+	}
+
+	async clickCalendarColor(calendarColorHex: string) {
+		await this.page.getByRole('radio', {name: calendarColorHex}).click();
+	}
+
 	async clickEvent(title: string) {
 		await this.page.getByText(title).click();
 	}
@@ -252,6 +289,16 @@ export class CalendarWidgetPage {
 		await this.modalRecurrencePage.addRecurrenceUntilDate(daysFromNow);
 	}
 
+	async openCalendarActionsDropdownMenu(calendarName: string) {
+		await this.page
+			.getByLabel(`Show Actions for Calendar ${calendarName}`)
+			.click();
+	}
+
+	async openCalendarGroupActionsDropdownMenu(groupName: string) {
+		await this.page.getByLabel(`Manage Calendar ${groupName}`).click();
+	}
+
 	async setCalendarWidgetConfiguration(
 		timeZone: string,
 		useGlobalTimeZone: boolean
@@ -270,5 +317,12 @@ export class CalendarWidgetPage {
 
 		await this.saveConfigurationButton.click();
 		await this.closeConfigurationButton.click();
+	}
+
+	async unhideSidebar() {
+		if (await this.unhideSidebarIcon.isVisible()) {
+			await this.page.waitForLoadState('networkidle');
+			await this.unhideSidebarIcon.click();
+		}
 	}
 }

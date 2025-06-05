@@ -18,13 +18,13 @@ import com.liferay.search.experiences.constants.SXPActionKeys;
 import com.liferay.search.experiences.model.SXPBlueprint;
 import com.liferay.search.experiences.web.internal.display.context.helper.SXPRequestHelper;
 
+import jakarta.portlet.PortletException;
+import jakarta.portlet.PortletURL;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
 import java.util.List;
-
-import javax.portlet.PortletException;
-import javax.portlet.PortletURL;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Kevin Tan
@@ -95,7 +95,19 @@ public class ViewSXPBlueprintsDisplayContext {
 				).buildString(),
 				"pencil", "edit",
 				LanguageUtil.get(_sxpRequestHelper.getRequest(), "edit"), "get",
-				"get", null),
+				"get", "link"),
+			new FDSActionDropdownItem(
+				"#", "book", "enableAsACollectionProvider",
+				LanguageUtil.get(
+					_sxpRequestHelper.getRequest(),
+					"enable-as-a-collection-provider"),
+				"put", "update", "link"),
+			new FDSActionDropdownItem(
+				"#", "book", "disableAsACollectionProvider",
+				LanguageUtil.get(
+					_sxpRequestHelper.getRequest(),
+					"disable-as-a-collection-provider"),
+				"put", "update", "link"),
 			new FDSActionDropdownItem(
 				getAPIURL() + "/{id}/copy", "copy", "copy",
 				LanguageUtil.get(_sxpRequestHelper.getRequest(), "copy"),
@@ -103,7 +115,7 @@ public class ViewSXPBlueprintsDisplayContext {
 			new FDSActionDropdownItem(
 				"#", "export", "export",
 				LanguageUtil.get(_sxpRequestHelper.getRequest(), "export"),
-				null, "get", null),
+				null, "get", "link"),
 			new FDSActionDropdownItem(
 				LanguageUtil.get(
 					_sxpRequestHelper.getRequest(),

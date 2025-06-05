@@ -54,6 +54,7 @@ export class PageEditorPage {
 	readonly languageSelector: Locator;
 	readonly publishButton: Locator;
 	readonly publishMasterButton: Locator;
+	readonly publishToLiveButton: Locator;
 	readonly redoButton: Locator;
 	readonly segmentEditorPage: SegmentEditorPage;
 	readonly selectItemMappingButton: Locator;
@@ -77,6 +78,9 @@ export class PageEditorPage {
 		);
 		this.publishMasterButton = page.getByLabel('Publish Master', {
 			exact: true,
+		});
+		this.publishToLiveButton = page.getByRole('button', {
+			name: 'Publish to Live',
 		});
 		this.redoButton = page.getByTitle('Redo');
 		this.segmentEditorPage = new SegmentEditorPage(page);
@@ -1169,20 +1173,29 @@ export class PageEditorPage {
 		const isMaster = await this.isMaster();
 
 		const button = isMaster ? this.publishMasterButton : this.publishButton;
-		const successMessage = isMaster
-			? 'Success:The master page was published successfully.'
-			: 'Success:The page was published successfully.';
 
 		await button.waitFor();
 		await button.click();
 
-		await waitForAlert(this.page, successMessage);
+		await waitForAlert(this.page, 'successfully');
 	}
 
 	async redoAction() {
 		await this.redoButton.click();
 
 		await this.waitForChangesSaved();
+	}
+
+	async regenerateDisplayPage() {
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: this.page.getByRole('menuitem', {
+				name: 'Autogenerate Default Experience',
+			}),
+			trigger: this.page
+				.locator('.page-editor__toolbar')
+				.getByRole('button', {name: 'Actions'}),
+		});
 	}
 
 	async removeFragment(fragmentId: string) {
@@ -1427,7 +1440,10 @@ export class PageEditorPage {
 					target: iframe
 						.locator('.sheet-title')
 						.getByText(entity, {exact: true}),
-					trigger: iframe.getByRole('menuitem', {name: entity}),
+					trigger: iframe.getByRole('menuitem', {
+						exact: true,
+						name: entity,
+					}),
 				});
 			}
 

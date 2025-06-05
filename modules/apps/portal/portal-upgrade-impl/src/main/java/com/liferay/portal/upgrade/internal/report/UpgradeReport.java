@@ -150,7 +150,7 @@ public class UpgradeReport {
 	}
 
 	private List<MessagesPrinter> _getMessagesPrinters(
-		Map<String, Map<String, Integer>> map1) {
+		boolean includeOccurrences, Map<String, Map<String, Integer>> map1) {
 
 		List<MessagesPrinter> messagesPrinters = new ArrayList<>();
 
@@ -174,7 +174,8 @@ public class UpgradeReport {
 
 			for (Map.Entry<String, Integer> entry2 : map2.entrySet()) {
 				messagesPrinter.addMessagePrinter(
-					entry2.getKey(), entry2.getValue());
+					entry2.getKey(),
+					includeOccurrences ? entry2.getValue() : null);
 			}
 		}
 
@@ -548,7 +549,12 @@ public class UpgradeReport {
 		).put(
 			"execution.time", _executionTimeString
 		).put(
-			"errors", _getMessagesPrinters(upgradeRecorder.getErrorMessages())
+			"data.clean.up",
+			_getMessagesPrinters(
+				false, upgradeRecorder.getDataCleanUpMessages())
+		).put(
+			"errors",
+			_getMessagesPrinters(true, upgradeRecorder.getErrorMessages())
 		).put(
 			"failed.sqls", UpgradeSQLRecorder.getFailedSQLs()
 		).put(
@@ -629,7 +635,7 @@ public class UpgradeReport {
 			}
 		).put(
 			"warnings",
-			_getMessagesPrinters(upgradeRecorder.getWarningMessages())
+			_getMessagesPrinters(true, upgradeRecorder.getWarningMessages())
 		).build();
 	}
 
@@ -1018,7 +1024,7 @@ public class UpgradeReport {
 			_className = className;
 		}
 
-		public void addMessagePrinter(String message, int occurrences) {
+		public void addMessagePrinter(String message, Integer occurrences) {
 			_messagePrinters.add(new MessagePrinter(message, occurrences));
 		}
 
@@ -1049,24 +1055,28 @@ public class UpgradeReport {
 
 		private class MessagePrinter {
 
-			public MessagePrinter(String message, int occurrences) {
+			public MessagePrinter(String message, Integer occurrences) {
 				_message = message;
 				_occurrences = occurrences;
 			}
 
 			@Override
 			public String toString() {
-				if (_logContext) {
-					return _occurrences + StringPool.COLON + _message;
+				if (_occurrences != null) {
+					if (_logContext) {
+						return _occurrences + StringPool.COLON + _message;
+					}
+
+					return StringBundler.concat(
+						_occurrences, " occurrences of the following event: ",
+						_message);
 				}
 
-				return StringBundler.concat(
-					_occurrences, " occurrences of the following event: ",
-					_message);
+				return _message;
 			}
 
 			private final String _message;
-			private final int _occurrences;
+			private final Integer _occurrences;
 
 		}
 

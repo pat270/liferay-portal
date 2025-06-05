@@ -8,13 +8,13 @@ package com.liferay.headless.admin.list.type.client.dto.v1_0;
 import com.liferay.headless.admin.list.type.client.function.UnsafeSupplier;
 import com.liferay.headless.admin.list.type.client.serdes.v1_0.ListTypeEntrySerDes;
 
+import jakarta.annotation.Generated;
+
 import java.io.Serializable;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.Generated;
 
 /**
  * @author Gabriel Albuquerque
@@ -190,6 +190,27 @@ public class ListTypeEntry implements Cloneable, Serializable {
 	}
 
 	protected Map<String, String> name_i18n;
+
+	public Boolean getSystem() {
+		return system;
+	}
+
+	public void setSystem(Boolean system) {
+		this.system = system;
+	}
+
+	public void setSystem(
+		UnsafeSupplier<Boolean, Exception> systemUnsafeSupplier) {
+
+		try {
+			system = systemUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean system;
 
 	public String getType() {
 		return type;

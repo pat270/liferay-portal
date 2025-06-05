@@ -44,7 +44,9 @@ public class DDLPanelApp extends BasePanelApp {
 	public boolean isShow(PermissionChecker permissionChecker, Group group)
 		throws PortalException {
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-196935")) {
+		if (!FeatureFlagManagerUtil.isEnabled(
+				group.getCompanyId(), "LPS-196935")) {
+
 			return false;
 		}
 
@@ -52,7 +54,7 @@ public class DDLPanelApp extends BasePanelApp {
 	}
 
 	@Reference(
-		target = "(javax.portlet.name=" + DDLPortletKeys.DYNAMIC_DATA_LISTS + ")"
+		target = "(jakarta.portlet.name=" + DDLPortletKeys.DYNAMIC_DATA_LISTS + ")"
 	)
 	private Portlet _portlet;
 

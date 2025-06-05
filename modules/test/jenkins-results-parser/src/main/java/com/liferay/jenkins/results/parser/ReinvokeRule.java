@@ -8,6 +8,7 @@ package com.liferay.jenkins.results.parser;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -17,7 +18,7 @@ import java.util.regex.Pattern;
 /**
  * @author Peter Yoo
  */
-public class ReinvokeRule {
+public class ReinvokeRule implements Comparable<ReinvokeRule> {
 
 	public static List<ReinvokeRule> getReinvokeRules() {
 		if (_reinvokeRules != null) {
@@ -47,9 +48,26 @@ public class ReinvokeRule {
 					new ReinvokeRule(
 						buildProperties.getProperty(propertyName), ruleName));
 			}
+
+			Collections.sort(_reinvokeRules);
 		}
 
 		return new ArrayList<>(_reinvokeRules);
+	}
+
+	@Override
+	public int compareTo(ReinvokeRule reinvokeRule) {
+		if (reinvokeRule == null) {
+			return -1;
+		}
+
+		int result = priority.compareTo(reinvokeRule.getPriority());
+
+		if (result != 0) {
+			return result;
+		}
+
+		return name.compareTo(reinvokeRule.getName());
 	}
 
 	@Override
@@ -60,7 +78,9 @@ public class ReinvokeRule {
 
 		ReinvokeRule reinvokeRule = (ReinvokeRule)object;
 
-		if (Objects.equals(getName(), reinvokeRule.getName())) {
+		if (Objects.equals(getName(), reinvokeRule.getName()) &&
+			Objects.equals(getPriority(), reinvokeRule.getPriority())) {
+
 			return true;
 		}
 
@@ -101,6 +121,10 @@ public class ReinvokeRule {
 
 	public String getNotificationRecipients() {
 		return notificationRecipients;
+	}
+
+	public int getPriority() {
+		return priority;
 	}
 
 	public String getReinvokeBuildPriority() {
@@ -257,6 +281,7 @@ public class ReinvokeRule {
 	protected Integer maximumInvocationCount;
 	protected String name;
 	protected String notificationRecipients;
+	protected Integer priority = 5;
 	protected String reinvokeBuildPriority;
 	protected Pattern testSuiteNamePattern;
 	protected Pattern topLevelBuildJobNamePattern;
@@ -285,6 +310,14 @@ public class ReinvokeRule {
 
 			if (name.equals("notificationRecipients")) {
 				notificationRecipients = value;
+
+				continue;
+			}
+
+			if (name.equals("priority")) {
+				if (JenkinsResultsParserUtil.isInteger(value)) {
+					priority = Integer.parseInt(value);
+				}
 
 				continue;
 			}

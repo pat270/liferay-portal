@@ -9,7 +9,7 @@ import com.liferay.frontend.js.importmaps.extender.JSImportMapsContributor;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -30,8 +30,8 @@ public class FragmentImplJSImportMapsContributor
 	@Activate
 	protected void activate() {
 		_importMapsJSONObject = JSONUtil.put(
-			"@liferay/fragment-impl",
-			_servletContext.getContextPath() + "/__liferay__/index.js");
+			"@liferay/fragment-impl/api",
+			_servletContext.getContextPath() + "/__liferay__/api.js");
 	}
 
 	private JSONObject _importMapsJSONObject;

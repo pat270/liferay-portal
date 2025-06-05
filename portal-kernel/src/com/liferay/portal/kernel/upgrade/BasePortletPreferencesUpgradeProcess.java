@@ -19,6 +19,9 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.simple.Element;
 
+import jakarta.portlet.PortletPreferences;
+import jakarta.portlet.ReadOnlyException;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -29,9 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.portlet.PortletPreferences;
-import javax.portlet.ReadOnlyException;
 
 /**
  * @author Jorge Ferrer
@@ -426,8 +426,7 @@ public abstract class BasePortletPreferencesUpgradeProcess
 					portletId, preferences
 				};
 			},
-			values -> _updatePortletPreferences(values),
-			"Unable to update PortletPreferences");
+			values -> _updatePortletPreferences(values), null);
 	}
 
 	private void _updatePortletPreferences(Object[] values) throws Exception {
@@ -529,8 +528,7 @@ public abstract class BasePortletPreferencesUpgradeProcess
 					portletId, ctCollectionId
 				};
 			},
-			values -> _updatePortletPreferenceValues(values),
-			"Unable to update PortletPreferences and PortletPreferenceValue");
+			values -> _updatePortletPreferenceValues(values), null);
 	}
 
 	private void _updatePortletPreferenceValues(Object[] values)

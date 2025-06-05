@@ -25,6 +25,7 @@ export interface FilterImplementation<
 }
 
 export interface FilterImplementationArgs<T> {
+	active: boolean;
 	id: string;
 	selectedData: T;
 	setFilter: (args: SetFilterArgs) => void;

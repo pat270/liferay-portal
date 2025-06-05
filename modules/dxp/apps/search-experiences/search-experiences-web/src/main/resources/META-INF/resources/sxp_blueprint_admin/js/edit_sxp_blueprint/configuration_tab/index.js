@@ -3,8 +3,15 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayForm, {ClayRadio, ClayRadioGroup, ClaySelect} from '@clayui/form';
+import ClayForm, {
+	ClayRadio,
+	ClayRadioGroup,
+	ClaySelect,
+	ClayToggle,
+} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
+import {ClayTooltipProvider} from '@clayui/tooltip';
 import getCN from 'classnames';
 import React, {useContext} from 'react';
 
@@ -30,6 +37,7 @@ function ConfigurationTab({
 	advancedConfig,
 	aggregationConfig,
 	errors,
+	frameworkConfig,
 	highlightConfig,
 	indexConfig,
 	parameterConfig,
@@ -49,6 +57,17 @@ function ConfigurationTab({
 	const _getExternalValue = (name) => {
 		return searchIndexes.find((searchIndex) => searchIndex.name === name)
 			.external;
+	};
+
+	/**
+	 * Called when the "Enable as Collection Provider" toggle selection is
+	 * changed. Currently behind feature flag LPS-129412.
+	 */
+	const _handleCollectionProviderChange = () => {
+		setFieldValue('frameworkConfig', {
+			...frameworkConfig,
+			collectionProvider: !frameworkConfig.collectionProvider,
+		});
 	};
 
 	/**
@@ -131,6 +150,50 @@ function ConfigurationTab({
 
 						<LearnMessage resourceKey="search-blueprint-configuration" />
 					</div>
+
+					{Liferay.FeatureFlags['LPS-129412'] && (
+						<div className="align-items-center c-mb-4">
+							<ClayToggle
+								aria-label={Liferay.Language.get(
+									'enable-as-a-collection-provider'
+								)}
+								label={
+									<>
+										{Liferay.Language.get(
+											'enable-as-a-collection-provider'
+										)}
+
+										<ClayTooltipProvider>
+											<span
+												title={
+													!frameworkConfig.collectionProvider
+														? Liferay.Language.get(
+																'enable-as-a-collection-provider-help'
+															)
+														: Liferay.Language.get(
+																'disable-as-a-collection-provider-help'
+															)
+												}
+											>
+												<ClayIcon
+													className="c-ml-2 text-secondary"
+													symbol="question-circle-full"
+												/>
+											</span>
+										</ClayTooltipProvider>
+									</>
+								}
+								onToggle={_handleCollectionProviderChange}
+								toggled={
+									frameworkConfig.collectionProvider || false
+								}
+							/>
+
+							<span className="c-ml-2 sheet-text">
+								<LearnMessage resourceKey="collections-with-search-blueprints" />
+							</span>
+						</div>
+					)}
 
 					<ClayForm.Group>
 						<label>

@@ -565,10 +565,23 @@ public class ObjectFieldLocalServiceImpl
 			return ObjectEntryTable.INSTANCE;
 		}
 
+		SystemObjectDefinitionManager systemObjectDefinitionManager = null;
+
 		ObjectDefinition objectDefinition =
 			_objectDefinitionPersistence.fetchByPrimaryKey(objectDefinitionId);
 
+		if (objectDefinition.isUnmodifiableSystemObject()) {
+			systemObjectDefinitionManager =
+				_systemObjectDefinitionManagerRegistry.
+					getSystemObjectDefinitionManager(
+						objectDefinition.getName());
+		}
+
 		if (objectField.isLocalized()) {
+			if (objectDefinition.isUnmodifiableSystemObject()) {
+				return systemObjectDefinitionManager.getLocalizationTable();
+			}
+
 			return DynamicObjectDefinitionLocalizationTableFactory.create(
 				objectDefinition, this);
 		}
@@ -578,11 +591,6 @@ public class ObjectFieldLocalServiceImpl
 				objectDefinition.getDBTableName())) {
 
 			if (objectDefinition.isUnmodifiableSystemObject()) {
-				SystemObjectDefinitionManager systemObjectDefinitionManager =
-					_systemObjectDefinitionManagerRegistry.
-						getSystemObjectDefinitionManager(
-							objectDefinition.getName());
-
 				return systemObjectDefinitionManager.getTable();
 			}
 
@@ -889,17 +897,14 @@ public class ObjectFieldLocalServiceImpl
 
 		objectField = objectFieldPersistence.update(objectField);
 
-		if (ObjectFieldUtil.isMetadata(name) ||
-			(system && objectDefinition.isUnmodifiableSystemObject())) {
-
-			return objectField;
-		}
-
 		_addOrUpdateObjectFieldSettings(
 			objectField, objectDefinition, objectFieldBusinessType,
 			objectFieldSettings, null);
 
-		if (!objectDefinition.isApproved()) {
+		if (!objectDefinition.isApproved() ||
+			ObjectFieldUtil.isMetadata(name) ||
+			(system && objectDefinition.isUnmodifiableSystemObject())) {
+
 			return objectField;
 		}
 
@@ -962,6 +967,14 @@ public class ObjectFieldLocalServiceImpl
 			List<ObjectFieldSetting> objectFieldSettings,
 			ObjectField oldObjectField)
 		throws PortalException {
+
+		if (ListUtil.isEmpty(objectFieldSettings) &&
+			(ObjectFieldUtil.isMetadata(newObjectField.getName()) ||
+			 (newObjectField.isSystem() &&
+			  objectDefinition.isUnmodifiableSystemObject()))) {
+
+			return;
+		}
 
 		objectFieldBusinessType.validateObjectFieldSettings(
 			newObjectField, objectFieldSettings);
@@ -1717,7 +1730,7 @@ public class ObjectFieldLocalServiceImpl
 
 		if (!FeatureFlagManagerUtil.isEnabled(
 				objectDefinition.getCompanyId(), "LPD-32050") &&
-			required) {
+			!objectDefinition.isUnmodifiableSystemObject() && required) {
 
 			throw new ObjectFieldLocalizedException(
 				"Localized object fields must not be required");
@@ -1915,8 +1928,9 @@ public class ObjectFieldLocalServiceImpl
 		"createDate", "creator", "id", "modifiedDate", "status");
 	private final Set<String> _reservedNames = SetUtil.fromArray(
 		"actions", "companyid", "createdate", "creator", "currentdate",
-		"datecreated", "datemodified", "externalreferencecode", "groupid", "id",
-		"lastpublishdate", "modifieddate", "status", "statusbyuserid",
+		"datecreated", "datemodified", "displaydate", "expirationdate",
+		"externalreferencecode", "groupid", "id", "lastpublishdate",
+		"modifieddate", "reviewdate", "status", "statusbyuserid",
 		"statusbyusername", "statusdate", "userid", "username");
 
 	@Reference

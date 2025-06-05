@@ -24,7 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Michael Hashimoto
@@ -177,7 +177,8 @@ public abstract class BaseEntityRelationshipDALO
 
 					try {
 						responseJSON = put(
-							getAuthorization(), "", objectDefinitionURLPath);
+							getAuthorization(), "",
+							createURI(objectDefinitionURLPath));
 					}
 					catch (Exception exception) {
 						refresh();
@@ -225,7 +226,9 @@ public abstract class BaseEntityRelationshipDALO
 				},
 				() -> {
 					try {
-						delete(getAuthorization(), "", objectDefinitionURLPath);
+						delete(
+							getAuthorization(), "",
+							createURI(objectDefinitionURLPath));
 					}
 					catch (Exception exception) {
 						refresh();
@@ -273,8 +276,7 @@ public abstract class BaseEntityRelationshipDALO
 						try {
 							responseJSON = get(
 								getAuthorization(),
-								_defaultUriBuilderFactory.builder(
-								).path(
+								UriComponentsBuilder.fromPath(
 									StringUtil.combine(
 										objectDefinitionURLPath, "/",
 										objectEntryId, "/",
@@ -282,7 +284,7 @@ public abstract class BaseEntityRelationshipDALO
 								).queryParam(
 									"page", String.valueOf(finalCurrentPage)
 								).build(
-								).toString());
+								).toUri());
 						}
 						catch (Exception exception) {
 							refresh();
@@ -365,8 +367,5 @@ public abstract class BaseEntityRelationshipDALO
 
 	private static final Log _log = LogFactory.getLog(
 		BaseEntityRelationshipDALO.class);
-
-	private final DefaultUriBuilderFactory _defaultUriBuilderFactory =
-		new DefaultUriBuilderFactory();
 
 }

@@ -9,7 +9,6 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentContributor;
@@ -45,13 +44,6 @@ public class ObjectEntryDocumentContributor
 		field.setValue(objectDefinition.getClassName());
 
 		document.add(field);
-
-		if (FeatureFlagManagerUtil.isEnabled(
-				objectEntry.getCompanyId(), "LPD-17564")) {
-
-			document.addKeyword(
-				Field.FOLDER_ID, objectEntry.getObjectEntryFolderId());
-		}
 	}
 
 	@Reference

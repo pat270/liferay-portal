@@ -6,19 +6,18 @@
 package com.liferay.site.cms.site.initializer.internal.display.context;
 
 import com.liferay.depot.service.DepotEntryLocalService;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.constants.ObjectFolderConstants;
 import com.liferay.object.service.ObjectDefinitionService;
 import com.liferay.object.service.ObjectDefinitionSettingLocalService;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.Portal;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Sam Ziemer
@@ -30,44 +29,13 @@ public class ContentsSectionDisplayContext extends BaseSectionDisplayContext {
 		GroupLocalService groupLocalService,
 		HttpServletRequest httpServletRequest, Language language,
 		ObjectDefinitionService objectDefinitionService,
-		ObjectDefinitionSettingLocalService
-			objectDefinitionSettingLocalService) {
+		ObjectDefinitionSettingLocalService objectDefinitionSettingLocalService,
+		Portal portal) {
 
 		super(
 			depotEntryLocalService, groupLocalService, httpServletRequest,
 			language, objectDefinitionService,
-			objectDefinitionSettingLocalService);
-
-		_depotEntryLocalService = depotEntryLocalService;
-	}
-
-	public Map<String, Object> getAdditionalProps() {
-		return HashMapBuilder.<String, Object>put(
-			"parentObjectEntryFolderExternalReferenceCode",
-			ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS
-		).build();
-	}
-
-	@Override
-	public CreationMenu getCreationMenu() {
-		return new CreationMenu() {
-			{
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.putData("action", "createFolder");
-						dropdownItem.putData(
-							"assetLibraries",
-							getDepotEntriesJSONArray(
-								_depotEntryLocalService.getDepotEntries(
-									QueryUtil.ALL_POS, QueryUtil.ALL_POS)));
-						dropdownItem.setIcon("folder");
-						dropdownItem.setLabel(
-							language.get(httpServletRequest, "folder"));
-					});
-
-				addStructureContentDropdownItems(this);
-			}
-		};
+			objectDefinitionSettingLocalService, portal);
 	}
 
 	@Override
@@ -85,17 +53,20 @@ public class ContentsSectionDisplayContext extends BaseSectionDisplayContext {
 	}
 
 	@Override
-	public String[] getObjectFolderExternalReferenceCodes() {
+	protected String getCMSSectionFilterString() {
+		return "cmsSection eq 'contents' and cmsRoot eq true";
+	}
+
+	@Override
+	protected String[] getObjectFolderExternalReferenceCodes() {
 		return new String[] {
 			ObjectFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENT_STRUCTURES
 		};
 	}
 
 	@Override
-	protected String getCMSSectionFilterString() {
-		return "cmsSection eq 'contents'";
+	protected String getRootObjectEntryFolderExternalReferenceCode() {
+		return ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS;
 	}
-
-	private final DepotEntryLocalService _depotEntryLocalService;
 
 }

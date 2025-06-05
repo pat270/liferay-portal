@@ -36,13 +36,13 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -81,7 +81,12 @@ public class SystemFDSSerializer
 			return null;
 		}
 
-		return systemFDSEntry.getAdditionalAPIURLParameters();
+		return createFDSAPIURLBuilder(
+			httpServletRequest, systemFDSEntry.getRESTApplication(),
+			systemFDSEntry.getRESTEndpoint(), systemFDSEntry.getRESTSchema()
+		).addQueryString(
+			systemFDSEntry.getAdditionalAPIURLParameters()
+		).buildQueryString();
 	}
 
 	@Override

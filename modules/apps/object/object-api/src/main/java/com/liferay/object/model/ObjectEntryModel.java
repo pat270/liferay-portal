@@ -288,6 +288,48 @@ public interface ObjectEntryModel
 	public void setDefaultLanguageId(String defaultLanguageId);
 
 	/**
+	 * Returns the display date of this object entry.
+	 *
+	 * @return the display date of this object entry
+	 */
+	public Date getDisplayDate();
+
+	/**
+	 * Sets the display date of this object entry.
+	 *
+	 * @param displayDate the display date of this object entry
+	 */
+	public void setDisplayDate(Date displayDate);
+
+	/**
+	 * Returns the expiration date of this object entry.
+	 *
+	 * @return the expiration date of this object entry
+	 */
+	public Date getExpirationDate();
+
+	/**
+	 * Sets the expiration date of this object entry.
+	 *
+	 * @param expirationDate the expiration date of this object entry
+	 */
+	public void setExpirationDate(Date expirationDate);
+
+	/**
+	 * Returns the review date of this object entry.
+	 *
+	 * @return the review date of this object entry
+	 */
+	public Date getReviewDate();
+
+	/**
+	 * Sets the review date of this object entry.
+	 *
+	 * @param reviewDate the review date of this object entry
+	 */
+	public void setReviewDate(Date reviewDate);
+
+	/**
 	 * Returns the tree path of this object entry.
 	 *
 	 * @return the tree path of this object entry

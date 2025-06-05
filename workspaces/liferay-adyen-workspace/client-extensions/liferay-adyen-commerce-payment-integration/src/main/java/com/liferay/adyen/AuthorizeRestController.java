@@ -78,8 +78,9 @@ public class AuthorizeRestController extends BaseRestController {
 
 				delete(
 					"Bearer " + jwt.getTokenValue(), "",
-					"/o/c/n1a0adyenwebhooks/by-external-reference-code/" +
-						payloadJSONObject.getString("id"));
+					createURI(
+						"/o/c/n1a0adyenwebhooks/by-external-reference-code/",
+						payloadJSONObject.getString("id")));
 
 				paymentStatus = "8";
 			}

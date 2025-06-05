@@ -1,6 +1,6 @@
 {
 	"dependencies": {
-		"@clayui/pagination": "3.135.0",
+		"@clayui/pagination": "3.136.0",
 		"frontend-js-web": "*",
 		"react": "18.2.0"
 	},
@@ -11,5 +11,5 @@
 		"checkFormat": "node-scripts format --check",
 		"format": "node-scripts format"
 	},
-	"version": "6.2.29"
+	"version": "7.0.1"
 }

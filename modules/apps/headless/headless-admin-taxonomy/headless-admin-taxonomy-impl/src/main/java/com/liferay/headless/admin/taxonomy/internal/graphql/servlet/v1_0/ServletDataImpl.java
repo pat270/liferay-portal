@@ -16,10 +16,10 @@ import com.liferay.headless.admin.taxonomy.resource.v1_0.TaxonomyVocabularyResou
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.vulcan.graphql.servlet.ServletData;
 
+import jakarta.annotation.Generated;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Generated;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentServiceObjects;
@@ -164,6 +164,10 @@ public class ServletDataImpl implements ServletData {
 						"mutation#updateKeywordBatch",
 						new ObjectValuePair<>(
 							KeywordResourceImpl.class, "putKeywordBatch"));
+					put(
+						"mutation#updateKeywordMerge",
+						new ObjectValuePair<>(
+							KeywordResourceImpl.class, "putKeywordMerge"));
 					put(
 						"mutation#updateKeywordSubscribe",
 						new ObjectValuePair<>(

@@ -9,16 +9,16 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.oauth2.provider.internal.test.TestAnnotatedApplication;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
 
 import java.util.Collections;
 import java.util.Dictionary;
-
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -50,15 +50,19 @@ public class AnnotatedApplicationPrefixHandlerClientTest
 		Assert.assertEquals("everything.read", builder.get(String.class));
 	}
 
-	public static class
-		AnnotatedApplicationPrefixHandlerTestPreparatorBundleActivator
-			extends BaseTestPreparatorBundleActivator {
+	@Override
+	protected BundleActivator getBundleActivator() {
+		return new AnnotatedApplicationPrefixHandlerTestPreparatorBundleActivator();
+	}
+
+	private class AnnotatedApplicationPrefixHandlerTestPreparatorBundleActivator
+		extends BaseTestPreparatorBundleActivator {
 
 		@Override
 		protected void prepareTest() throws Exception {
-			long defaultCompanyId = PortalUtil.getDefaultCompanyId();
+			long companyId = TestPropsValues.getCompanyId();
 
-			User user = UserTestUtil.getAdminUser(defaultCompanyId);
+			User user = UserTestUtil.getAdminUser(companyId);
 
 			Dictionary<String, Object> properties =
 				HashMapDictionaryBuilder.<String, Object>put(
@@ -73,15 +77,10 @@ public class AnnotatedApplicationPrefixHandlerClientTest
 				new TestAnnotatedApplication(), "annotated", properties);
 
 			createOAuth2Application(
-				defaultCompanyId, user, "oauthTestApplication",
+				companyId, user, "oauthTestApplication",
 				Collections.singletonList("test/everything"));
 		}
 
-	}
-
-	@Override
-	protected BundleActivator getBundleActivator() {
-		return new AnnotatedApplicationPrefixHandlerTestPreparatorBundleActivator();
 	}
 
 }

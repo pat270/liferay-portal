@@ -77,7 +77,8 @@ public class ListTypeEntryModelImpl
 		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
 		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
 		{"listTypeDefinitionId", Types.BIGINT}, {"key_", Types.VARCHAR},
-		{"name", Types.VARCHAR}, {"type_", Types.VARCHAR}
+		{"name", Types.VARCHAR}, {"system_", Types.BOOLEAN},
+		{"type_", Types.VARCHAR}, {"status", Types.INTEGER}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
@@ -96,11 +97,13 @@ public class ListTypeEntryModelImpl
 		TABLE_COLUMNS_MAP.put("listTypeDefinitionId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("key_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("name", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("system_", Types.BOOLEAN);
 		TABLE_COLUMNS_MAP.put("type_", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("status", Types.INTEGER);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table ListTypeEntry (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(75) null,listTypeEntryId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,listTypeDefinitionId LONG,key_ VARCHAR(75) null,name STRING null,type_ VARCHAR(75) null)";
+		"create table ListTypeEntry (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(75) null,listTypeEntryId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,listTypeDefinitionId LONG,key_ VARCHAR(75) null,name STRING null,system_ BOOLEAN,type_ VARCHAR(75) null,status INTEGER)";
 
 	public static final String TABLE_SQL_DROP = "drop table ListTypeEntry";
 
@@ -289,7 +292,9 @@ public class ListTypeEntryModelImpl
 				"listTypeDefinitionId", ListTypeEntry::getListTypeDefinitionId);
 			attributeGetterFunctions.put("key", ListTypeEntry::getKey);
 			attributeGetterFunctions.put("name", ListTypeEntry::getName);
+			attributeGetterFunctions.put("system", ListTypeEntry::getSystem);
 			attributeGetterFunctions.put("type", ListTypeEntry::getType);
+			attributeGetterFunctions.put("status", ListTypeEntry::getStatus);
 
 			_attributeGetterFunctions = Collections.unmodifiableMap(
 				attributeGetterFunctions);
@@ -348,8 +353,14 @@ public class ListTypeEntryModelImpl
 				"name",
 				(BiConsumer<ListTypeEntry, String>)ListTypeEntry::setName);
 			attributeSetterBiConsumers.put(
+				"system",
+				(BiConsumer<ListTypeEntry, Boolean>)ListTypeEntry::setSystem);
+			attributeSetterBiConsumers.put(
 				"type",
 				(BiConsumer<ListTypeEntry, String>)ListTypeEntry::setType);
+			attributeSetterBiConsumers.put(
+				"status",
+				(BiConsumer<ListTypeEntry, Integer>)ListTypeEntry::setStatus);
 
 			_attributeSetterBiConsumers = Collections.unmodifiableMap(
 				(Map)attributeSetterBiConsumers);
@@ -739,6 +750,27 @@ public class ListTypeEntryModelImpl
 
 	@JSON
 	@Override
+	public boolean getSystem() {
+		return _system;
+	}
+
+	@JSON
+	@Override
+	public boolean isSystem() {
+		return _system;
+	}
+
+	@Override
+	public void setSystem(boolean system) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_system = system;
+	}
+
+	@JSON
+	@Override
 	public String getType() {
 		if (_type == null) {
 			return "";
@@ -755,6 +787,21 @@ public class ListTypeEntryModelImpl
 		}
 
 		_type = type;
+	}
+
+	@JSON
+	@Override
+	public int getStatus() {
+		return _status;
+	}
+
+	@Override
+	public void setStatus(int status) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_status = status;
 	}
 
 	@Override
@@ -897,7 +944,9 @@ public class ListTypeEntryModelImpl
 		listTypeEntryImpl.setListTypeDefinitionId(getListTypeDefinitionId());
 		listTypeEntryImpl.setKey(getKey());
 		listTypeEntryImpl.setName(getName());
+		listTypeEntryImpl.setSystem(isSystem());
 		listTypeEntryImpl.setType(getType());
+		listTypeEntryImpl.setStatus(getStatus());
 
 		listTypeEntryImpl.resetOriginalValues();
 
@@ -929,7 +978,11 @@ public class ListTypeEntryModelImpl
 			this.<Long>getColumnOriginalValue("listTypeDefinitionId"));
 		listTypeEntryImpl.setKey(this.<String>getColumnOriginalValue("key_"));
 		listTypeEntryImpl.setName(this.<String>getColumnOriginalValue("name"));
+		listTypeEntryImpl.setSystem(
+			this.<Boolean>getColumnOriginalValue("system_"));
 		listTypeEntryImpl.setType(this.<String>getColumnOriginalValue("type_"));
+		listTypeEntryImpl.setStatus(
+			this.<Integer>getColumnOriginalValue("status"));
 
 		return listTypeEntryImpl;
 	}
@@ -1081,6 +1134,8 @@ public class ListTypeEntryModelImpl
 			listTypeEntryCacheModel.name = null;
 		}
 
+		listTypeEntryCacheModel.system = isSystem();
+
 		listTypeEntryCacheModel.type = getType();
 
 		String type = listTypeEntryCacheModel.type;
@@ -1088,6 +1143,8 @@ public class ListTypeEntryModelImpl
 		if ((type != null) && (type.length() == 0)) {
 			listTypeEntryCacheModel.type = null;
 		}
+
+		listTypeEntryCacheModel.status = getStatus();
 
 		return listTypeEntryCacheModel;
 	}
@@ -1164,7 +1221,9 @@ public class ListTypeEntryModelImpl
 	private String _key;
 	private String _name;
 	private String _nameCurrentLanguageId;
+	private boolean _system;
 	private String _type;
+	private int _status;
 
 	public <T> T getColumnValue(String columnName) {
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
@@ -1210,7 +1269,9 @@ public class ListTypeEntryModelImpl
 			"listTypeDefinitionId", _listTypeDefinitionId);
 		_columnOriginalValues.put("key_", _key);
 		_columnOriginalValues.put("name", _name);
+		_columnOriginalValues.put("system_", _system);
 		_columnOriginalValues.put("type_", _type);
+		_columnOriginalValues.put("status", _status);
 	}
 
 	private static final Map<String, String> _attributeNames;
@@ -1220,6 +1281,7 @@ public class ListTypeEntryModelImpl
 
 		attributeNames.put("uuid_", "uuid");
 		attributeNames.put("key_", "key");
+		attributeNames.put("system_", "system");
 		attributeNames.put("type_", "type");
 
 		_attributeNames = Collections.unmodifiableMap(attributeNames);
@@ -1260,7 +1322,11 @@ public class ListTypeEntryModelImpl
 
 		columnBitmasks.put("name", 2048L);
 
-		columnBitmasks.put("type_", 4096L);
+		columnBitmasks.put("system_", 4096L);
+
+		columnBitmasks.put("type_", 8192L);
+
+		columnBitmasks.put("status", 16384L);
 
 		_columnBitmasks = Collections.unmodifiableMap(columnBitmasks);
 	}

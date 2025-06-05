@@ -34,7 +34,7 @@ public class TicketCommandLineRunner
 		JSONObject responseJSONObject = new JSONObject(
 			get(
 				"Bearer " + _oAuth2AccessToken.getTokenValue(),
-				"/o/c/j3y7tickets"));
+				createURI("/o/c/j3y7tickets")));
 
 		if (_log.isInfoEnabled()) {
 			_log.info(responseJSONObject.toString(4));
@@ -68,7 +68,7 @@ public class TicketCommandLineRunner
 
 			delete(
 				"Bearer " + _oAuth2AccessToken.getTokenValue(), "",
-				"/o/c/j3y7tickets/" + id);
+				createURI("/o/c/j3y7tickets/", id));
 		}
 	}
 

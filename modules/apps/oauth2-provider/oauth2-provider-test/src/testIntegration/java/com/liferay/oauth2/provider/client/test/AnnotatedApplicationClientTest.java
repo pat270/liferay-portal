@@ -11,19 +11,19 @@ import com.liferay.oauth2.provider.internal.test.TestInterfaceAnnotatedApplicati
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
+
 import java.util.Arrays;
 import java.util.Dictionary;
-
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -55,37 +55,6 @@ public class AnnotatedApplicationClientTest extends BaseClientTestCase {
 			testNoScopeAnnotation("/annotated-interface/no-scope");
 			testRequiresScopeAnnotation("/annotated-interface");
 		}
-	}
-
-	public static class AnnotatedApplicationTestPreparatorBundleActivator
-		extends BaseTestPreparatorBundleActivator {
-
-		@Override
-		protected void prepareTest() throws Exception {
-			long defaultCompanyId = PortalUtil.getDefaultCompanyId();
-
-			User user = UserTestUtil.getAdminUser(defaultCompanyId);
-
-			Dictionary<String, Object> properties =
-				HashMapDictionaryBuilder.<String, Object>put(
-					"auth.verifier.guest.allowed", false
-				).put(
-					"oauth2.scope.checker.type", "annotations"
-				).build();
-
-			registerJaxRsApplication(
-				new TestInterfaceAnnotatedApplication(), "annotated-interface",
-				properties);
-
-			registerJaxRsApplication(
-				new TestAnnotatedApplication(), "annotated-impl", properties);
-
-			createOAuth2Application(
-				defaultCompanyId, user, "oauthTestApplication",
-				Arrays.asList(
-					"everything", "everything.read", "everything.write"));
-		}
-
 	}
 
 	@Override
@@ -145,6 +114,37 @@ public class AnnotatedApplicationClientTest extends BaseClientTestCase {
 
 		Assert.assertEquals(
 			"everything.read", invocationBuilder.get(String.class));
+	}
+
+	private class AnnotatedApplicationTestPreparatorBundleActivator
+		extends BaseTestPreparatorBundleActivator {
+
+		@Override
+		protected void prepareTest() throws Exception {
+			long companyId = TestPropsValues.getCompanyId();
+
+			User user = UserTestUtil.getAdminUser(companyId);
+
+			Dictionary<String, Object> properties =
+				HashMapDictionaryBuilder.<String, Object>put(
+					"auth.verifier.guest.allowed", false
+				).put(
+					"oauth2.scope.checker.type", "annotations"
+				).build();
+
+			registerJaxRsApplication(
+				new TestInterfaceAnnotatedApplication(), "annotated-interface",
+				properties);
+
+			registerJaxRsApplication(
+				new TestAnnotatedApplication(), "annotated-impl", properties);
+
+			createOAuth2Application(
+				companyId, user, "oauthTestApplication",
+				Arrays.asList(
+					"everything", "everything.read", "everything.write"));
+		}
+
 	}
 
 }

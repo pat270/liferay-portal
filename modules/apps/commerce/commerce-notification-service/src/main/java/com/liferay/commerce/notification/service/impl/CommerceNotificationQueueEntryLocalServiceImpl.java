@@ -26,15 +26,14 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
-import com.liferay.portal.kernel.util.File;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
+
+import jakarta.mail.internet.InternetAddress;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.mail.internet.InternetAddress;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -254,8 +253,7 @@ public class CommerceNotificationQueueEntryLocalServiceImpl
 					commerceNotificationAttachment.getFileEntry();
 
 				mailMessage.addFileAttachment(
-					_file.createTempFile(fileEntry.getContentStream()),
-					fileEntry.getFileName());
+					fileEntry.getFileName(), fileEntry.getContentStream());
 			}
 
 			List<InternetAddress> bccInternetAddresses = new ArrayList<>();
@@ -357,9 +355,6 @@ public class CommerceNotificationQueueEntryLocalServiceImpl
 	@Reference
 	private CommerceNotificationAttachmentLocalService
 		_commerceNotificationAttachmentLocalService;
-
-	@Reference
-	private File _file;
 
 	@Reference
 	private MailService _mailService;

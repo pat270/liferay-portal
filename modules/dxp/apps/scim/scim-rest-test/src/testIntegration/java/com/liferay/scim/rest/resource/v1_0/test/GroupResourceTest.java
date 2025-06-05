@@ -14,9 +14,12 @@ import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.UserGroup;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -67,14 +70,6 @@ public class GroupResourceTest extends BaseGroupResourceTestCase {
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		BaseUserResourceTestCase.setUpClass();
-
-		UserResource.Builder builder = UserResource.builder();
-
-		_userResource = builder.authentication(
-			"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).build();
 	}
 
 	@Before
@@ -94,6 +89,21 @@ public class GroupResourceTest extends BaseGroupResourceTestCase {
 			).put(
 				"userId", TestPropsValues.getUserId()
 			).build());
+
+		UserResource.Builder builder = UserResource.builder();
+
+		Company company = _companyLocalService.getCompany(
+			TestPropsValues.getCompanyId());
+		com.liferay.portal.kernel.model.User user = _userLocalService.getUser(
+			TestPropsValues.getUserId());
+
+		_userResource = builder.authentication(
+			user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
+		).endpoint(
+			company.getVirtualHostname(), 8080, "http"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -713,13 +723,20 @@ public class GroupResourceTest extends BaseGroupResourceTestCase {
 		return _getGroup(userGroupId);
 	}
 
-	private static String _pid;
-	private static UserResource _userResource;
+	@Inject
+	private CompanyLocalService _companyLocalService;
 
 	@Inject
 	private JSONFactory _jsonFactory;
 
+	private String _pid;
+
 	@Inject
 	private UserGroupLocalService _userGroupLocalService;
+
+	@Inject
+	private UserLocalService _userLocalService;
+
+	private UserResource _userResource;
 
 }

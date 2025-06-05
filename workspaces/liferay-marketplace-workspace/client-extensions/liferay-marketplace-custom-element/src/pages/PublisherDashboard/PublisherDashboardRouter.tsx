@@ -26,11 +26,12 @@ import Licensing from './pages/NewAppFlow/pages/Licensing';
 import LicensePrices from './pages/NewAppFlow/pages/Licensing/LicensePrices';
 import Pricing from './pages/NewAppFlow/pages/Pricing';
 import Storefront from './pages/NewAppFlow/pages/Storefront';
-import SubmitApp from './pages/NewAppFlow/pages/Submit';
+import SubmitApp from './pages/NewAppFlow/pages/Submit/Submit';
 import Support from './pages/NewAppFlow/pages/Support';
 import Version from './pages/NewAppFlow/pages/Version';
 import Solutions from './pages/Solutions';
-import PublishSolutionOutlet from './pages/Solutions/NewSolutionFlow/PublishSolutionOutlet';
+import SolutionsDetails from './pages/Solutions/Solution';
+import PublishSolutionOutlet from './pages/Solutions/SolutionForm/PublishSolutionOutlet';
 import {
 	CompanyProfile,
 	ContactUs,
@@ -39,13 +40,12 @@ import {
 	Header,
 	Profile,
 	Submit,
-} from './pages/Solutions/NewSolutionFlow/pages';
-import SolutionsDetails from './pages/Solutions/Solution';
+} from './pages/Solutions/SolutionForm/pages';
 
 const PublisherDashboardRouter = () => {
 	const {accountId} = Liferay.CommerceContext.account || {};
 	const {data, isValidating} = useAccount();
-	const {data: catalogs = []} = useCatalogs();
+	const {data: catalogs = [], isLoading} = useCatalogs();
 	const accountsSearch = useSupplierAccounts();
 
 	useEffect(() => {
@@ -54,6 +54,7 @@ const PublisherDashboardRouter = () => {
 
 			Liferay.CommerceContext.account = {
 				accountId,
+				accountName: data?.name ?? null,
 			};
 
 			window.location.reload();
@@ -64,11 +65,15 @@ const PublisherDashboardRouter = () => {
 		if (!isValidating && data?.type !== 'supplier' && newAccountId) {
 			checkAccount(newAccountId);
 		}
-	}, [isValidating, data?.type, accountsSearch.items]);
+	}, [isValidating, data?.type, accountsSearch.items, data?.name]);
 
-	const catalogId = catalogs.find(
-		(catalog) => catalog.accountId === accountId
-	)?.id;
+	const catalog = catalogs.find((catalog) => catalog.accountId === accountId);
+
+	const catalogId = catalog?.id;
+
+	if (isLoading) {
+		return null;
+	}
 
 	return (
 		<HashRouter>
@@ -76,9 +81,7 @@ const PublisherDashboardRouter = () => {
 				<Route path="newapp">
 					<Route
 						element={
-							<NewAppContextProvider
-								catalogId={catalogId as number}
-							>
+							<NewAppContextProvider catalog={catalog as Catalog}>
 								<Outlet />
 							</NewAppContextProvider>
 						}
@@ -123,7 +126,7 @@ const PublisherDashboardRouter = () => {
 				>
 					<Route path="/">
 						<Route element={<Apps />} index />
-						<Route element={<App />} path="app/:appId" />
+						<Route element={<App />} path="app/:productId" />
 					</Route>
 
 					<Route element={<Accounts />} path="accounts" />

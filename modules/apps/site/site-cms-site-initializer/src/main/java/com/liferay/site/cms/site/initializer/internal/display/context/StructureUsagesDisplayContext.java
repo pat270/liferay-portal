@@ -17,12 +17,12 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.portlet.ActionRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Collections;
 import java.util.List;
-
-import javax.portlet.ActionRequest;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Marco Galluzzi
@@ -43,9 +43,9 @@ public class StructureUsagesDisplayContext {
 		StringBundler sb = new StringBundler(4);
 
 		sb.append("/o/search/v1.0/search?emptySearch=true&");
-		sb.append("filter=objectDefinitionId eq ");
+		sb.append("filter=(objectDefinitionId eq ");
 		sb.append(ParamUtil.getLong(_httpServletRequest, "objectDefinitionId"));
-		sb.append("&nestedFields=embedded");
+		sb.append(")&nestedFields=embedded");
 
 		return sb.toString();
 	}

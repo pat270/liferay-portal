@@ -1167,7 +1167,8 @@ public class ObjectDefinitionGraphQLTest {
 		ListTypeEntryLocalServiceUtil.addListTypeEntry(
 			null, TestPropsValues.getUserId(),
 			listTypeDefinition.getListTypeDefinitionId(), key,
-			LocalizedMapUtil.getLocalizedMap(key));
+			LocalizedMapUtil.getLocalizedMap(key),
+			listTypeDefinition.isSystem());
 	}
 
 	private ObjectDefinition _addObjectDefinition(
@@ -1177,7 +1178,7 @@ public class ObjectDefinitionGraphQLTest {
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(), 0, null, false, false, true, false,
-				enableObjectEntryDraft, false,
+				enableObjectEntryDraft, false, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),

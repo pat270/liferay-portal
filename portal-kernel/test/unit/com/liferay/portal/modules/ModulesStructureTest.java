@@ -1079,6 +1079,7 @@ public class ModulesStructureTest {
 			name.equals("com.liferay.portal.cache.test.util") ||
 			name.equals("com.liferay.poshi.core") ||
 			name.equals("com.liferay.whip") ||
+			name.startsWith("com.liferay.faces.") ||
 			!name.startsWith("com.liferay.") ||
 			_isInModulesRootDir(dirPath, "sdk", "third-party", "util") ||
 			Files.exists(dirPath.resolve("settings.gradle")) ||
@@ -1511,7 +1512,9 @@ public class ModulesStructureTest {
 		).put(
 			"provided", mainConfigurationsAllowed
 		).put(
-			"testImplementation", hasSrcTestDir
+			"testImplementation",
+			hasSrcTestDir ||
+			Objects.equals(path.toString(), "modules/build.gradle")
 		).put(
 			"testIntegrationImplementation", hasSrcTestIntegrationDir
 		).put(
@@ -1596,13 +1599,11 @@ public class ModulesStructureTest {
 				Assert.assertFalse(sb.toString(), !allowed);
 			}
 
-			if (!content.contains("jakartaAppServer")) {
-				Assert.assertEquals(
-					"Redundant dependency detected in " + path,
-					_getActiveGradleDependency(
-						gradleDependencies, gradleDependency),
-					gradleDependency);
-			}
+			Assert.assertEquals(
+				"Redundant dependency detected in " + path,
+				_getActiveGradleDependency(
+					gradleDependencies, gradleDependency),
+				gradleDependency);
 		}
 	}
 

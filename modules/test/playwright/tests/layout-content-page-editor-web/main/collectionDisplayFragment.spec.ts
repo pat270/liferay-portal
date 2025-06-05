@@ -17,7 +17,7 @@ import {clickAndExpectToBeHidden} from '../../../utils/clickAndExpectToBeHidden'
 import {clickAndExpectToBeVisible} from '../../../utils/clickAndExpectToBeVisible';
 import {getContentSetElementContent} from '../../../utils/getContentSetElementContent';
 import getRandomString from '../../../utils/getRandomString';
-import {ANIMALS_COLLECTION_NAME} from '../../setup/page-management-site/constants/animals';
+import {ANIMALS_COLLECTION_NAME} from '../../setup/page-management-site/main/constants/animals';
 import getCollectionDefinition from './utils/getCollectionDefinition';
 import getFragmentDefinition from './utils/getFragmentDefinition';
 import getPageDefinition from './utils/getPageDefinition';
@@ -327,6 +327,32 @@ testWithIsolatedSite(
 
 		await expect(page.getByLabel('Go to page, 9')).toBeVisible();
 
+		// Go to view mode and check the pagination keyboard navigation
+
+		await pageEditorPage.publishPage();
+
+		await page.goto(`/web${site.friendlyUrlPath}${layout.friendlyUrlPath}`);
+
+		await page.getByLabel('Go to page, 2').focus();
+
+		await page.keyboard.press('Tab');
+
+		await expect(page.getByLabel('Go to page, 3')).toBeFocused();
+
+		await page.keyboard.press('Enter');
+
+		await page.waitForURL(({href}) =>
+			href.includes(`page_number_${collectionId}=3`)
+		);
+
+		// Go back to edit mode and continue modifying the configuration
+
+		await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+		await pageEditorPage.selectFragment(
+			await pageEditorPage.getFragmentId('Collection Display')
+		);
+
 		await pageEditorPage.changeConfiguration({
 			fieldLabel: 'Display All Pages',
 			tab: 'General',
@@ -383,7 +409,7 @@ testWithIsolatedSite(
 			value: 'None',
 		});
 
-		// Assert pagination is not visbile
+		// Assert pagination is not visible
 
 		await expect(page.locator('.pagination-bar')).not.toBeVisible();
 

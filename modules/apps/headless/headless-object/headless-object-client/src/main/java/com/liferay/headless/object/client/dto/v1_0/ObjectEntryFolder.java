@@ -8,13 +8,13 @@ package com.liferay.headless.object.client.dto.v1_0;
 import com.liferay.headless.object.client.function.UnsafeSupplier;
 import com.liferay.headless.object.client.serdes.v1_0.ObjectEntryFolderSerDes;
 
+import jakarta.annotation.Generated;
+
 import java.io.Serializable;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.Generated;
 
 /**
  * @author Alicia García
@@ -111,6 +111,27 @@ public class ObjectEntryFolder implements Cloneable, Serializable {
 	}
 
 	protected Date dateModified;
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setDescription(
+		UnsafeSupplier<String, Exception> descriptionUnsafeSupplier) {
+
+		try {
+			description = descriptionUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String description;
 
 	public String getExternalReferenceCode() {
 		return externalReferenceCode;

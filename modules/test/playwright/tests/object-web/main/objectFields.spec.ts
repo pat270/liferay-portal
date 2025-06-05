@@ -754,9 +754,137 @@ test.describe('Manage object fields through Model Builder', () => {
 			)
 		).toBeVisible();
 	});
+
+	test('navigates to documentation from the "unsupported translations" alert link', async ({
+		apiHelpers,
+		modelBuilderDiagramPage,
+		modelBuilderLeftSidebarPage,
+		modelBuilderObjectDefinitionNodePage,
+		page,
+	}) => {
+		const {objectFields} = await mockObjectFields({
+			apiHelpers,
+			objectFieldBusinessTypes: ['encrypted'],
+		});
+
+		const objectDefinition =
+			await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				objectFields,
+				objectFolderExternalReferenceCode: 'default',
+				status: {code: 0},
+			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		await modelBuilderDiagramPage.goto({objectFolderName: 'Default'});
+
+		await modelBuilderLeftSidebarPage.sidebarItems
+			.filter({hasText: objectDefinition.label['en_US']})
+			.click();
+
+		await modelBuilderObjectDefinitionNodePage.clickShowAllFieldsButton(
+			objectDefinition.label['en_US'],
+			modelBuilderDiagramPage.objectDefinitionNodes
+		);
+
+		await page.getByText('Encrypted', {exact: true}).click();
+
+		const pagePromise = page.waitForEvent('popup');
+
+		await page
+			.getByRole('link', {name: 'Learn more. (Opens a new window)'})
+			.click();
+
+		const newPage = await pagePromise;
+
+		await expect(
+			newPage.getByRole('heading', {
+				name: 'Localizing Object Definitions',
+			})
+		).toBeVisible();
+	});
 });
 
 test.describe('Manage objectFields through Objects Admin UI', () => {
+	test('can update custom object field in a system object', async ({
+		apiHelpers,
+		objectFieldsPage,
+		page,
+	}) => {
+		const {items} = await apiHelpers.objectAdmin.getAllObjectDefinitions();
+
+		const systemObjectDefinition = items.find((item: ObjectDefinition) => {
+			return item.system === true;
+		});
+
+		const objectFieldAPIClient =
+			await apiHelpers.buildRestClient(ObjectFieldAPI);
+
+		const objectFieldLabel = 'objectFieldLabel';
+
+		await objectFieldAPIClient.postObjectDefinitionObjectField(
+			systemObjectDefinition.id,
+			{
+				DBType: 'String',
+				businessType: 'Text',
+				label: {en_US: objectFieldLabel},
+				name: 'customField' + getRandomInt(),
+				required: false,
+			}
+		);
+
+		await objectFieldsPage.goto(systemObjectDefinition.label.en_US);
+
+		await objectFieldsPage.openObjectField(objectFieldLabel);
+
+		const newObjectFieldLabel = 'newObjectFieldLabel';
+
+		await page
+			.frameLocator('iframe')
+			.getByLabel('Label')
+			.fill(newObjectFieldLabel);
+
+		await page
+			.frameLocator('iframe')
+			.getByRole('button', {name: 'save'})
+			.click();
+
+		await expect(
+			page.getByRole('row').filter({hasText: newObjectFieldLabel})
+		).toBeVisible();
+
+		await objectFieldsPage.deleteObjectFieldByLabel(newObjectFieldLabel);
+
+		await expect(
+			page.getByRole('row').filter({hasText: newObjectFieldLabel})
+		).toBeHidden();
+	});
+
+	test('can create custom object field in a system object definition', async ({
+		modelBuilderDiagramPage,
+		objectFieldsPage,
+		page,
+	}) => {
+		await objectFieldsPage.goto('Account');
+
+		const objectFieldLabel = `formula${getRandomInt()}`;
+
+		await objectFieldsPage.addObjectField({
+			formulaFieldOutput: 'Integer',
+			objectDefinitionNodes:
+				modelBuilderDiagramPage.objectDefinitionNodes,
+			objectFieldBusinessType: 'Formula',
+			objectFieldLabel,
+		});
+
+		await expect(page.getByText(objectFieldLabel)).toBeVisible();
+
+		await objectFieldsPage.deleteObjectField(true, -1);
+	});
+
 	test('can create object fields of multiple types (except AutoIncrement, Date and Time, Encrypted and Aggregation)', async ({
 		apiHelpers,
 		modelBuilderDiagramPage,
@@ -1000,7 +1128,7 @@ test.describe('Manage objectFields through Objects Admin UI', () => {
 
 		await objectFieldsPage.goto(objectDefinition.label['en_US']);
 
-		await objectFieldsPage.deleteObjectField(-1);
+		await objectFieldsPage.deleteObjectField(false, -1);
 
 		await expect(page.getByText('Deletion Not Allowed')).toBeVisible();
 		await expect(
@@ -1066,5 +1194,97 @@ test.describe('Manage objectFields through Objects Admin UI', () => {
 		expect(objectFieldsPage.externalReferenceCodeField).toHaveValue(
 			ERCValue
 		);
+	});
+
+	test('LPD-53450 can delete created custom fields in a System Object', async ({
+		apiHelpers,
+		objectFieldsPage,
+		page,
+	}) => {
+		const objectDefinitionField =
+			await apiHelpers.buildRestClient(ObjectFieldAPI);
+
+		const fieldName = 'Custom Field';
+
+		const {items} = await apiHelpers.objectAdmin.getAllObjectDefinitions();
+
+		const systemObjectDefinition = items.find((item: ObjectDefinition) => {
+			return item.system === true;
+		});
+
+		await objectDefinitionField.postObjectDefinitionObjectField(
+			systemObjectDefinition.id,
+			{
+				DBType: 'String',
+				businessType: 'Text',
+				indexed: true,
+				label: {en_US: fieldName},
+				localized: false,
+				name: 'customField',
+				readOnly: 'false',
+				required: false,
+				state: false,
+			}
+		);
+
+		await objectFieldsPage.goto(systemObjectDefinition.label.en_US);
+
+		await page
+			.getByRole('row')
+			.filter({hasText: fieldName})
+			.getByRole('button', {name: 'Actions'})
+			.click();
+
+		await objectFieldsPage.deleteObjectFieldOption.click();
+
+		await page.getByRole('button', {name: 'Delete'}).click();
+
+		await expect(page.locator('.alert-success')).toBeVisible();
+
+		await expect(
+			page.getByRole('row').filter({hasText: fieldName})
+		).toHaveCount(0);
+	});
+
+	test('navigates to documentation from the "unsupported translations" alert link', async ({
+		apiHelpers,
+		objectFieldsPage,
+		page,
+	}) => {
+		const {objectFields} = await mockObjectFields({
+			apiHelpers,
+			objectFieldBusinessTypes: ['encrypted'],
+		});
+
+		const objectDefinition =
+			await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				objectFields,
+				objectFolderExternalReferenceCode: 'default',
+				status: {code: 0},
+			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		await objectFieldsPage.goto(objectDefinition.label['en_US']);
+
+		await objectFieldsPage.openObjectField(objectFields[0].label['en_US']);
+
+		const pagePromise = page.waitForEvent('popup');
+
+		await page
+			.frameLocator('iframe')
+			.getByRole('link', {name: 'Learn more. (Opens a new window)'})
+			.click();
+
+		const newPage = await pagePromise;
+
+		await expect(
+			newPage.getByRole('heading', {
+				name: 'Localizing Object Definitions',
+			})
+		).toBeVisible();
 	});
 });

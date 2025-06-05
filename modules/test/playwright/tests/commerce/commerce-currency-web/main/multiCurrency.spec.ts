@@ -40,16 +40,12 @@ test(
 	}) => {
 		test.setTimeout(180000);
 
-		const {channel, site} = await classicCommerceSetUp(
-			apiHelpers,
-			getRandomString()
-		);
+		const {channel, site} = await classicCommerceSetUp(apiHelpers);
 
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			name: getRandomString(),
 			type: 'business',
 		});
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user =
 			await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
@@ -153,7 +149,7 @@ test(
 		).toBeVisible();
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		await page.goto(`/web/${site.name}`);
 
@@ -180,7 +176,7 @@ test(
 		).toContain(`${currency3.symbol}`);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await commerceAdminChannelsPage.goto();
 
@@ -204,7 +200,7 @@ test(
 		).toHaveLength(2);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		await page.goto(`/web/${site.name}`);
 
@@ -236,16 +232,12 @@ test(
 	}) => {
 		test.setTimeout(180000);
 
-		const {channel, site} = await classicCommerceSetUp(
-			apiHelpers,
-			getRandomString()
-		);
+		const {channel, site} = await classicCommerceSetUp(apiHelpers);
 
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			name: getRandomString(),
 			type: 'business',
 		});
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user =
 			await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
@@ -371,7 +363,7 @@ test(
 		);
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		await page.goto(`/web/${site.name}`);
 
@@ -433,16 +425,12 @@ test(
 	}) => {
 		test.setTimeout(180000);
 
-		const {catalog, channel, site} = await classicCommerceSetUp(
-			apiHelpers,
-			getRandomString()
-		);
+		const {catalog, channel, site} = await classicCommerceSetUp(apiHelpers);
 
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			name: getRandomString(),
 			type: 'business',
 		});
-		apiHelpers.data.push({id: account.id, type: 'account'});
 
 		const user =
 			await apiHelpers.headlessAdminUser.getUserAccountByEmailAddress(
@@ -593,7 +581,7 @@ test(
 		).toBeVisible();
 
 		await performLogout(page);
-		await performLoginViaApi(page, 'demo.unprivileged');
+		await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 		await page.goto(`/web/${site.name}`);
 

@@ -48,7 +48,9 @@ public class SiteInitializerPanelApp extends BasePanelApp {
 	public boolean isShow(PermissionChecker permissionChecker, Group group)
 		throws PortalException {
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-165482")) {
+		if (!FeatureFlagManagerUtil.isEnabled(
+				group.getCompanyId(), "LPS-165482")) {
+
 			return false;
 		}
 
@@ -71,7 +73,7 @@ public class SiteInitializerPanelApp extends BasePanelApp {
 	}
 
 	@Reference(
-		target = "(javax.portlet.name=" + SiteInitializerExtenderPortletKeys.SITE_INITIALIZER + ")"
+		target = "(jakarta.portlet.name=" + SiteInitializerExtenderPortletKeys.SITE_INITIALIZER + ")"
 	)
 	private Portlet _portlet;
 

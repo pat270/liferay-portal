@@ -79,6 +79,7 @@ export default function buildState(
 		selection: [],
 		spaces: getSpaces(objectDefinition),
 		status: isPublished ? 'published' : 'draft',
+		unsavedChanges: false,
 		uuid: getUuid(),
 	};
 }
@@ -143,6 +144,7 @@ function getFieldType(objectField: ObjectField): FieldType {
 		Clob: 'long-text',
 		Date: 'date',
 		DateTime: 'datetime',
+		Double: 'decimal',
 		Integer: 'integer',
 		Long: 'upload',
 		RichText: 'rich-text',

@@ -5,14 +5,14 @@
 import {useEffect, useState} from 'react';
 import i18n from '~/utils/I18n';
 import ActivationKeysTable from '~/features/project/containers/ActivationKeysTable';
-import {useCustomerPortal} from '~/features/project/context';
+import {useAppContext} from '~/features/project/context';
 import DeveloperKeysLayouts from '~/features/project/layouts/DeveloperKeysLayout';
 import {LIST_TYPES} from '~/features/project/utils/constants';
 import {getOrRequestToken} from '~/services/liferay/security/auth/getOrRequestToken';
 
 const DXP = ({hasComplimentaryKey}) => {
 	const [oAuthToken, setOAuthToken] = useState();
-	const [{project}] = useCustomerPortal();
+	const [{project}] = useAppContext();
 
 	useEffect(() => {
 		const fetchToken = async () => {
@@ -41,7 +41,7 @@ const DXP = ({hasComplimentaryKey}) => {
 						'select-the-liferay-dxp-version-for-your-developer-key-to-download'
 					)}
 					dxpVersion={project.dxpVersion}
-					listType={LIST_TYPES.dxpMajorVersion}
+					listType={LIST_TYPES.developerKeyDXPVersion}
 					oAuthToken={oAuthToken}
 					productName="DXP"
 					projectName={project.name}

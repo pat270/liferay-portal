@@ -88,7 +88,8 @@ public class GitHubClient extends BaseRestController {
 					}
 				},
 				() -> {
-					String response = get(_getAuthorization(), gitHubURL);
+					String response = get(
+						_getAuthorization(), createURI(gitHubURL));
 
 					if (response == null) {
 						throw new RuntimeException(
@@ -120,7 +121,7 @@ public class GitHubClient extends BaseRestController {
 				() -> {
 					String response = patch(
 						_getAuthorization(), requestJSONObject.toString(),
-						gitHubURL);
+						createURI(gitHubURL));
 
 					if (response == null) {
 						throw new RuntimeException("No response");
@@ -151,7 +152,7 @@ public class GitHubClient extends BaseRestController {
 				() -> {
 					String response = post(
 						_getAuthorization(), requestJSONObject.toString(),
-						gitHubURL);
+						createURI(gitHubURL));
 
 					if (response == null) {
 						throw new RuntimeException("No response");
@@ -182,7 +183,7 @@ public class GitHubClient extends BaseRestController {
 				() -> {
 					String response = put(
 						_getAuthorization(), requestJSONObject.toString(),
-						gitHubURL);
+						createURI(gitHubURL));
 
 					if (response == null) {
 						throw new RuntimeException("No response");

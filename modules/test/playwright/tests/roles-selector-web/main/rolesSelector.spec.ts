@@ -105,12 +105,14 @@ test(
 		).toBeVisible();
 
 		await performLogout(page);
-		await performLoginViaApi(page, user1.alternateName);
+		await performLoginViaApi({page, screenName: user1.alternateName});
 
 		await usersAndOrganizationsPage.goToOrganizationsWithLimitedAccess();
 
 		await (
-			await usersAndOrganizationsPage.organizationActionsMenu(org1.name)
+			await usersAndOrganizationsPage.organizationsTable.rowActions(
+				org1.name
+			)
 		).click();
 		await usersAndOrganizationsPage.assignOrganizationRolesMenuItem.click();
 		await (

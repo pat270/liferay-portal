@@ -29,7 +29,7 @@ dependencies {
 	api group: "com.liferay", name: "org.apache.commons.logging", version: "1.2.LIFERAY-PATCHED-2"
 	api group: "com.puppycrawl.tools", name: "checkstyle", version: "8.43"
 	api group: "com.thoughtworks.qdox", name: "qdox", version: "2.0-M5"
-	api group: "commons-io", name: "commons-io", version: "2.15.1"
+	api group: "commons-io", name: "commons-io", version: "2.19.0"
 	api group: "commons-lang", name: "commons-lang", version: "2.6"
 	api(group: "jaxen", name: "jaxen", version: "1.1.6") {
 		exclude group: "com.ibm.icu", module: "icu4j"
@@ -62,7 +62,7 @@ dependencies {
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.util.java", version: "2.5.0"
-	compileOnly group: "org.apache.felix", name: "org.apache.felix.http.servlet-api", version: "1.1.2"
+	compileOnly group: "jakarta.servlet", name: "jakarta.servlet-api", version: "6.0.0"
 	compileOnly group: "org.apache.maven", name: "maven-plugin-api", transitive: false, version: "3.0.4"
 
 	constraints {
@@ -118,9 +118,9 @@ test {
 
 updateFileVersions {
 	match(/<artifactId>com\.liferay\.source\.formatter<\/artifactId>\s+<version>(.+)<\/version>/, "../../etl/talend/pom.xml")
+	match(/\t\t<dependency name="com.liferay.source.formatter" org="com.liferay" rev="(\d.+)" \/>/, "../../../tools/sdk/dependencies/com.liferay.source.formatter/ivy.xml")
 	match(/\t\t\t\t<version>(\d.+)<\/version>/, "samples/pom.xml")
 	match(/com\.liferay\.source\.formatter=(\d.+)/, "../../sdk/gradle-plugins/src/main/resources/com/liferay/gradle/plugins/dependencies/portal-tools.properties")
-	match(/\t\t<dependency name="com.liferay.source.formatter" org="com.liferay" rev="(\d.+)" \/>/, "../../../tools/sdk/dependencies/com.liferay.source.formatter/ivy.xml")
 
 	replaceOnlyIf([{
 		String group, String replacement, String content, File contentFile ->

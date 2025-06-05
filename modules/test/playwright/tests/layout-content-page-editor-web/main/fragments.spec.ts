@@ -34,9 +34,9 @@ import {journalPagesTest} from '../../journal-web/main/fixtures/journalPagesTest
 import {
 	ANIMAL_DDM_STRUCTURE_KEY,
 	ANIMAL_DDM_TEMPLATE_KEY,
-} from '../../setup/page-management-site/constants/animals';
-import {getObjectERC} from '../../setup/page-management-site/utils/getObjectERC';
-import {goToObjectEntity} from '../../setup/page-management-site/utils/goToObjectEntity';
+} from '../../setup/page-management-site/main/constants/animals';
+import {getObjectERC} from '../../setup/page-management-site/main/utils/getObjectERC';
+import {goToObjectEntity} from '../../setup/page-management-site/main/utils/goToObjectEntity';
 import getContainerDefinition from './utils/getContainerDefinition';
 import getFormContainerDefinition from './utils/getFormContainerDefinition';
 import getFragmentDefinition from './utils/getFragmentDefinition';
@@ -1704,6 +1704,49 @@ test.describe('Paragraph Fragment', () => {
 					.locator('.ae-editable p')
 					.evaluate((element) => element.style.textAlign)
 			).toBe('right');
+		}
+	);
+
+	test(
+		'Editor config contributor client extension is applied',
+		{tag: ['@LPD-54262']},
+		async ({apiHelpers, page, pageEditorPage, site}) => {
+
+			// Create page with a paragraph fragment and go to edit mode
+
+			const fragmentId = getRandomString();
+
+			const fragment = getFragmentDefinition({
+				id: fragmentId,
+				key: 'BASIC_COMPONENT-paragraph',
+			});
+
+			const layout = await apiHelpers.headlessDelivery.createSitePage({
+				pageDefinition: getPageDefinition([fragment]),
+				siteId: site.id,
+				title: getRandomString(),
+			});
+
+			await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+			// Open editor options
+
+			await pageEditorPage.selectEditable(fragmentId, 'element-text');
+
+			const editable = pageEditorPage.getEditable({
+				editableId: 'element-text',
+				fragmentId,
+			});
+
+			await editable.dblclick();
+
+			await editable.locator('.cke_editable_inline').dblclick();
+
+			// Assert "Insert Video" button is visible as provided by the CX
+
+			await page.getByText('A paragraph').selectText();
+
+			await expect(page.getByTitle('Insert Video')).toBeInViewport();
 		}
 	);
 });

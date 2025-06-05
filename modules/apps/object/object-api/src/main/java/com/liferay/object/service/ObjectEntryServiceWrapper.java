@@ -78,6 +78,16 @@ public class ObjectEntryServiceWrapper
 	}
 
 	@Override
+	public com.liferay.object.model.ObjectEntry expireObjectEntry(
+			long userId, long objectEntryId, int version,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryService.expireObjectEntry(
+			userId, objectEntryId, version, serviceContext);
+	}
+
+	@Override
 	public com.liferay.object.model.ObjectEntry fetchManyToOneObjectEntry(
 			long groupId, long objectRelationshipId, long primaryKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -221,6 +231,17 @@ public class ObjectEntryServiceWrapper
 
 		return _objectEntryService.hasPortletResourcePermission(
 			groupId, objectDefinitionId, actionId);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectEntry partialUpdateObjectEntry(
+			long objectEntryId,
+			java.util.Map<String, java.io.Serializable> values,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryService.partialUpdateObjectEntry(
+			objectEntryId, values, serviceContext);
 	}
 
 	@Override

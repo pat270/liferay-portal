@@ -10,19 +10,19 @@ import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
 
-import java.util.Collections;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -50,7 +50,8 @@ public class TokenIntrospectionTest extends BaseClientTestCase {
 		String token = getToken(
 			applicationClientId, null,
 			getAuthorizationCodeBiFunction(
-				"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD, null),
+				_user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD,
+				null),
 			this::parseTokenString);
 
 		Assert.assertNotNull(token);
@@ -80,7 +81,8 @@ public class TokenIntrospectionTest extends BaseClientTestCase {
 		String token = getToken(
 			applicationClientId, null,
 			getAuthorizationCodePKCEBiFunction(
-				"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD, null),
+				_user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD,
+				null),
 			this::parseTokenString);
 
 		Assert.assertNotNull(token);
@@ -103,28 +105,6 @@ public class TokenIntrospectionTest extends BaseClientTestCase {
 			applicationClientId, parseJsonField(response, "client_id"));
 	}
 
-	public static class TokenIntrospectionTestPreparatorBundleActivator
-		extends BaseTestPreparatorBundleActivator {
-
-		@Override
-		protected void prepareTest() throws Exception {
-			long defaultCompanyId = PortalUtil.getDefaultCompanyId();
-
-			User user = UserTestUtil.getAdminUser(defaultCompanyId);
-
-			createOAuth2Application(
-				defaultCompanyId, user, "oauthTestApplicationCode",
-				Collections.singletonList(GrantType.AUTHORIZATION_CODE), false,
-				Collections.singletonList("everything"), false);
-			createOAuth2ApplicationWithNone(
-				defaultCompanyId, user, "oauthTestApplicationCodePKCE",
-				Collections.singletonList(GrantType.AUTHORIZATION_CODE_PKCE),
-				Collections.singletonList("http://redirecturi:8080"), false,
-				Collections.singletonList("everything"), false);
-		}
-
-	}
-
 	@Override
 	protected BundleActivator getBundleActivator() {
 		return new TokenIntrospectionTest.
@@ -139,6 +119,30 @@ public class TokenIntrospectionTest extends BaseClientTestCase {
 		webTarget = webTarget.path("introspect");
 
 		return webTarget;
+	}
+
+	private User _user;
+
+	private class TokenIntrospectionTestPreparatorBundleActivator
+		extends BaseTestPreparatorBundleActivator {
+
+		@Override
+		protected void prepareTest() throws Exception {
+			long companyId = TestPropsValues.getCompanyId();
+
+			_user = UserTestUtil.getAdminUser(companyId);
+
+			createOAuth2Application(
+				companyId, _user, "oauthTestApplicationCode",
+				Collections.singletonList(GrantType.AUTHORIZATION_CODE), false,
+				Collections.singletonList("everything"), false);
+			createOAuth2ApplicationWithNone(
+				companyId, _user, "oauthTestApplicationCodePKCE",
+				Collections.singletonList(GrantType.AUTHORIZATION_CODE_PKCE),
+				Collections.singletonList("http://redirecturi:8080"), false,
+				Collections.singletonList("everything"), false);
+		}
+
 	}
 
 }

@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Rubén Pulido
  */
-@FeatureFlags("LPD-35443")
+@FeatureFlag("LPD-35443")
 @RunWith(Arquillian.class)
 public class PageTemplateSetResourceTest
 	extends BasePageTemplateSetResourceTestCase {
@@ -81,6 +81,13 @@ public class PageTemplateSetResourceTest
 						liveGroupPageTemplateSet.getExternalReferenceCode()));
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGetSitePageTemplateSetPermissionsPage() throws Exception {
+		super.testGetSitePageTemplateSetPermissionsPage();
+	}
+
 	@Override
 	@Test
 	public void testGetSiteSiteByExternalReferenceCodePageTemplateSet()
@@ -95,16 +102,6 @@ public class PageTemplateSetResourceTest
 		_enableLocalStaging();
 
 		_testGetSiteSiteByExternalReferenceCodePageTemplateSet(pageTemplateSet);
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testGetSiteSiteByExternalReferenceCodePageTemplateSetPermissionsPage()
-		throws Exception {
-
-		super.
-			testGetSiteSiteByExternalReferenceCodePageTemplateSetPermissionsPage();
 	}
 
 	@Override
@@ -191,16 +188,6 @@ public class PageTemplateSetResourceTest
 
 		super.
 			testGetSiteSiteByExternalReferenceCodePageTemplateSetsPageWithPagination();
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testGetSiteSiteExternalReferenceCodePageTemplateSetPermissionsPage()
-		throws Exception {
-
-		super.
-			testGetSiteSiteExternalReferenceCodePageTemplateSetPermissionsPage();
 	}
 
 	@Override
@@ -301,6 +288,13 @@ public class PageTemplateSetResourceTest
 				"Key ", key, " must have fewer than 75 characters"));
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testPutSitePageTemplateSetPermissionsPage() throws Exception {
+		super.testPutSitePageTemplateSetPermissionsPage();
+	}
+
 	@Override
 	@Test
 	public void testPutSiteSiteByExternalReferenceCodePageTemplateSet()
@@ -330,29 +324,20 @@ public class PageTemplateSetResourceTest
 						pageTemplateSet));
 	}
 
-	@Ignore
-	@Override
-	@Test
-	public void testPutSiteSiteByExternalReferenceCodePageTemplateSetPermissionsPage()
-		throws Exception {
-
-		super.
-			testPutSiteSiteByExternalReferenceCodePageTemplateSetPermissionsPage();
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testPutSiteSiteExternalReferenceCodePageTemplateSetPermissionsPage()
-		throws Exception {
-
-		super.
-			testPutSiteSiteExternalReferenceCodePageTemplateSetPermissionsPage();
-	}
-
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {"description", "externalReferenceCode", "name"};
+	}
+
+	@Ignore
+	@Override
+	@Test
+	protected PageTemplateSet
+			testGetSitePageTemplateSetPermissionsPage_addPageTemplateSet()
+		throws Exception {
+
+		return super.
+			testGetSitePageTemplateSetPermissionsPage_addPageTemplateSet();
 	}
 
 	@Override
@@ -386,6 +371,17 @@ public class PageTemplateSetResourceTest
 			putSiteSiteByExternalReferenceCodePageTemplateSet(
 				testGroup.getExternalReferenceCode(),
 				pageTemplateSet.getExternalReferenceCode(), pageTemplateSet);
+	}
+
+	@Ignore
+	@Override
+	@Test
+	protected PageTemplateSet
+			testPutSitePageTemplateSetPermissionsPage_addPageTemplateSet()
+		throws Exception {
+
+		return super.
+			testPutSitePageTemplateSetPermissionsPage_addPageTemplateSet();
 	}
 
 	private void _assertProblemException(

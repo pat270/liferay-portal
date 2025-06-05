@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.Serializable;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,6 +37,9 @@ public class ObjectEntryTestUtil {
 		if (keywords.length > 0) {
 			serviceContext.setAssetTagNames(keywords);
 		}
+
+		serviceContext.setAttribute(
+			"friendlyUrlMap", new HashMap<String, String>());
 
 		return ObjectEntryLocalServiceUtil.addObjectEntry(
 			TestPropsValues.getUserId(), groupId,

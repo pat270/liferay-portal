@@ -7,6 +7,7 @@ import {expect, mergeTests} from '@playwright/test';
 
 import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../fixtures/loginTest';
+import {pageEditorPagesTest} from '../../../fixtures/pageEditorPagesTest';
 import {clickAndExpectToBeHidden} from '../../../utils/clickAndExpectToBeHidden';
 import {clickAndExpectToBeVisible} from '../../../utils/clickAndExpectToBeVisible';
 import {getRandomInt} from '../../../utils/getRandomInt';
@@ -21,7 +22,8 @@ const test = mergeTests(
 		'LPD-11232': {enabled: true},
 		'LPD-17564': {enabled: true},
 	}),
-	loginTest()
+	loginTest(),
+	pageEditorPagesTest
 );
 
 test(
@@ -42,13 +44,6 @@ test(
 		await structureBuilderPage.changeStructureSettings({
 			label,
 			name: label,
-		});
-
-		// Check we can't publish without adding a field
-
-		await clickAndExpectToBeVisible({
-			target: page.getByText('At least one field must be added'),
-			trigger: structureBuilderPage.saveButton,
 		});
 
 		// Add fields and check they are selected by default
@@ -512,16 +507,314 @@ test(
 
 		await waitForAlert(newPage, 'Success:Plants was saved successfully.');
 
-		// Try to select the new picklist in the structure builder
+		// Check the new picklist in the structure builder opening the picker by keyboard
 
-		await structureBuilderPage.changeFieldSettings({
-			picklist: 'Plants',
-		});
+		const picklistPicker = page.getByLabel('Picklist');
+
+		await picklistPicker.press('Enter');
+
+		await expect(picklistPicker).toBeFocused();
+
+		await expect(page.getByRole('option', {name: 'Plants'})).toBeAttached();
 
 		// Delete picklist
 
 		const picklist = await picklistBuilderPage.getPicklist('Plants');
 
 		await picklistBuilderPage.deletePicklist(picklist.id);
+	}
+);
+
+test.describe('Customize experience', () => {
+	let structureId = null;
+
+	test.afterEach(async ({structureBuilderPage}) => {
+		if (structureId) {
+			await structureBuilderPage.deleteStructure(Number(structureId));
+		}
+	});
+
+	test(
+		'Alerts are displayed when trying to customize the experience without publishing the structure',
+		{
+			tag: '@LPD-50370',
+		},
+		async ({page, structureBuilderPage}) => {
+
+			// Go to the Structure Builder
+
+			await structureBuilderPage.goto();
+
+			await structureBuilderPage.enableForAllSpaces();
+
+			await structureBuilderPage.changeStructureSettings({
+				name: `StructureName${getRandomInt()}`,
+			});
+
+			// Add two Text fields
+
+			await structureBuilderPage.addField('Text');
+
+			await structureBuilderPage.changeFieldSettings({
+				label: 'Field 1',
+			});
+
+			await structureBuilderPage.addField('Text');
+
+			await structureBuilderPage.changeFieldSettings({
+				label: 'Field 2',
+			});
+
+			// Try to customize the experience without publishing the structure
+
+			await page
+				.getByRole('button', {name: 'Customize Experience'})
+				.click();
+
+			// Check the warning is shown
+
+			await expect(
+				page.getByText(
+					'To customize the experience you need to publish the structure first.'
+				)
+			).toBeAttached();
+
+			// Publish the structure
+
+			await page
+				.getByRole('dialog', {
+					name: 'Publish to Customize Experience',
+				})
+				.getByRole('button', {name: 'Publish'})
+				.click();
+
+			await waitForAlert(
+				page,
+				'Remember to review the customized experience if needed.',
+				{autoClose: false}
+			);
+
+			// Check the customized experience
+
+			const url = new URL(page.url());
+
+			structureId = url.searchParams.get('objectDefinitionId');
+
+			await page
+				.getByRole('alert')
+				.getByRole('button', {name: 'Customize Experience'})
+				.click();
+
+			await structureBuilderPage.waitForExperienceCustomizerModal();
+
+			await expect(page.getByLabel('Field 1')).toBeVisible();
+
+			// Go back to the structure builder
+
+			await page
+				.locator('.management-bar')
+				.getByRole('link', {name: 'Back'})
+				.click();
+
+			// Delete the field and try to customize the experience again
+
+			await structureBuilderPage.deleteFields([{label: 'Field 1'}]);
+
+			await page
+				.getByRole('button', {name: 'Customize Experience'})
+				.click();
+
+			// Check the warning is shown
+
+			await expect(
+				page.getByText(
+					'To customize the experience you need to publish the structure first. You removed one or more fields from the structure.'
+				)
+			).toBeAttached();
+
+			await page
+				.getByRole('dialog', {
+					name: 'Publish to Customize Experience',
+				})
+				.getByRole('button', {name: 'Publish'})
+				.click();
+
+			await page
+				.getByRole('alert')
+				.getByRole('button', {name: 'Customize Experience'})
+				.click();
+
+			await structureBuilderPage.waitForExperienceCustomizerModal();
+
+			// Check the experience is regenerated removing the deleted field
+
+			await expect(page.getByLabel('Field 1')).not.toBeVisible();
+			await expect(page.getByLabel('Field 2')).toBeVisible();
+		}
+	);
+
+	test(
+		'Edit experience link is shown every time we publish if it is customized',
+		{
+			tag: '@LPD-50370',
+		},
+		async ({page, pageEditorPage, structureBuilderPage}) => {
+
+			// Go to the Structure Builder
+
+			await structureBuilderPage.goto();
+
+			await structureBuilderPage.enableForAllSpaces();
+
+			await structureBuilderPage.changeStructureSettings({
+				name: `StructureName${getRandomInt()}`,
+			});
+
+			// Add two Text fields
+
+			await structureBuilderPage.addField('Text');
+
+			await structureBuilderPage.changeFieldSettings({
+				label: 'Field 1',
+			});
+
+			await structureBuilderPage.addField('Text');
+
+			await structureBuilderPage.changeFieldSettings({
+				label: 'Field 2',
+			});
+
+			// Publish the structure and check standard toast is shown
+
+			await expect(async () => {
+				await structureBuilderPage.publishButton.click({timeout: 1000});
+
+				await waitForAlert(
+					page,
+					'Success:Untitled Structure was published successfully.',
+					{exact: true}
+				);
+			}).toPass();
+
+			const url = new URL(page.url());
+
+			structureId = url.searchParams.get('objectDefinitionId');
+
+			// Customize the experience
+
+			await structureBuilderPage.customizeExperience();
+
+			const fragmentId = await pageEditorPage.getFragmentId('Text', 0);
+
+			await pageEditorPage.deleteFragment(fragmentId);
+
+			// Go back to structure builder
+
+			await clickAndExpectToBeVisible({
+				target: page.getByText('Structure Fields'),
+				trigger: page
+					.locator('.management-bar')
+					.getByRole('link', {name: 'Back'}),
+			});
+
+			// Publish again and check edit experience link is show in toast
+
+			await expect(async () => {
+				await structureBuilderPage.publishButton.click({timeout: 1000});
+
+				await waitForAlert(
+					page,
+					'Remember to review the customized experience if needed'
+				);
+			}).toPass();
+		}
+	);
+
+	test(
+		'Can autogenerate default experience after customizing it',
+		{
+			tag: '@LPD-50376',
+		},
+		async ({page, pageEditorPage, structureBuilderPage}) => {
+
+			// Go to the Structure Builder
+
+			await structureBuilderPage.goto();
+
+			await structureBuilderPage.enableForAllSpaces();
+
+			await structureBuilderPage.changeStructureSettings({
+				name: `StructureName${getRandomInt()}`,
+			});
+
+			// Publish the structure
+
+			await structureBuilderPage.publishStructure();
+
+			const url = new URL(page.url());
+
+			structureId = url.searchParams.get('objectDefinitionId');
+
+			// Customize the experience and add a fragment
+
+			await structureBuilderPage.customizeExperience();
+
+			await pageEditorPage.addFragment('Basic Components', 'Heading');
+
+			// Regenerate Display Page and check the Heading is not present
+
+			await pageEditorPage.regenerateDisplayPage();
+
+			await page
+				.getByText('Select a Page Element', {exact: true})
+				.waitFor();
+
+			await expect(
+				page.locator(
+					'.lfr-layout-structure-item-basic-component-heading'
+				)
+			).not.toBeVisible();
+		}
+	);
+});
+
+test(
+	'Add correct initial fields depending on type',
+	{
+		tag: '@LPD-50371',
+	},
+	async ({page, structureBuilderPage}) => {
+
+		// Go to the Structure Builder with type content and check initial fields
+
+		await structureBuilderPage.goto({type: 'content'});
+
+		await structureBuilderPage.changeStructureSettings({
+			label: getRandomString(),
+		});
+
+		await expect(
+			page.locator('.treeview-link', {hasText: 'Title'})
+		).toBeVisible();
+
+		await expect(
+			page.locator('.treeview-link', {hasText: 'File'})
+		).not.toBeVisible();
+
+		// Check with type file
+
+		await structureBuilderPage.goto({type: 'file'});
+
+		await structureBuilderPage.changeStructureSettings({
+			label: getRandomString(),
+		});
+
+		await expect(
+			page.locator('.treeview-link', {hasText: 'Title'})
+		).toBeVisible();
+
+		await expect(
+			page.locator('.treeview-link', {hasText: 'File'})
+		).toBeVisible();
 	}
 );

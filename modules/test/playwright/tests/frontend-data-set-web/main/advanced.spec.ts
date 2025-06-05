@@ -367,6 +367,8 @@ test(
 
 			actionsDropdown = page.locator(`#${actionsDropdownId}`);
 
+			page.keyboard.press('Escape');
+
 			await fdsSamplePage.customViewsSelectorButton.click();
 
 			const customViewsDropdownId =
@@ -375,6 +377,8 @@ test(
 				);
 
 			customViewsDropdown = page.locator(`#${customViewsDropdownId}`);
+
+			page.keyboard.press('Escape');
 
 			await fdsSamplePage.table.manageColumnsVisibilityButton.click();
 
@@ -386,6 +390,8 @@ test(
 			columnsVisibilityDropdown = page.locator(
 				`#${columnsVisibilityDropdownId}`
 			);
+
+			page.keyboard.press('Escape');
 		});
 
 		await test.step('Create a custom views and set it as the default one', async () => {
@@ -452,11 +458,9 @@ test(
 				.getByRole('menuitem', {name: 'Description'})
 				.click();
 
-			await expect(fdsSamplePage.table.headerCells).toHaveCount(9);
-
-			await fdsSamplePage.customViewsActionsButton.click();
-
 			page.keyboard.press('Escape');
+
+			await expect(fdsSamplePage.table.headerCells).toHaveCount(9);
 		});
 
 		await test.step('Confirm that changes in a custom view does not affect Default View', async () => {
@@ -996,6 +1000,37 @@ test(
 	}
 );
 
+test('Resize columns', {tag: '@LPD-54497'}, async ({fdsSamplePage, page}) => {
+	const firstColumnHeader = fdsSamplePage.table.firstColumnHeader;
+	let initialWidth: number;
+
+	await test.step('Get the initial width of a column', async () => {
+		initialWidth = await firstColumnHeader.evaluate(
+			(element) => element.getBoundingClientRect().width
+		);
+
+		await expect(initialWidth).toBeGreaterThan(0);
+	});
+
+	await test.step('Drag resizer element to make column wider', async () => {
+		const resizer = firstColumnHeader.locator('.dnd-th-resizer');
+		const resizerBoundingBox = await resizer.boundingBox();
+
+		await page.mouse.move(resizerBoundingBox.x, resizerBoundingBox.y);
+		await page.mouse.down();
+		await page.mouse.move(resizerBoundingBox.x + 50, resizerBoundingBox.y);
+		await page.mouse.up();
+	});
+
+	await test.step('Check that final widht is greater than initial one', async () => {
+		const finalWidth = await firstColumnHeader.evaluate(
+			(element) => element.getBoundingClientRect().width
+		);
+
+		await expect(finalWidth).toBeGreaterThan(initialWidth);
+	});
+});
+
 test(
 	'Hide column and assert correct visibility of columns',
 	{tag: '@LPD-45051'},
@@ -1037,6 +1072,14 @@ test('Use client extensions', async ({fdsSamplePage, page}) => {
 			.first();
 
 		await expect(firstColorCell).toContainText('🍏');
+	});
+
+	await test.step('Assert that the cell renderer has access to data from other cells', async () => {
+		const firstColorCell = fdsSamplePage.table.container
+			.locator('td.cell-color')
+			.nth(1);
+
+		await expect(firstColorCell).toContainText('Sample100 is Blue');
 	});
 
 	await test.step('Assert that the filter client extension is working', async () => {
@@ -1082,6 +1125,9 @@ test(
 	'Check Select All behavior',
 	{tag: '@LPD-52063'},
 	async ({fdsSamplePage, page}) => {
+		const bulkActionsButton = page
+			.locator('.bulk-actions')
+			.getByLabel('Actions');
 		const itemsSelectorCheckbox = page.locator(
 			'input[name="items-selector"]'
 		);
@@ -1105,7 +1151,7 @@ test(
 			await itemsSelectorCheckbox.click();
 
 			await expect(
-				page.getByText('10 of 75 Items Selected')
+				page.getByText('20 of 75 Items Selected')
 			).toBeVisible();
 
 			await page.getByText('Select All').click();
@@ -1123,23 +1169,27 @@ test(
 				.uncheck();
 
 			await expect(
-				page.getByText('9 of 75 Items Selected')
+				page.getByText('19 of 75 Items Selected')
 			).toBeVisible();
 
 			await expect(page.getByText('Select All')).not.toBeVisible();
 		});
 
 		await test.step('Without Select All flag active, requests sent actual item selection to bulk actions', async () => {
-			await page.locator('.bulk-actions').getByLabel('Actions').click();
+			await bulkActionsButton.click();
 
 			await page
 				.locator('.dropdown-menu.show')
 				.getByRole('menuitem', {name: 'test'})
 				.click();
 
-			expect(sentItems).toHaveLength(9);
-			expect(sentKeyValues).toHaveLength(9);
+			expect(sentItems).toHaveLength(19);
+			expect(sentKeyValues).toHaveLength(19);
 			expect(sentSelectAll).toBe(false);
+
+			expect(await bulkActionsButton.getAttribute('aria-expanded')).toBe(
+				'false'
+			);
 		});
 
 		await test.step('With Select All flag active, requests sent the flag instead of selected items', async () => {
@@ -1147,7 +1197,7 @@ test(
 
 			await page.getByText('Select All').click();
 
-			await page.locator('.bulk-actions').getByLabel('Actions').click();
+			await bulkActionsButton.click();
 
 			await page
 				.locator('.dropdown-menu.show')
@@ -1157,6 +1207,143 @@ test(
 			expect(sentItems).toEqual([]);
 			expect(sentKeyValues).toEqual([]);
 			expect(sentSelectAll).toBe(true);
+
+			expect(await bulkActionsButton.getAttribute('aria-expanded')).toBe(
+				'false'
+			);
+		});
+	}
+);
+
+test(
+	'Check behavior of quick actions',
+	{tag: '@LPS-153220'},
+	async ({fdsSamplePage, page}) => {
+		const firstRowItemActionButton = fdsSamplePage.table.itemActionsCells
+			.first()
+			.getByRole('button', {
+				exact: true,
+				name: 'Actions',
+			});
+
+		const thirdRowItemActionButton = fdsSamplePage.table.itemActionsCells
+			.nth(2)
+			.getByRole('button', {
+				exact: true,
+				name: 'Actions',
+			});
+
+		const firstRowSampleEditQuickActionLink = fdsSamplePage.table.bodyRows
+			.first()
+			.getByLabel('Sample Edit');
+
+		const firstTableHeadCell = fdsSamplePage.table.headerCells.first();
+
+		await test.step('Assert that "#test-pencil" is appended to browser URL after clicking', async () => {
+			await firstTableHeadCell.hover();
+
+			await firstTableHeadCell.click();
+
+			await firstRowItemActionButton.hover();
+
+			await firstRowSampleEditQuickActionLink.click();
+
+			expect(page.url()).toContain('#test-pencil');
+		});
+
+		await test.step('Assert that clicking quick action is equivalent to clicking the ellipsis dropdown menu', async () => {
+			await firstRowItemActionButton.hover();
+
+			await firstRowSampleEditQuickActionLink.click();
+
+			const pageURLAfterQuickAction = page.url();
+
+			expect(pageURLAfterQuickAction).toContain('#test-pencil');
+
+			await firstRowItemActionButton.click();
+
+			await page
+				.getByRole('menuitem', {
+					name: 'Sample Edit',
+				})
+				.click();
+
+			expect(page.url()).toEqual(pageURLAfterQuickAction);
+		});
+
+		await test.step('Assert that hover over mouse off of the table body quick action menu is not visible', async () => {
+			await firstRowItemActionButton.hover();
+
+			await expect(firstRowSampleEditQuickActionLink).toBeVisible();
+
+			await firstTableHeadCell.hover();
+
+			await expect(firstRowSampleEditQuickActionLink).not.toBeVisible();
+		});
+
+		await test.step('When hovering over the first line item and the quick action menu is displayed on the 1st line', async () => {
+			const firstTableRow = fdsSamplePage.table.bodyRows.first();
+
+			await firstTableRow.hover();
+
+			await expect(firstRowSampleEditQuickActionLink).toBeVisible();
+		});
+
+		await test.step('When clicking on the ellipsis and hovering over another row, multiple quick action menus are displayed', async () => {
+			await thirdRowItemActionButton.click();
+
+			await expect(page.locator('.dropdown-menu.show')).toBeVisible();
+
+			await fdsSamplePage.table.bodyRows.first().hover();
+
+			await expect(firstRowSampleEditQuickActionLink).toBeVisible();
+
+			await firstTableHeadCell.click(); // Close dropdown
+		});
+
+		await test.step('Assert quick action can be displayed on only one active row', async () => {
+			await firstRowItemActionButton.hover();
+
+			await expect(firstRowSampleEditQuickActionLink).toBeVisible();
+
+			await thirdRowItemActionButton.hover();
+
+			await thirdRowItemActionButton.click();
+
+			await expect(firstRowSampleEditQuickActionLink).not.toBeVisible();
+
+			await firstTableHeadCell.click(); // Close dropdown
+		});
+
+		await test.step('Assert that quick action icons list should be limited to three actions', async () => {
+			await firstRowItemActionButton.hover();
+
+			await expect(
+				fdsSamplePage.table.bodyRows.first().getByLabel('Sample View')
+			).toBeVisible();
+
+			await expect(
+				fdsSamplePage.table.bodyRows.first().getByLabel('Sample Edit')
+			).toBeVisible();
+
+			await expect(
+				fdsSamplePage.table.bodyRows.first().getByLabel('Sample Delete')
+			).toBeVisible();
+
+			await expect(
+				fdsSamplePage.table.bodyRows.first().getByLabel('Sample Copy')
+			).not.toBeVisible();
+		});
+
+		await test.step('Assert the quick action is not visible when the row checkbox is checked', async () => {
+			await fdsSamplePage.table.bodyRows
+				.first()
+				.getByRole('checkbox')
+				.click();
+
+			await firstRowItemActionButton.hover();
+
+			await expect(firstRowSampleEditQuickActionLink).not.toBeVisible();
 		});
 	}
 );

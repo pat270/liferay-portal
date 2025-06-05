@@ -43,18 +43,18 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
+import jakarta.portlet.ActionRequest;
+import jakarta.portlet.RenderRequest;
+import jakarta.portlet.RenderResponse;
+import jakarta.portlet.ResourceURL;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.ResourceURL;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Samuel Trong Tran
@@ -431,20 +431,26 @@ public class ViewConflictsDisplayContext {
 							"deletion-conflicts-with-modifications-in-" +
 								"another-publication"))) {
 
-					actionsJSONArray.put(
-						_createEditActionJSONObject(
-							_language.format(
-								_httpServletRequest,
-								"you-are-currently-working-on-x.-work-on-" +
-									"production",
-								new Object[] {_ctCollection.getName()}, false),
-							CTConstants.CT_COLLECTION_ID_PRODUCTION,
-							_ctDisplayRendererRegistry.getEditURL(
+					String editURL = _ctDisplayRendererRegistry.getEditURL(
+						CTConstants.CT_COLLECTION_ID_PRODUCTION,
+						CTSQLModeThreadLocal.CTSQLMode.DEFAULT,
+						_httpServletRequest, model, modelClassNameId);
+
+					if (Validator.isNotNull(editURL)) {
+						actionsJSONArray.put(
+							_createEditActionJSONObject(
+								_language.format(
+									_httpServletRequest,
+									"you-are-currently-working-on-x.-work-on-" +
+										"production",
+									new Object[] {_ctCollection.getName()},
+									false),
 								CTConstants.CT_COLLECTION_ID_PRODUCTION,
-								CTSQLModeThreadLocal.CTSQLMode.DEFAULT,
-								_httpServletRequest, model, modelClassNameId),
-							_language.get(
-								_httpServletRequest, "edit-in-production")));
+								editURL,
+								_language.get(
+									_httpServletRequest,
+									"edit-in-production")));
+					}
 				}
 
 				actionsJSONArray.put(

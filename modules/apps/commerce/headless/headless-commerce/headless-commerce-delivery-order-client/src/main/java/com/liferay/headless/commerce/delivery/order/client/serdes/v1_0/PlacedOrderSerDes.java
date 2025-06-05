@@ -12,6 +12,8 @@ import com.liferay.headless.commerce.delivery.order.client.dto.v1_0.PlacedOrderI
 import com.liferay.headless.commerce.delivery.order.client.dto.v1_0.Step;
 import com.liferay.headless.commerce.delivery.order.client.json.BaseJSONParser;
 
+import jakarta.annotation.Generated;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -20,8 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-
-import javax.annotation.Generated;
 
 /**
  * @author Andrea Sbarra
@@ -517,6 +517,22 @@ public class PlacedOrderSerDes {
 			sb.append("\"");
 		}
 
+		if (placedOrder.getRequestedDeliveryDate() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"requestedDeliveryDate\": ");
+
+			sb.append("\"");
+
+			sb.append(
+				liferayToJSONDateFormat.format(
+					placedOrder.getRequestedDeliveryDate()));
+
+			sb.append("\"");
+		}
+
 		if (placedOrder.getShipments() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -936,6 +952,16 @@ public class PlacedOrderSerDes {
 				String.valueOf(placedOrder.getPurchaseOrderNumber()));
 		}
 
+		if (placedOrder.getRequestedDeliveryDate() == null) {
+			map.put("requestedDeliveryDate", null);
+		}
+		else {
+			map.put(
+				"requestedDeliveryDate",
+				liferayToJSONDateFormat.format(
+					placedOrder.getRequestedDeliveryDate()));
+		}
+
 		if (placedOrder.getShipments() == null) {
 			map.put("shipments", null);
 		}
@@ -1148,6 +1174,11 @@ public class PlacedOrderSerDes {
 			}
 			else if (Objects.equals(
 						jsonParserFieldName, "purchaseOrderNumber")) {
+
+				return false;
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "requestedDeliveryDate")) {
 
 				return false;
 			}
@@ -1441,6 +1472,14 @@ public class PlacedOrderSerDes {
 				if (jsonParserFieldValue != null) {
 					placedOrder.setPurchaseOrderNumber(
 						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "requestedDeliveryDate")) {
+
+				if (jsonParserFieldValue != null) {
+					placedOrder.setRequestedDeliveryDate(
+						toDate((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "shipments")) {

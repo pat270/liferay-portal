@@ -64,6 +64,7 @@ import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.marketplace.constants.MarketplaceActionKeys;
 import com.liferay.marketplace.constants.MarketplacePortletKeys;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
@@ -108,7 +109,6 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.SessionClicks;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -136,6 +136,12 @@ import com.liferay.style.book.util.DefaultStyleBookEntryUtil;
 import com.liferay.style.book.util.StyleBookUtil;
 import com.liferay.style.book.util.comparator.StyleBookEntryNameComparator;
 
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.PortletURL;
+import jakarta.portlet.RenderResponse;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -147,12 +153,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
-import javax.portlet.RenderResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eudaldo Alonso
@@ -552,14 +552,14 @@ public class ContentPageEditorDisplayContext {
 			).put(
 				"infoListSelectorURL", _getInfoListSelectorURL()
 			).put(
-				"isConversionDraft", _isConversionDraft()
+				"isCMS",
+				() -> {
+					Group scopeGroup = themeDisplay.getScopeGroup();
+
+					return scopeGroup.isCMS();
+				}
 			).put(
-				"isMarketplaceButtonVisited",
-				GetterUtil.getBoolean(
-					SessionClicks.get(
-						httpServletRequest,
-						getPortletNamespace() + "isMarketplaceButtonVisited",
-						StringPool.BLANK))
+				"isConversionDraft", _isConversionDraft()
 			).put(
 				"isPrivateLayoutsEnabled",
 				() -> {
@@ -648,6 +648,16 @@ public class ContentPageEditorDisplayContext {
 				"publishURL", getPublishURL()
 			).put(
 				"redirectURL", _getRedirect()
+			).put(
+				"regenerateDisplayPageURL",
+				() -> {
+					Layout draftLayout = themeDisplay.getLayout();
+
+					return StringBundler.concat(
+						themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
+						"/cms/regenerate_structure_display_page?plid=",
+						draftLayout.getPlid());
+				}
 			).put(
 				"renderFragmentEntriesURL",
 				_getResourceURL(
@@ -880,10 +890,26 @@ public class ContentPageEditorDisplayContext {
 						}
 					).put(
 						ContentPageEditorActionKeys.VIEW_MARKETPLACE,
-						() -> PortletPermissionUtil.contains(
-							themeDisplay.getPermissionChecker(),
-							MarketplacePortletKeys.FRAGMENTS,
-							MarketplaceActionKeys.VIEW_APPS)
+						() -> {
+							if (PortletPermissionUtil.contains(
+									themeDisplay.getPermissionChecker(),
+									MarketplacePortletKeys.FRAGMENTS,
+									MarketplaceActionKeys.
+										INSTALL_FREE_BUNDLED_APPS) ||
+								PortletPermissionUtil.contains(
+									themeDisplay.getPermissionChecker(),
+									MarketplacePortletKeys.FRAGMENTS,
+									MarketplaceActionKeys.
+										PURCHASE_AND_INSTALL_PAID_APPS)) {
+
+								return true;
+							}
+
+							return PortletPermissionUtil.contains(
+								themeDisplay.getPermissionChecker(),
+								MarketplacePortletKeys.FRAGMENTS,
+								MarketplaceActionKeys.VIEW_APPS);
+						}
 					).put(
 						FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES,
 						() -> _portletResourcePermission.contains(

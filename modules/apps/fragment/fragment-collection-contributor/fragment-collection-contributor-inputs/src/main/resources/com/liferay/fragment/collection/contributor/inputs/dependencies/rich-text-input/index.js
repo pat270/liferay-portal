@@ -1,20 +1,46 @@
+const editorClass = '.ck-editor';
 const editorName = `${fragmentEntryLinkNamespace}-${input.name}`;
+const wrapper = document.getElementById(
+	`${fragmentEntryLinkNamespace}-wrapper`
+);
 
-if (layoutMode !== 'edit') {
-	const editor = document.getElementById(editorName);
-	editor.name = input.name;
-
-	const editorPromise = new Promise((resolve) => {
-		CKEDITOR.on('instanceReady', (editorEvent) => {
-			if (editorEvent.editor.name === editorName) {
-				resolve(editorEvent.editor);
-			}
+if (layoutMode === 'edit') {
+	if (Liferay.FeatureFlags['LPD-11235']) {
+		initEditorWhenReady(() => {
+			wrapper
+				.querySelector(editorClass)
+				.classList.add('rich-text-input--disabled');
 		});
+	}
+}
+else {
+	const editorPromise = new Promise((resolve) => {
+		if (Liferay.FeatureFlags['LPD-11235']) {
+			initEditorWhenReady((editor) => {
+				resolve(editor);
+			});
+		}
+		else {
+			const editor = document.getElementById(editorName);
+
+			editor.name = input.name;
+
+			CKEDITOR.on('instanceReady', ({editor}) => {
+				if (editor.name === editorName) {
+					resolve(editor);
+				}
+			});
+		}
 	});
 
 	if (input.readOnly || input.attributes?.disabled) {
 		editorPromise.then((editor) => {
-			editor.setReadOnly(true);
+			if (Liferay.FeatureFlags['LPD-11235']) {
+				editor.enableReadOnlyMode('read-only');
+			}
+			else {
+				editor.setReadOnly(true);
+			}
 		});
 	}
 	else if (Liferay.FeatureFlags['LPD-37927']) {
@@ -22,7 +48,7 @@ if (layoutMode !== 'edit') {
 			`${fragmentEntryLinkNamespace}-rich-text-input`
 		);
 
-		import('@liferay/fragment-impl').then(
+		import('@liferay/fragment-impl/api').then(
 			({registerLocalizedInput, registerUnlocalizedInput}) => {
 				const defaultLanguageId = themeDisplay.getDefaultLanguageId();
 
@@ -36,8 +62,7 @@ if (layoutMode !== 'edit') {
 						namespace: fragmentNamespace,
 						onLocaleChange: ({languageId, value}) => {
 							editorPromise.then((editor) => {
-								editor.config.contentsLangDirection =
-									Liferay.Language.direction[languageId];
+								changeLanguageDirection(editor, languageId);
 
 								editor.setData(value);
 							});
@@ -45,14 +70,29 @@ if (layoutMode !== 'edit') {
 					});
 
 					editorPromise.then((editor) => {
-						editor.config.contentsLangDirection =
-							Liferay.Language.direction[defaultLanguageId];
+						changeLanguageDirection(editor, defaultLanguageId);
 
-						editor.on('change', () => {
+						const updateData = () => {
 							const value = editor.getData();
 
 							onChange(value);
-						});
+						};
+
+						if (Liferay.FeatureFlags['LPD-11235']) {
+							editor.model.document.on(
+								'change:data',
+								(event, source) => {
+									if (source?.isTyping) {
+										updateData();
+									}
+								}
+							);
+						}
+						else {
+							editor.on('change', () => {
+								updateData();
+							});
+						}
 					});
 				}
 				else {
@@ -62,59 +102,99 @@ if (layoutMode !== 'edit') {
 						defaultLanguageId,
 						onLocaleChange: (languageId) => {
 							editorPromise.then((editor) => {
-								const editorWrapper = document.getElementById(
-									`cke_${editorName}`
-								);
-								const iframe =
-									editorWrapper.querySelector('iframe');
-								const inputLabel = document.querySelector(
-									`label[for="${editorName}"]`
-								);
+								let editorElement = null;
+								let iframe = null;
+								let label = null;
+
+								if (Liferay.FeatureFlags['LPD-11235']) {
+									editorElement =
+										wrapper.querySelector(editorClass);
+
+									label = wrapper.querySelector('label');
+								}
+								else {
+									editorElement = document.getElementById(
+										`cke_${editorName}`
+									);
+
+									iframe =
+										editorElement.querySelector('iframe');
+
+									label = document.querySelector(
+										`label[for="${editorName}"]`
+									);
+								}
+
 								const isReadOnly =
 									input.attributes.unlocalizedFieldsState ===
 									'read-only';
 
-								editor.config.contentsLangDirection =
-									Liferay.Language.direction[languageId];
-
-								editor.setData(editor.getData());
+								changeLanguageDirection(
+									editor,
+									languageId,
+									() => editor.setData(editor.getData())
+								);
 
 								if (languageId === defaultLanguageId) {
-									editor.setReadOnly(false);
-
-									if (isReadOnly) {
-										inputLabel.innerHTML = input.label;
+									if (Liferay.FeatureFlags['LPD-11235']) {
+										editor.disableReadOnlyMode('read-only');
 									}
 									else {
-										editorWrapper.classList.remove(
+										editor.setReadOnly(false);
+									}
+
+									if (isReadOnly) {
+										label.innerHTML = input.label;
+									}
+									else {
+										editorElement.classList.remove(
 											'rich-text-input--disabled'
 										);
 
-										iframe.setAttribute('tabindex', '0');
+										if (
+											!Liferay.FeatureFlags['LPD-11235']
+										) {
+											iframe.setAttribute(
+												'tabindex',
+												'0'
+											);
 
-										iframe.contentDocument.body.removeAttribute(
-											'aria-disabled'
-										);
+											iframe.contentDocument.body.removeAttribute(
+												'aria-disabled'
+											);
+										}
 									}
 								}
 								else {
-									editor.setReadOnly(true);
+									if (Liferay.FeatureFlags['LPD-11235']) {
+										editor.enableReadOnlyMode('read-only');
+									}
+									else {
+										editor.setReadOnly(true);
+									}
 
 									if (isReadOnly) {
-										inputLabel.innerHTML =
+										label.innerHTML =
 											inputContainer.dataset.readonlyLabel;
 									}
 									else {
-										editorWrapper.classList.add(
+										editorElement.classList.add(
 											'rich-text-input--disabled'
 										);
 
-										iframe.setAttribute('tabindex', '-1');
+										if (
+											!Liferay.FeatureFlags['LPD-11235']
+										) {
+											iframe.setAttribute(
+												'tabindex',
+												'-1'
+											);
 
-										iframe.contentDocument.body.setAttribute(
-											'aria-disabled',
-											'true'
-										);
+											iframe.contentDocument.body.setAttribute(
+												'aria-disabled',
+												'true'
+											);
+										}
 									}
 								}
 							});
@@ -127,11 +207,58 @@ if (layoutMode !== 'edit') {
 					});
 
 					editorPromise.then((editor) => {
-						editor.config.contentsLangDirection =
-							Liferay.Language.direction[defaultLanguageId];
+						changeLanguageDirection(editor, defaultLanguageId);
+
+						if (Liferay.FeatureFlags['LPD-11235']) {
+							const hiddenInput = document.createElement('input');
+
+							hiddenInput.type = 'hidden';
+							hiddenInput.name = input.name;
+
+							inputContainer.appendChild(hiddenInput);
+
+							editor.model.document.on(
+								'change:data',
+								(event, source) => {
+									if (source?.isTyping) {
+										hiddenInput.value = editor.getData();
+									}
+								}
+							);
+						}
 					});
 				}
 			}
 		);
 	}
+}
+
+function changeLanguageDirection(editor, languageId, onChange) {
+	if (Liferay.FeatureFlags['LPD-11235']) {
+		const root = editor.editing.view.document.getRoot();
+
+		editor.editing.view.change((element) => {
+			element.setAttribute(
+				'dir',
+				Liferay.Language.direction[languageId],
+				root
+			);
+
+			element.setAttribute('lang', languageId.substr(0, 2), root);
+		});
+	}
+	else {
+		editor.config.contentsLangDirection =
+			Liferay.Language.direction[languageId];
+
+		onChange?.();
+	}
+}
+
+function initEditorWhenReady(onReady) {
+	Liferay.on('ckeditor:ready', ({editor}) => {
+		if (editorName === editor.config.get('name')) {
+			onReady(editor);
+		}
+	});
 }

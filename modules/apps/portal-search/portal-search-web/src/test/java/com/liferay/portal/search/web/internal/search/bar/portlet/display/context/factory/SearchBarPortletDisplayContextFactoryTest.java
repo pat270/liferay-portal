@@ -38,16 +38,16 @@ import com.liferay.portal.search.web.internal.search.bar.portlet.display.context
 import com.liferay.portal.search.web.internal.search.bar.portlet.helper.SearchBarPrecedenceHelper;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchRequest;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchResponse;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portlet.PortletPreferencesImpl;
 
+import jakarta.portlet.PortletPreferences;
+import jakarta.portlet.RenderRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Collections;
-
-import javax.portlet.PortletPreferences;
-import javax.portlet.RenderRequest;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -65,7 +65,7 @@ import org.mockito.Mockito;
  * @author Adam Brandizzi
  * @author Petteri Karttunne
  */
-@FeatureFlags("LPD-35128")
+@FeatureFlag("LPD-35128")
 public class SearchBarPortletDisplayContextFactoryTest {
 
 	@ClassRule

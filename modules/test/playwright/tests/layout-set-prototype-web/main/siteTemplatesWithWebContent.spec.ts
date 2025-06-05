@@ -20,12 +20,14 @@ import {sitesPageTest} from '../../../fixtures/sitesPageTest';
 import {uiElementsPageTest} from '../../../fixtures/uiElementsTest';
 import {webContentDisplayPageTest} from '../../../fixtures/webContentDisplayPageTest';
 import {LayoutSetPrototype} from '../../../helpers/json-web-services/JSONWebServicesLayoutSetPrototypeApiHelper';
+import {liferayConfig} from '../../../liferay.config';
 import getGlobalSiteId from '../../../utils/getGlobalSiteId';
 import getRandomString from '../../../utils/getRandomString';
 import getBasicWebContentStructureId from '../../../utils/structured-content/getBasicWebContentStructureId';
 import {journalPagesTest} from '../../journal-web/main/fixtures/journalPagesTest';
 import {pagesPagesTest} from '../../layout-admin-web/main/fixtures/pagesPagesTest';
 import {layoutSetPrototypePageTest} from './fixtures/layoutSetPrototypePageTest';
+import createSiteTemplate from './utils/createSiteTemplate';
 import createSiteTemplateWithContentPageAndAssetPublisher from './utils/createSiteTemplateWithContentPageAndAssetPublisher';
 import createSiteTemplateWithWebContentOnContentPage from './utils/createSiteTemplateWithWebContentOnContentPage';
 import createSiteTemplateWithWebContentOnHomePage from './utils/createSiteTemplateWithWebContentOnHomePage';
@@ -434,6 +436,112 @@ testWithPrivatePages(
 		await layoutSetPrototypePage.checkIfWebContentAddedToHome(
 			siteName,
 			webContentText1
+		);
+	}
+);
+
+test(
+	'Page links on sites which were created in site templates should redirect correctly to other pages.',
+	{tag: ['@LPD-46415']},
+	async ({
+		apiHelpers,
+		applicationsMenuPage,
+		page,
+		pageEditorPage,
+		pagesAdminPage,
+		productMenuPage,
+		sitesPage,
+		uiElementsPage,
+		webContentDisplayPage,
+	}) => {
+		const siteTemplateName: string = 'Template-' + getRandomString();
+
+		const layoutSetPrototype = await createSiteTemplate({
+			apiHelpers,
+			page,
+			productMenuPage,
+			templateName: siteTemplateName,
+		});
+
+		apiHelpers.data.push({
+			id: layoutSetPrototype.layoutSetPrototypeId,
+			type: 'layoutSetPrototype',
+		});
+
+		await productMenuPage.goToPages();
+
+		const page1Name = getRandomString();
+		await pagesAdminPage.createNewPage({
+			name: page1Name,
+		});
+		const page2Name = getRandomString();
+		await pagesAdminPage.createNewPage({
+			name: page2Name,
+		});
+
+		const basicWebContentStructureId =
+			await getBasicWebContentStructureId(apiHelpers);
+
+		const webContentName = getRandomString();
+
+		const site =
+			await apiHelpers.headlessAdminUser.getSiteByFriendlyUrlPath(
+				`Template-${layoutSetPrototype.layoutSetPrototypeId}`
+			);
+
+		const baseURL = liferayConfig.environment.baseUrl;
+		const baseURLNoProtocol = baseURL.replace('http://', '');
+
+		await apiHelpers.jsonWebServicesJournal.addWebContent({
+			content: `<a href="${baseURLNoProtocol}/group/template-${layoutSetPrototype.layoutSetPrototypeId}/${page2Name}">${baseURL}/group/template-${layoutSetPrototype.layoutSetPrototypeId}/${page2Name}</a>`,
+			ddmStructureId: basicWebContentStructureId,
+			groupId: site.id,
+			titleMap: {en_US: webContentName},
+		});
+
+		await applicationsMenuPage.goToSites();
+
+		const siteName = getRandomString();
+
+		const siteId = await sitesPage.createSite({
+			isCustom: true,
+			siteName,
+			templateName: layoutSetPrototype.nameCurrentValue,
+		});
+
+		apiHelpers.data.push({
+			id: siteId,
+			type: 'site',
+		});
+
+		await applicationsMenuPage.goToSite(siteName);
+		await productMenuPage.goToPages();
+		await page.getByLabel(`${page1Name}`, {exact: true}).click();
+		await pageEditorPage.addWidget(
+			'Content Management',
+			'Web Content Display'
+		);
+		await webContentDisplayPage.addWebContentWithDisplay({
+			webContentName,
+		});
+		await uiElementsPage.publishButton.click();
+
+		await page.goto(`web/${siteName}/${page1Name}`);
+
+		await expect(
+			page.getByRole('link', {
+				name: `template-${layoutSetPrototype.layoutSetPrototypeId}/${page2Name}`,
+			})
+		).toBeVisible();
+
+		expect(
+			await page
+				.getByRole('link', {
+					name: `template-${layoutSetPrototype.layoutSetPrototypeId}/${page2Name}`,
+				})
+				.getAttribute('href')
+		).toEqual(
+			`${baseURLNoProtocol}/group/template-${layoutSetPrototype.layoutSetPrototypeId}/${page2Name}`
 		);
 	}
 );

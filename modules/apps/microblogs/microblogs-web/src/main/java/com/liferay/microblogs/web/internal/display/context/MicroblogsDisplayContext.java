@@ -24,16 +24,16 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.portlet.PortletURL;
+import jakarta.portlet.RenderRequest;
+import jakarta.portlet.RenderResponse;
+import jakarta.portlet.WindowState;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.WindowState;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Mariano Álvaro Sáiz
@@ -234,17 +234,18 @@ public class MicroblogsDisplayContext {
 					microblogsAssetTagName));
 		}
 		else if (getParentMicroblogsEntryId() > 0) {
-			List<MicroblogsEntry> results = new ArrayList<>();
+			List<MicroblogsEntry> microblogsEntries = new ArrayList<>();
 
 			MicroblogsEntry microblogsEntry =
 				MicroblogsEntryLocalServiceUtil.fetchMicroblogsEntry(
 					getParentMicroblogsEntryId());
 
 			if (microblogsEntry != null) {
-				results.add(microblogsEntry);
+				microblogsEntries.add(microblogsEntry);
 			}
 
-			_searchContainer.setResultsAndTotal(() -> results, results.size());
+			_searchContainer.setResultsAndTotal(
+				() -> microblogsEntries, microblogsEntries.size());
 
 			_portletURL.setParameter(
 				"parentMicroblogsEntryId",

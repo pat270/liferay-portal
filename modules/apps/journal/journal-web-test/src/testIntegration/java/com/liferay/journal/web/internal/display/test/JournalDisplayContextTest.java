@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -39,15 +40,18 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portlet.test.MockLiferayPortletContext;
 
+import jakarta.portlet.Portlet;
+import jakarta.portlet.PortletURL;
+
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.portlet.Portlet;
-import javax.portlet.PortletURL;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,7 +69,9 @@ public class JournalDisplayContextTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
@@ -105,6 +111,24 @@ public class JournalDisplayContextTest {
 		SearchContainer<Object> searchContainer = _getSearchContainer();
 
 		Assert.assertEquals(count, searchContainer.getTotal());
+	}
+
+	@Test
+	public void testGetSearchContainerWithJournalFolderFixture()
+		throws Exception {
+
+		JournalFolderFixture journalFolderFixture = new JournalFolderFixture(
+			_journalFolderLocalService);
+
+		for (int i = 1; i <= 21; i++) {
+			journalFolderFixture.addFolder(_group.getGroupId(), "Folder " + i);
+		}
+
+		SearchContainer<Object> searchContainer = _getSearchContainer();
+
+		List<Object> results = searchContainer.getResults();
+
+		Assert.assertEquals(results.toString(), 20, results.size());
 	}
 
 	@Test
@@ -222,6 +246,9 @@ public class JournalDisplayContextTest {
 			SearchContainer.DEFAULT_CUR_PARAM, String.valueOf(cur));
 		mockLiferayPortletRenderRequest.setParameter(
 			SearchContainer.DEFAULT_DELTA_PARAM, String.valueOf(delta));
+
+		mockLiferayPortletRenderRequest.setParameter(
+			Field.STATUS, String.valueOf(WorkflowConstants.STATUS_APPROVED));
 
 		if (Validator.isNotNull(keywords)) {
 			mockLiferayPortletRenderRequest.setParameter("keywords", keywords);

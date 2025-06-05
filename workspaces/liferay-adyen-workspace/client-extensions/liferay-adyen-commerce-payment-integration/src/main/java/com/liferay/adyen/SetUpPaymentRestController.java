@@ -118,7 +118,7 @@ public class SetUpPaymentRestController extends BaseRestController {
 						"webhookUsername",
 						typeSettingsJSONObject.getString("webhookUsername")
 					).toString(),
-					"/o/c/n1a0adyenwebhooks");
+					createURI("/o/c/n1a0adyenwebhooks"));
 			}
 		}
 		catch (Exception exception) {

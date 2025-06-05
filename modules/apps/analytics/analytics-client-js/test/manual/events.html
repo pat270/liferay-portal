@@ -18,9 +18,8 @@
 			</h1>
 
 			<div>
-				Open console to see events in the Network tab or you can
-				download
-			<a href="https://chrome.google.com/webstore/detail/ac-event-bucket/gghpanomgaddpgokmgjjemebmdkbpbck" target="_blank">ac-event-bucket chrome extension</a>
+				Open console to see events in the Network tab or you can download
+				<a href="https://chrome.google.com/webstore/detail/ac-event-bucket/gghpanomgaddpgokmgjjemebmdkbpbck" target="_blank">ac-event-bucket chrome extension</a>
 			</div>
 
 			<div id="hiddenBoxes">
@@ -32,6 +31,7 @@
 					<button data-id="document" data-action="enable" class="btn">document X</button>
 					<button data-id="form" data-action="enable" class="btn">form X</button>
 					<button data-id="webContent" data-action="enable" class="btn">webContent X</button>
+					<button data-id="objectEntry" data-action="enable" class="btn">objectEntry X</button>
 				</div>
 			</div>
 		</div>
@@ -44,7 +44,7 @@
 
 				<h2 class="box__title"><small>ApplicationId</small> Blog</h2>
 
-				<div class="box__track" data-analytics-asset-id="myBlogId" data-analytics-asset-title="Blog Title" data-analytics-asset-type="blog">
+				<div class="box__track" data-analytics-asset-erc="d0817abb-d224-426c-8bc4-6670ed614a6b" data-analytics-asset-id="myBlogId" data-analytics-asset-title="Blog Title" data-analytics-asset-type="blog">
 					<h3>
 						Bringing Ideas To Life: A Look Into Creative Writing
 					</h3>
@@ -79,16 +79,16 @@
 					<h3>List of the documents related to Analytics Cloud</h3>
 
 					<ul>
-					<li data-analytics-asset-action="preview" data-analytics-asset-id="myDocumentA" data-analytics-asset-title="Document A" data-analytics-asset-type="document">
+					<li data-analytics-asset-action="preview" data-analytics-asset-erc="df33acc7-b5d7-4ee8-b48d-f3ce9503c5e3" data-analytics-asset-id="myDocumentA" data-analytics-asset-title="Document A" data-analytics-asset-type="document">
 						<a data-analytics-asset-action="download" href="#">Document A</a>
 						</li>
-					<li data-analytics-asset-action="preview" data-analytics-asset-id="myDocumentB" data-analytics-asset-title="Document B" data-analytics-asset-type="document">
+					<li data-analytics-asset-action="preview" data-analytics-asset-erc="6a37ca01-230a-4e20-a405-7273526843ec" data-analytics-asset-id="myDocumentB" data-analytics-asset-title="Document B" data-analytics-asset-type="document">
 						<a data-analytics-asset-action="download" href="#">Document B</a>
 						</li>
-					<li data-analytics-asset-action="preview" data-analytics-asset-id="myDocumentC" data-analytics-asset-title="Document C" data-analytics-asset-type="document">
+					<li data-analytics-asset-action="preview" data-analytics-asset-erc="a88fe7f2-85bb-4b89-a1ef-0e99626d10df" data-analytics-asset-id="myDocumentC" data-analytics-asset-title="Document C" data-analytics-asset-type="document">
 						<a data-analytics-asset-action="download" href="#">Document C</a>
 						</li>
-					<li data-analytics-asset-action="preview" data-analytics-asset-id="myDocumentD" data-analytics-asset-title="Document D" data-analytics-asset-type="document">
+					<li data-analytics-asset-action="preview" data-analytics-asset-erc="48a426d3-59ba-4d5d-a7fb-527e9a0d6f69" data-analytics-asset-id="myDocumentD" data-analytics-asset-title="Document D" data-analytics-asset-type="document">
 						<a data-analytics-asset-action="download" href="#">Document D</a>
 						</li>
 					</ul>
@@ -109,7 +109,7 @@
 					<small>ApplicationId</small> WebContent
 				</h2>
 
-				<div class="box__track" data-analytics-asset-id="myWebContentId" data-analytics-asset-title="Web Content Title" data-analytics-asset-type="web-content">
+				<div class="box__track" data-analytics-asset-erc="a66d047e-3203-401a-890c-b881a9c54648" data-analytics-asset-id="myWebContentId" data-analytics-asset-title="Web Content Title" data-analytics-asset-type="web-content">
 					<h3>
 						Bringing Ideas To Life: A Look Into Creative Writing
 					</h3>
@@ -137,7 +137,7 @@
 
 				<h2 class="box__title"><small>ApplicationId</small> Form</h2>
 
-			<form class="box__track box__form" data-analytics-asset-id="myFormId" data-analytics-asset-title="Form Title" data-analytics-asset-type="form">
+			<form class="box__track box__form" data-analytics-asset-erc="ef129ef8-7959-4e34-8598-1ea936fee1cf" data-analytics-asset-id="myFormId" data-analytics-asset-title="Form Title" data-analytics-asset-type="form">
 					<h3>Create new user</h3>
 
 					<div class="content">
@@ -217,6 +217,39 @@
 					<li>documentDownloaded</li>
 				</ul>
 			</div>
+
+			<div class="box" id="objectEntry">
+				<button class="btn-hidden" data-action="disable" data-id="objectEntry">hide</button>
+
+				<h2 class="box__title">
+					<small>ApplicationId</small> objectEntry
+				</h2>
+
+				<div class="box__track">
+					<h3 data-analytics-asset-action="impression" data-analytics-asset-erc="a66d047e-3203-401a-890c-b881a9c54648" data-analytics-asset-title="Web Content Title" data-analytics-asset-type="object-entry" data-analytics-object-type="my-custom-object-type">
+						Bringing Ideas To Life: A Look Into Creative Writing
+					</h3>
+
+					<p data-analytics-asset-action="view" data-analytics-asset-erc="a66d047e-3203-401a-890c-b881a9c54648" data-analytics-asset-title="Web Content Title" data-analytics-asset-type="object-entry" data-analytics-object-type="my-custom-object-type">
+						This content explores the ways in which we can use
+						creativity to bring our ideas to life. We will be
+						looking at techniques for how to inspire, generate and
+						develop characters and plotlines for compelling stories.
+						We will also look at real-life examples and discuss
+						practical use cases to apply knowledge to real writing.
+					</p>
+
+					<a data-analytics-asset-action="download" data-analytics-asset-erc="a66d047e-3203-401a-890c-b881a9c54648" data-analytics-asset-type="object-entry" data-analytics-object-type="my-custom-object-type" href="#">
+						here is a link to download something
+					</a>
+				</div>
+
+				<ul class="events">
+					<li>objectEntryViewed</li>
+					<li>objectEntryImpressionMade</li>
+					<li>objectEntryDownloaded</li>
+				</ul>
+			</div>
 		</div>
 
 		<!-- AC Script -->
@@ -256,7 +289,10 @@
 			function init() {
 				document.querySelector('body').addEventListener('click', (event) => {
 					if (event.target.dataset.id) {
-						setEnabled(event.target.dataset.id, event.target.dataset.action === 'enable')
+						setEnabled(
+							event.target.dataset.id,
+							event.target.dataset.action === 'enable'
+						);
 					}
 				});
 
@@ -267,7 +303,10 @@
 					const buttonEnabled = document.querySelector(`.btn[data-id="${box}"]`);
 
 					buttonEnabled.classList.toggle('show', !boxes[box]);
-					boxElement.classList.toggle('hidden', !boxes[box]);
+
+					// Delete element from DOM if box is disabled before render it.
+
+					!boxes[box] && boxElement.remove();
 				});
 			}
 

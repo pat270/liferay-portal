@@ -58,6 +58,8 @@ import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.time.Instant;
 
 import java.util.ArrayList;
@@ -70,8 +72,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -113,7 +113,14 @@ public class CustomFDSSerializer
 		Map<String, Object> properties = getDataSetObjectEntryProperties(
 			fdsName, httpServletRequest);
 
-		return String.valueOf(properties.get("additionalAPIURLParameters"));
+		return createFDSAPIURLBuilder(
+			httpServletRequest,
+			String.valueOf(properties.get("restApplication")),
+			String.valueOf(properties.get("restEndpoint")),
+			String.valueOf(properties.get("restSchema"))
+		).addQueryString(
+			String.valueOf(properties.get("additionalAPIURLParameters"))
+		).buildQueryString();
 	}
 
 	@Override

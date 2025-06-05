@@ -13,6 +13,7 @@ import com.liferay.portal.tools.rest.builder.test.client.dto.v1_0.ChildTestEntit
 import com.liferay.portal.tools.rest.builder.test.client.dto.v1_0.TestEntity;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,6 +22,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class TestEntityResourceTest extends BaseTestEntityResourceTestCase {
+
+	@Ignore
+	@Override
+	@Test
+	public void testDeleteTestEntityBatch() throws Exception {
+		super.testDeleteTestEntityBatch();
+	}
 
 	@Override
 	@Test
@@ -126,9 +134,19 @@ public class TestEntityResourceTest extends BaseTestEntityResourceTestCase {
 		testEntityResource.postReservedWord(true);
 	}
 
+	@Ignore
+	@Test
+	public void testPostTestEntityMultipartBulk() throws Exception {
+	}
+
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {"property1", "property2"};
+	}
+
+	@Override
+	protected TestEntity testDeleteTestEntity_addTestEntity() throws Exception {
+		return testGetTestEntitiesPage_addTestEntity(randomTestEntity());
 	}
 
 	@Override

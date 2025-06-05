@@ -151,7 +151,7 @@ public class ObjectEntryWorkflowHandlerTest {
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(), 0, null, false, false, false,
-				false, false, false,
+				false, false, false, null,
 				LocalizedMapUtil.getLocalizedMap(StringUtil.randomString()),
 				"A" + StringUtil.randomString(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -187,6 +187,7 @@ public class ObjectEntryWorkflowHandlerTest {
 			StringUtil.randomString(), TestPropsValues.getUserId(),
 			_group.getGroupId(),
 			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			RandomTestUtil.randomString(),
 			HashMapBuilder.put(
 				LocaleUtil.getDefault(), StringUtil.randomString()
 			).build(),
@@ -207,6 +208,7 @@ public class ObjectEntryWorkflowHandlerTest {
 			TestPropsValues.getUserId(),
 			_objectEntryFolder.getObjectEntryFolderId(),
 			_objectEntryFolder.getParentObjectEntryFolderId(),
+			_objectEntryFolder.getDescription(),
 			_objectEntryFolder.getLabelMap(), _objectEntryFolder.getName(),
 			serviceContext);
 	}

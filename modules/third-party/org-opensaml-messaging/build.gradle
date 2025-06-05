@@ -1,22 +1,5 @@
-import com.liferay.gradle.plugins.patcher.PatchTask
-
-apply plugin: "com.liferay.patcher"
-
-task patch(type: PatchTask)
+apply from: "../../build-jakarta-transformer.gradle"
 
 dependencies {
-	compileOnly group: "org.opensaml", name: "opensaml-messaging-api", transitive: false, version: "3.3.0"
-}
-
-jarSources {
-	mustRunAfter patch
-}
-
-patch {
-	ext {
-		autoClean = false
-	}
-
-	fileNames "org/opensaml/messaging/context/MessageContext.java"
-	originalLibModuleName = "opensaml-messaging-api"
+	compileOnly group: "com.liferay", name: "org.opensaml.messaging", transitive: false, version: "3.3.0.LIFERAY-PATCHED-1"
 }

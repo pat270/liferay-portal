@@ -1448,10 +1448,6 @@ public abstract class BaseBuild implements Build {
 
 	@Override
 	public boolean hasMaximumInvocationCount() {
-		if (_invocations.size() >= _getMaximumInvocationCount()) {
-			return true;
-		}
-
 		Map<ReinvokeRule, Integer> invocationCounts = new HashMap<>();
 
 		for (Invocation invocation : _invocations) {
@@ -1479,6 +1475,12 @@ public abstract class BaseBuild implements Build {
 			if (invocationCount > reinvokeRule.getMaximumInvocationCount()) {
 				return true;
 			}
+
+			return false;
+		}
+
+		if (_invocations.size() >= _getMaximumInvocationCount()) {
+			return true;
 		}
 
 		return false;

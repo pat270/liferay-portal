@@ -8,6 +8,7 @@ package com.liferay.headless.admin.site.resource.v1_0.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.admin.site.client.dto.v1_0.ContentPageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.FriendlyUrlHistory;
+import com.liferay.headless.admin.site.client.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.UtilityPage;
 import com.liferay.headless.admin.site.client.dto.v1_0.UtilityPageSEOSettings;
@@ -26,7 +27,10 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.TestInfo;
@@ -35,11 +39,12 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.test.rule.FeatureFlags;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -62,7 +67,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Rubén Pulido
  */
-@FeatureFlags("LPD-35443")
+@FeatureFlag("LPD-35443")
 @RunWith(Arquillian.class)
 public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 
@@ -164,16 +169,6 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 				postUtilityPage.getExternalReferenceCode()));
 	}
 
-	@Ignore
-	@Override
-	@Test
-	public void testGetSiteSiteByExternalReferenceCodeUtilityPagePermissionsPage()
-		throws Exception {
-
-		super.
-			testGetSiteSiteByExternalReferenceCodeUtilityPagePermissionsPage();
-	}
-
 	@Override
 	@Test
 	public void testGetSiteSiteByExternalReferenceCodeUtilityPagesPage()
@@ -228,10 +223,8 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	@Ignore
 	@Override
 	@Test
-	public void testGetSiteSiteExternalReferenceCodeUtilityPagePermissionsPage()
-		throws Exception {
-
-		super.testGetSiteSiteExternalReferenceCodeUtilityPagePermissionsPage();
+	public void testGetSiteUtilityPagePermissionsPage() throws Exception {
+		super.testGetSiteUtilityPagePermissionsPage();
 	}
 
 	@Override
@@ -244,26 +237,96 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 				ServiceContextTestUtil.getServiceContext(
 					testGroup.getGroupId(), TestPropsValues.getUserId()));
 
+		UtilityPage utilityPage =
+			utilityPageResource.getSiteSiteByExternalReferenceCodeUtilityPage(
+				testGroup.getExternalReferenceCode(),
+				layoutUtilityPageEntry.getExternalReferenceCode());
+
 		_testPatchSiteSiteByExternalReferenceCodeUtilityPage(
-			Boolean.FALSE,
-			_getUtilityPage(
-				Boolean.FALSE,
-				layoutUtilityPageEntry.getExternalReferenceCode()));
+			Boolean.FALSE, utilityPage,
+			new UtilityPage() {
+				{
+					setMarkedAsDefault(Boolean.FALSE);
+				}
+			});
 
 		Layout layout = _layoutLocalService.getLayout(
 			layoutUtilityPageEntry.getPlid());
 
 		ContentLayoutTestUtil.publishLayout(layout.fetchDraftLayout(), layout);
 
+		Repository repository = _portletFileRepository.addPortletRepository(
+			testGroup.getGroupId(), RandomTestUtil.randomString(),
+			ServiceContextTestUtil.getServiceContext(
+				testGroup, TestPropsValues.getUserId()));
+
+		utilityPage.setThumbnail(
+			() -> new ItemExternalReference() {
+				{
+					setClassName(() -> FileEntry.class.getName());
+					setExternalReferenceCode(
+						() -> {
+							FileEntry fileEntry = _addPortletFileEntry(
+								repository.getDlFolderId());
+
+							return fileEntry.getExternalReferenceCode();
+						});
+				}
+			});
+
 		_testPatchSiteSiteByExternalReferenceCodeUtilityPage(
-			Boolean.TRUE,
-			_getUtilityPage(
-				Boolean.TRUE,
-				layoutUtilityPageEntry.getExternalReferenceCode()));
+			Boolean.TRUE, utilityPage,
+			new UtilityPage() {
+				{
+					setMarkedAsDefault(Boolean.TRUE);
+					setThumbnail(utilityPage::getThumbnail);
+				}
+			});
+
+		utilityPage.setName(RandomTestUtil::randomString);
+		utilityPage.setThumbnail(
+			() -> new ItemExternalReference() {
+				{
+					setClassName(() -> FileEntry.class.getName());
+					setExternalReferenceCode(
+						() -> {
+							FileEntry fileEntry = _addPortletFileEntry(
+								repository.getDlFolderId());
+
+							return fileEntry.getExternalReferenceCode();
+						});
+				}
+			});
+		utilityPage.setUtilityPageSettings(
+			() -> new UtilityPageSettings() {
+				{
+					setSeoSettings(
+						() -> new UtilityPageSEOSettings() {
+							{
+								setDescription_i18n(
+									() -> LocalizedMapUtil.getI18nMap(
+										true,
+										RandomTestUtil.
+											randomLocaleStringMap()));
+								setHtmlTitle_i18n(
+									() -> LocalizedMapUtil.getI18nMap(
+										true,
+										RandomTestUtil.
+											randomLocaleStringMap()));
+							}
+						});
+				}
+			});
+
 		_testPatchSiteSiteByExternalReferenceCodeUtilityPage(
-			Boolean.TRUE,
-			_getUtilityPage(
-				null, layoutUtilityPageEntry.getExternalReferenceCode()));
+			Boolean.TRUE, utilityPage,
+			new UtilityPage() {
+				{
+					setName(utilityPage::getName);
+					setThumbnail(utilityPage::getThumbnail);
+					setUtilityPageSettings(utilityPage::getUtilityPageSettings);
+				}
+			});
 
 		_testPatchSiteSiteByExternalReferenceCodeUtilityPageWithPageSpecifications(
 			PageSpecification.Status.APPROVED,
@@ -292,6 +355,47 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 
 	@Override
 	@Test
+	@TestInfo("LPD-48984")
+	public void testPostSiteSiteByExternalReferenceCodeUtilityPage()
+		throws Exception {
+
+		super.testPostSiteSiteByExternalReferenceCodeUtilityPage();
+
+		UtilityPage utilityPage = randomUtilityPage();
+
+		Repository repository = _portletFileRepository.addPortletRepository(
+			testGroup.getGroupId(), RandomTestUtil.randomString(),
+			ServiceContextTestUtil.getServiceContext(
+				testGroup, TestPropsValues.getUserId()));
+
+		ItemExternalReference itemExternalReference =
+			new ItemExternalReference() {
+				{
+					setClassName(() -> FileEntry.class.getName());
+					setExternalReferenceCode(
+						() -> {
+							FileEntry fileEntry = _addPortletFileEntry(
+								repository.getDlFolderId());
+
+							return fileEntry.getExternalReferenceCode();
+						});
+				}
+			};
+
+		utilityPage.setThumbnail(itemExternalReference);
+
+		UtilityPage postUtilityPage =
+			testPostSiteSiteByExternalReferenceCodeUtilityPage_addUtilityPage(
+				utilityPage);
+
+		assertEquals(utilityPage, postUtilityPage);
+		assertValid(postUtilityPage);
+		Assert.assertEquals(
+			itemExternalReference, postUtilityPage.getThumbnail());
+	}
+
+	@Override
+	@Test
 	@TestInfo("LPD-48987")
 	public void testPostSiteSiteByExternalReferenceCodeUtilityPagePageSpecification()
 		throws Exception {
@@ -301,7 +405,8 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 		UtilityPage utilityPage =
 			utilityPageResource.postSiteSiteByExternalReferenceCodeUtilityPage(
 				testGroup.getExternalReferenceCode(),
-				_getUtilityPage(Boolean.FALSE, RandomTestUtil.randomString()));
+				_getUtilityPage(
+					null, Boolean.FALSE, RandomTestUtil.randomString()));
 
 		LayoutUtilityPageEntry layoutUtilityPageEntry =
 			_layoutUtilityPageEntryLocalService.
@@ -339,7 +444,8 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	public void testPutSiteSiteByExternalReferenceCodeUtilityPage()
 		throws Exception {
 
-		_testPutSiteSiteByExternalReferenceCodeUtilityPage(randomUtilityPage());
+		_testPutSiteSiteByExternalReferenceCodeUtilityPage(
+			Boolean.FALSE, randomUtilityPage());
 
 		LayoutUtilityPageEntry layoutUtilityPageEntry =
 			LayoutUtilityPageEntryTestUtil.getLayoutUtilityPageEntry(
@@ -354,23 +460,33 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 		_assertProblemException(
 			"BAD_REQUEST",
 			() -> _testPutSiteSiteByExternalReferenceCodeUtilityPage(
+				Boolean.TRUE,
 				_getUtilityPage(
-					Boolean.TRUE,
+					null, Boolean.TRUE,
 					layoutUtilityPageEntry.getExternalReferenceCode())));
 
 		ContentLayoutTestUtil.publishLayout(layout.fetchDraftLayout(), layout);
 
+		Repository repository = _portletFileRepository.addPortletRepository(
+			testGroup.getGroupId(), RandomTestUtil.randomString(),
+			ServiceContextTestUtil.getServiceContext(
+				testGroup, TestPropsValues.getUserId()));
+
 		_testPutSiteSiteByExternalReferenceCodeUtilityPage(
+			Boolean.FALSE,
 			_getUtilityPage(
-				Boolean.FALSE,
+				_addPortletFileEntry(repository.getDlFolderId()), Boolean.FALSE,
 				layoutUtilityPageEntry.getExternalReferenceCode()));
 		_testPutSiteSiteByExternalReferenceCodeUtilityPage(
+			Boolean.TRUE,
 			_getUtilityPage(
-				Boolean.TRUE,
+				_addPortletFileEntry(repository.getDlFolderId()), Boolean.TRUE,
 				layoutUtilityPageEntry.getExternalReferenceCode()));
+
 		_testPutSiteSiteByExternalReferenceCodeUtilityPage(
+			Boolean.FALSE,
 			_getUtilityPage(
-				null, layoutUtilityPageEntry.getExternalReferenceCode()));
+				null, null, layoutUtilityPageEntry.getExternalReferenceCode()));
 
 		_testPutSiteSiteByExternalReferenceCodeUtilityPageWithPageSpecifications(
 			PageSpecification.Status.APPROVED,
@@ -392,20 +508,8 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	@Ignore
 	@Override
 	@Test
-	public void testPutSiteSiteByExternalReferenceCodeUtilityPagePermissionsPage()
-		throws Exception {
-
-		super.
-			testPutSiteSiteByExternalReferenceCodeUtilityPagePermissionsPage();
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testPutSiteSiteExternalReferenceCodeUtilityPagePermissionsPage()
-		throws Exception {
-
-		super.testPutSiteSiteExternalReferenceCodeUtilityPagePermissionsPage();
+	public void testPutSiteUtilityPagePermissionsPage() throws Exception {
+		super.testPutSiteUtilityPagePermissionsPage();
 	}
 
 	@Override
@@ -483,6 +587,15 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 		return testGroup.getExternalReferenceCode();
 	}
 
+	@Ignore
+	@Override
+	@Test
+	protected UtilityPage testGetSiteUtilityPagePermissionsPage_addUtilityPage()
+		throws Exception {
+
+		return super.testGetSiteUtilityPagePermissionsPage_addUtilityPage();
+	}
+
 	@Override
 	protected UtilityPage
 			testPostSiteSiteByExternalReferenceCodeUtilityPage_addUtilityPage(
@@ -491,6 +604,26 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 
 		return testGetSiteSiteByExternalReferenceCodeUtilityPagesPage_addUtilityPage(
 			testGroup.getExternalReferenceCode(), utilityPage);
+	}
+
+	@Ignore
+	@Override
+	@Test
+	protected UtilityPage testPutSiteUtilityPagePermissionsPage_addUtilityPage()
+		throws Exception {
+
+		return super.testPutSiteUtilityPagePermissionsPage_addUtilityPage();
+	}
+
+	private FileEntry _addPortletFileEntry(long folderId) throws Exception {
+		Class<?> clazz = getClass();
+
+		return _portletFileRepository.addPortletFileEntry(
+			null, testGroup.getGroupId(), TestPropsValues.getUserId(),
+			LayoutUtilityPageEntry.class.getName(), RandomTestUtil.randomLong(),
+			RandomTestUtil.randomString(), folderId,
+			clazz.getResourceAsStream("dependencies/thumbnail.png"),
+			RandomTestUtil.randomString(), ContentTypes.IMAGE_PNG, false);
 	}
 
 	private void _assertNestedFields(UtilityPage utilityPage) throws Exception {
@@ -576,13 +709,25 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	}
 
 	private UtilityPage _getUtilityPage(
-			Boolean markedAsDefault, String utilityPageExternalReferenceCode)
+			FileEntry fileEntry, Boolean markedAsDefault,
+			String utilityPageExternalReferenceCode)
 		throws Exception {
 
 		UtilityPage utilityPage = randomUtilityPage();
 
 		utilityPage.setExternalReferenceCode(utilityPageExternalReferenceCode);
 		utilityPage.setMarkedAsDefault(markedAsDefault);
+
+		if (fileEntry != null) {
+			utilityPage.setThumbnail(
+				() -> new ItemExternalReference() {
+					{
+						setClassName(() -> FileEntry.class.getName());
+						setExternalReferenceCode(
+							fileEntry::getExternalReferenceCode);
+					}
+				});
+		}
 
 		return utilityPage;
 	}
@@ -766,19 +911,23 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	}
 
 	private void _testPatchSiteSiteByExternalReferenceCodeUtilityPage(
-			Boolean expectedMarkedAsDefault, UtilityPage utilityPage)
+			Boolean expectedMarkedAsDefault, UtilityPage expectedUtilityPage,
+			UtilityPage utilityPage)
 		throws Exception {
 
-		UtilityPage pathUtilityPage =
+		UtilityPage patchUtilityPage =
 			utilityPageResource.patchSiteSiteByExternalReferenceCodeUtilityPage(
 				testGroup.getExternalReferenceCode(),
-				utilityPage.getExternalReferenceCode(), utilityPage);
+				expectedUtilityPage.getExternalReferenceCode(), utilityPage);
 
-		assertEquals(utilityPage, pathUtilityPage);
-		assertValid(pathUtilityPage);
+		assertEquals(expectedUtilityPage, patchUtilityPage);
+		assertValid(patchUtilityPage);
 
 		Assert.assertEquals(
-			expectedMarkedAsDefault, pathUtilityPage.getMarkedAsDefault());
+			expectedMarkedAsDefault, patchUtilityPage.getMarkedAsDefault());
+		Assert.assertEquals(
+			expectedUtilityPage.getThumbnail(),
+			patchUtilityPage.getThumbnail());
 	}
 
 	private void
@@ -790,7 +939,7 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 		throws Exception {
 
 		UtilityPage utilityPage = _getUtilityPage(
-			Boolean.FALSE, RandomTestUtil.randomString());
+			null, Boolean.FALSE, RandomTestUtil.randomString());
 
 		ContentPageSpecification draftContentPageSpecification =
 			PageSpecificationsTestUtil.getContentPageSpecification(
@@ -842,7 +991,7 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 		throws Exception {
 
 		UtilityPage utilityPage = _getUtilityPage(
-			Boolean.FALSE, RandomTestUtil.randomString());
+			null, Boolean.FALSE, RandomTestUtil.randomString());
 
 		ContentPageSpecification draftContentPageSpecification =
 			PageSpecificationsTestUtil.getContentPageSpecification(
@@ -867,7 +1016,7 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	}
 
 	private void _testPutSiteSiteByExternalReferenceCodeUtilityPage(
-			UtilityPage utilityPage)
+			Boolean markedAsDefault, UtilityPage utilityPage)
 		throws Exception {
 
 		UtilityPage putUtilityPage =
@@ -877,6 +1026,11 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 
 		assertEquals(utilityPage, putUtilityPage);
 		assertValid(putUtilityPage);
+
+		Assert.assertEquals(
+			markedAsDefault, putUtilityPage.getMarkedAsDefault());
+		Assert.assertEquals(
+			utilityPage.getThumbnail(), putUtilityPage.getThumbnail());
 	}
 
 	private void
@@ -888,7 +1042,7 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 		throws Exception {
 
 		UtilityPage utilityPage = _getUtilityPage(
-			Boolean.FALSE, RandomTestUtil.randomString());
+			null, Boolean.FALSE, RandomTestUtil.randomString());
 
 		ContentPageSpecification draftContentPageSpecification =
 			PageSpecificationsTestUtil.getContentPageSpecification(
@@ -931,6 +1085,9 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	@Inject
 	private LayoutUtilityPageEntryLocalService
 		_layoutUtilityPageEntryLocalService;
+
+	@Inject
+	private PortletFileRepository _portletFileRepository;
 
 	@Inject
 	private UserLocalService _userLocalService;

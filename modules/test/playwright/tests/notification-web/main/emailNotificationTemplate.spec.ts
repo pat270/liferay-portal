@@ -10,17 +10,31 @@ import {
 import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../../fixtures/apiHelpersTest';
+import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {notificationPagesTest} from '../../../fixtures/notificationPagesTest';
 import {getRandomInt} from '../../../utils/getRandomInt';
+import getRandomString from '../../../utils/getRandomString';
 
 export const test = mergeTests(
 	apiHelpersTest,
+	dataApiHelpersTest,
 	loginTest(),
 	notificationPagesTest
 );
 
 let objectDefinition: ObjectDefinition;
+
+const notificationTemplateInfo = {
+	bcc: 'test3@liferay.com',
+	cc: 'test2@liferay.com',
+	description: 'This is a description',
+	recipients: 'test@liferay.com, test4@liferay.com',
+	senderAddress: 'test1@liferay.com',
+	senderName: 'Test Test',
+	subject: 'This is a subject',
+	term: '[%CURRENT_USER_FIRST_NAME%]',
+};
 
 test.beforeEach(async ({apiHelpers}) => {
 	objectDefinition = await apiHelpers.objectAdmin.postRandomObjectDefinition({
@@ -61,414 +75,564 @@ test.afterEach(async ({apiHelpers, notificationTemplatesPage, page}) => {
 	}
 });
 
-test('can add rich text source code and verify that the source code is being persisted', async ({
-	emailNotificationTemplatePage,
-	notificationTemplatesPage,
-	page,
-}) => {
-	await emailNotificationTemplatePage.goto();
+test.describe('Email notification template', () => {
+	test('can be created and saved correctly', async ({
+		emailNotificationTemplatePage,
+		notificationTemplatesPage,
+	}) => {
+		await emailNotificationTemplatePage.goto();
 
-	const notificationTemplateName =
-		'Notification Template Name' + getRandomInt();
+		const notificationTemplateName =
+			'Notification Template Name' + getRandomInt();
 
-	await emailNotificationTemplatePage.basicInfoName.fill(
-		notificationTemplateName
-	);
+		await emailNotificationTemplatePage.fillNotificationTemplateInfo(
+			notificationTemplateName,
+			notificationTemplateInfo
+		);
 
-	await emailNotificationTemplatePage.senderEmailAddress.fill(
-		'test@liferay.com'
-	);
+		await emailNotificationTemplatePage.saveButton.click();
 
-	await emailNotificationTemplatePage.senderName.fill('test user');
+		await notificationTemplatesPage
+			.getFrontEndDatasetItemLocator(notificationTemplateName)
+			.click();
 
-	await emailNotificationTemplatePage.primaryRecipientUserEmailAddress.fill(
-		'test@liferay.com'
-	);
+		await expect(emailNotificationTemplatePage.basicInfoName).toHaveValue(
+			notificationTemplateName
+		);
 
-	await emailNotificationTemplatePage.contentSubject.fill('Content subject');
-
-	await emailNotificationTemplatePage.richTextSourceButton.click();
-
-	await emailNotificationTemplatePage.richTextSourceField.fill(
-		'<h1>Hello World</h1>'
-	);
-
-	await emailNotificationTemplatePage.saveButton.click();
-
-	await notificationTemplatesPage
-		.getFrontEndDatasetItemLocator(notificationTemplateName)
-		.click();
-
-	await emailNotificationTemplatePage.richTextSourceButton.click();
-
-	await expect(page.getByText('<h1>Hello World</h1>')).toBeVisible();
-});
-
-test('can save recipients roles in email notification template', async ({
-	emailNotificationTemplatePage,
-	notificationTemplatesPage,
-	page,
-}) => {
-	const primaryRecipientsRoles = [
-		'Account Administrator',
-		'Account Member',
-		'Administrator',
-		'Analytics Administrator',
-		'Account Manager',
-		'Organization Administrator',
-	];
-
-	const secondaryRecipientsRolesCC = [
-		'Account Supplier',
-		'Buyer',
-		'Owner',
-		'Portal Content Reviewer',
-		'Organization Content Reviewer',
-		'Organization Owner',
-	];
-
-	const secondaryRecipientsRolesBCC = [
-		'Order Manager',
-		'Power User',
-		'Publications User',
-		'Organization User',
-	];
-
-	await emailNotificationTemplatePage.goto();
-
-	const notificationTemplateName =
-		'Notification Template Name' + getRandomInt();
-
-	await emailNotificationTemplatePage.basicInfoName.fill(
-		notificationTemplateName
-	);
-
-	await emailNotificationTemplatePage.senderEmailAddress.fill(
-		'test@liferay.com'
-	);
-
-	await emailNotificationTemplatePage.senderName.fill('test user');
-
-	await emailNotificationTemplatePage.primaryRecipientType.click();
-
-	await page.getByRole('option', {name: 'Roles'}).click();
-
-	await emailNotificationTemplatePage.primaryRecipientRoles.click();
-
-	for (const role of primaryRecipientsRoles) {
-		await page
-			.getByLabel(role, {exact: true})
-			.locator('visible=true')
-			.check();
-	}
-
-	await emailNotificationTemplatePage.secondaryRecipientTypeCC.click();
-
-	await page.getByRole('option', {name: 'Roles'}).click();
-
-	await emailNotificationTemplatePage.secondaryRecipientRolesCC.click();
-
-	for (const role of secondaryRecipientsRolesCC) {
-		await page
-			.getByLabel(role, {exact: true})
-			.locator('visible=true')
-			.check();
-	}
-
-	await emailNotificationTemplatePage.secondaryRecipientTypeBCC.click();
-
-	await page.getByRole('option', {name: 'Roles'}).click();
-
-	await emailNotificationTemplatePage.secondaryRecipientRolesBCC.click();
-
-	for (const role of secondaryRecipientsRolesBCC) {
-		await page
-			.getByLabel(role, {exact: true})
-			.locator('visible=true')
-			.check();
-	}
-
-	await emailNotificationTemplatePage.contentSubject.fill('Content subject');
-
-	await emailNotificationTemplatePage.saveButton.click();
-
-	await notificationTemplatesPage
-		.getFrontEndDatasetItemLocator(notificationTemplateName)
-		.click();
-
-	await emailNotificationTemplatePage.primaryRecipientRoles.click();
-
-	for (const role of primaryRecipientsRoles) {
 		await expect(
-			page.getByLabel(role, {exact: true}).locator('visible=true')
-		).toBeChecked();
-	}
+			emailNotificationTemplatePage.descriptionInput
+		).toHaveValue(notificationTemplateInfo.description);
 
-	await emailNotificationTemplatePage.secondaryRecipientRolesCC.click();
-
-	for (const role of secondaryRecipientsRolesCC) {
 		await expect(
-			page.getByLabel(role, {exact: true}).locator('visible=true')
-		).toBeChecked();
-	}
+			emailNotificationTemplatePage.senderEmailAddress
+		).toHaveValue(notificationTemplateInfo.senderAddress);
 
-	await emailNotificationTemplatePage.secondaryRecipientRolesBCC.click();
+		await expect(emailNotificationTemplatePage.senderName).toHaveValue(
+			notificationTemplateInfo.senderName
+		);
 
-	for (const role of secondaryRecipientsRolesBCC) {
 		await expect(
-			page.getByLabel(role, {exact: true}).locator('visible=true')
-		).toBeChecked();
-	}
-});
+			emailNotificationTemplatePage.primaryRecipientUserEmailAddress
+		).toHaveValue(notificationTemplateInfo.recipients);
 
-test('can see all roles groups in email notification template recipients', async ({
-	emailNotificationTemplatePage,
-	page,
-}) => {
-	await emailNotificationTemplatePage.goto();
+		await expect(
+			emailNotificationTemplatePage.secondaryRecipientsCCInput
+		).toHaveValue(notificationTemplateInfo.cc);
 
-	await emailNotificationTemplatePage.primaryRecipientType.click();
+		await expect(
+			emailNotificationTemplatePage.secondaryRecipientsBCCInput
+		).toHaveValue(notificationTemplateInfo.bcc);
 
-	await page.getByRole('option', {name: 'Roles'}).click();
+		await expect(emailNotificationTemplatePage.contentSubject).toHaveValue(
+			notificationTemplateInfo.subject
+		);
+	});
 
-	await emailNotificationTemplatePage.primaryRecipientRoles.click();
+	test('can be edited correctly', async ({
+		apiHelpers,
+		emailNotificationTemplatePage,
+		notificationTemplatesPage,
+	}) => {
+		const notificationTemplate =
+			await apiHelpers.notification.postRandomNotificationTemplate(
+				'notification template test ' + getRandomInt()
+			);
 
-	await expect(
-		emailNotificationTemplatePage.accountRolesGroupTitle
-	).toBeVisible();
-
-	await expect(
-		emailNotificationTemplatePage.regularRolesGroupTitle
-	).toBeVisible();
-
-	await expect(
-		emailNotificationTemplatePage.organizationRolesGroupTitle
-	).toBeVisible();
-
-	await page.keyboard.press('Escape');
-
-	await emailNotificationTemplatePage.secondaryRecipientTypeCC.click();
-
-	await page.getByRole('option', {name: 'Roles'}).click();
-
-	await emailNotificationTemplatePage.secondaryRecipientRolesCC.click();
-
-	await expect(
-		emailNotificationTemplatePage.accountRolesGroupTitle
-	).toBeVisible();
-
-	await expect(
-		emailNotificationTemplatePage.regularRolesGroupTitle
-	).toBeVisible();
-
-	await expect(
-		emailNotificationTemplatePage.organizationRolesGroupTitle
-	).toBeVisible();
-
-	await page.keyboard.press('Escape');
-
-	await emailNotificationTemplatePage.secondaryRecipientTypeBCC.click();
-
-	await page.getByRole('option', {name: 'Roles'}).click();
-
-	await emailNotificationTemplatePage.secondaryRecipientRolesBCC.click();
-
-	await expect(
-		emailNotificationTemplatePage.accountRolesGroupTitle
-	).toBeVisible();
-
-	await expect(
-		emailNotificationTemplatePage.regularRolesGroupTitle
-	).toBeVisible();
-
-	await expect(
-		emailNotificationTemplatePage.organizationRolesGroupTitle
-	).toBeVisible();
-});
-
-test('can see cc/bcc fields in UI when creating notification via API without passing them', async ({
-	apiHelpers,
-	notificationTemplatesPage,
-	page,
-}) => {
-	const notificationTemplate =
-		await apiHelpers.notification.postNotificationTemplate({
-			editorType: 'richText',
-			name: 'Test Email',
-			recipientType: 'email',
-			recipients: [
-				{
-					from: 'test@liferay.com',
-					fromName: {
-						en_US: 'Test',
-					},
-					to: [
-						{
-							roleName: 'Account Administrator',
-						},
-					],
-					toType: 'role',
-				},
-			],
-			subject: {
-				en_US: 'Subject',
-			},
-			type: 'email',
+		apiHelpers.data.push({
+			id: notificationTemplate.id,
+			type: 'notificationTemplate',
 		});
 
-	await notificationTemplatesPage.goto();
+		await notificationTemplatesPage.goto();
 
-	await notificationTemplatesPage.openNotificationTemplate(
-		notificationTemplate.name
-	);
+		await notificationTemplatesPage
+			.getFrontEndDatasetItemLocator(notificationTemplate.name)
+			.click();
 
-	await expect(page.locator('#secondaryRecipientsCC')).toBeVisible();
-	await expect(page.locator('#secondaryRecipientsBCC')).toBeVisible();
-});
+		const editedNotificationTemplateInfo = {
+			bcc: getRandomString(),
+			cc: getRandomString(),
+			description: getRandomString(),
+			recipients: getRandomString(),
+			senderAddress: getRandomString(),
+			senderName: getRandomString(),
+			subject: getRandomString(),
+			term: getRandomString(),
+		};
 
-test('can use notification terms and freeMarker variables in notification template', async ({
-	emailNotificationTemplatePage,
-	notificationTemplatesPage,
-	page,
-}) => {
-	await emailNotificationTemplatePage.goto();
+		const editedNotificationTemplateName = getRandomString();
 
-	const notificationTemplateName =
-		'Notification Template Name' + getRandomInt();
+		await emailNotificationTemplatePage.fillNotificationTemplateInfo(
+			editedNotificationTemplateName,
+			editedNotificationTemplateInfo
+		);
 
-	await emailNotificationTemplatePage.basicInfoName.fill(
-		notificationTemplateName
-	);
+		await emailNotificationTemplatePage.saveButton.click();
 
-	await emailNotificationTemplatePage.senderEmailAddress.fill(
-		'test@liferay.com'
-	);
+		await notificationTemplatesPage
+			.getFrontEndDatasetItemLocator(editedNotificationTemplateName)
+			.click();
 
-	await emailNotificationTemplatePage.senderName.fill('test user');
+		await expect
+			.soft(emailNotificationTemplatePage.basicInfoName)
+			.toHaveValue(editedNotificationTemplateName);
 
-	await emailNotificationTemplatePage.primaryRecipientUserEmailAddress.fill(
-		'[%CURRENT_USER_EMAIL_ADDRESS%]'
-	);
+		await expect
+			.soft(emailNotificationTemplatePage.descriptionInput)
+			.toHaveValue(editedNotificationTemplateInfo.description);
 
-	await emailNotificationTemplatePage.contentSubject.fill('Content subject');
+		await expect
+			.soft(emailNotificationTemplatePage.senderEmailAddress)
+			.toHaveValue(editedNotificationTemplateInfo.senderAddress);
 
-	await emailNotificationTemplatePage.definitionOfTermsEntity.click();
+		await expect
+			.soft(emailNotificationTemplatePage.senderName)
+			.toHaveValue(editedNotificationTemplateInfo.senderName);
 
-	await page
-		.getByRole('option', {name: objectDefinition.externalReferenceCode})
-		.click();
+		await expect
+			.soft(
+				emailNotificationTemplatePage.primaryRecipientUserEmailAddress
+			)
+			.toHaveValue(editedNotificationTemplateInfo.recipients);
 
-	const objectDefinitionTerm =
-		objectDefinition.externalReferenceCode.toUpperCase();
+		await expect
+			.soft(emailNotificationTemplatePage.secondaryRecipientsCCInput)
+			.toHaveValue(editedNotificationTemplateInfo.cc);
 
-	const objectFieldName = objectDefinition.objectFields.find(
-		(objectField) => !objectField.system
-	).name;
+		await expect
+			.soft(emailNotificationTemplatePage.secondaryRecipientsBCCInput)
+			.toHaveValue(editedNotificationTemplateInfo.bcc);
 
-	const terms = [
-		'[%CURRENT_USER_FIRST_NAME%]',
-		'[%CURRENT_USER_PREFIX%]',
-		'[%CURRENT_DATE%]',
-		'[%CURRENT_USER_LAST_NAME%]',
-		'[%CURRENT_USER_MIDDLE_NAME%]',
-		'[%CURRENT_USER_EMAIL_ADDRESS%]',
-		'[%CURRENT_USER_ID%]',
-		'[%CURRENT_USER_SUFFIX%]',
-		`[%${objectDefinitionTerm}_CREATEDATE%]`,
-		`[%${objectDefinitionTerm}_AUTHOR_EMAIL_ADDRESS%]`,
-		`[%${objectDefinitionTerm}_AUTHOR_SUFFIX%]`,
-		`[%${objectDefinitionTerm}_AUTHOR_PREFIX%]`,
-		`[%${objectDefinitionTerm}_AUTHOR_FIRST_NAME%]`,
-		`[%${objectDefinitionTerm}_AUTHOR_LAST_NAME%]`,
-		`[%${objectDefinitionTerm}_AUTHOR_MIDDLE_NAME%]`,
-		`[%${objectDefinitionTerm}_AUTHOR_ID%]`,
-		`[%${objectDefinitionTerm}_EXTERNALREFERENCECODE%]`,
-		`[%${objectDefinitionTerm}_ID%]`,
-		`[%${objectDefinitionTerm}_MODIFIEDDATE%]`,
-		`[%${objectDefinitionTerm}_STATUS%]`,
-		`[%${objectDefinitionTerm}_${objectFieldName.toUpperCase()}%]`,
-	];
+		await expect
+			.soft(emailNotificationTemplatePage.contentSubject)
+			.toHaveValue(editedNotificationTemplateInfo.subject);
 
-	for (const term of terms) {
-		await expect(page.locator('.fds td').getByText(term)).toBeVisible();
-	}
+		await expect
+			.soft(emailNotificationTemplatePage.contentSubject)
+			.toHaveValue(editedNotificationTemplateInfo.subject);
 
-	const copyButtons = [
-		emailNotificationTemplatePage.copyButton.first(),
-		emailNotificationTemplatePage.copyButton.last(),
-	];
+		await expect(test.info().errors).toHaveLength(0);
+	});
 
-	for (const copyButton of copyButtons) {
-		await copyButton.click();
+	test('can have rich text source code verifying that the source code is persisted', async ({
+		emailNotificationTemplatePage,
+		notificationTemplatesPage,
+		page,
+	}) => {
+		await emailNotificationTemplatePage.goto();
 
-		await emailNotificationTemplatePage.richTextField.click();
+		const notificationTemplateName =
+			'Notification Template Name' + getRandomInt();
 
-		await page.keyboard.press('PageDown');
+		await emailNotificationTemplatePage.basicInfoName.fill(
+			notificationTemplateName
+		);
 
-		await page.keyboard.press('Control+V');
-	}
+		await emailNotificationTemplatePage.senderEmailAddress.fill(
+			'test@liferay.com'
+		);
 
-	await emailNotificationTemplatePage.saveButton.click();
+		await emailNotificationTemplatePage.senderName.fill('test user');
 
-	await notificationTemplatesPage
-		.getFrontEndDatasetItemLocator(notificationTemplateName)
-		.click();
+		await emailNotificationTemplatePage.primaryRecipientUserEmailAddress.fill(
+			'test@liferay.com'
+		);
 
-	await expect(
-		emailNotificationTemplatePage.primaryRecipientUserEmailAddress
-	).toHaveValue('[%CURRENT_USER_EMAIL_ADDRESS%]');
+		await emailNotificationTemplatePage.contentSubject.fill(
+			'Content subject'
+		);
 
-	await expect(
-		emailNotificationTemplatePage.richTextField.getByText(
-			'[%CURRENT_USER_FIRST_NAME%]' +
-				`[%${objectDefinitionTerm}_${objectFieldName.toUpperCase()}%]`
-		)
-	).toBeVisible();
+		await emailNotificationTemplatePage.richTextSourceButton.click();
 
-	await emailNotificationTemplatePage.editorType.click();
+		await emailNotificationTemplatePage.richTextSourceField.fill(
+			'<h1>Hello World</h1>'
+		);
 
-	await page.getByRole('option', {name: 'FreeMarker Template'}).click();
+		await emailNotificationTemplatePage.saveButton.click();
 
-	await expect(page.getByText('Elements')).toBeVisible();
+		await notificationTemplatesPage
+			.getFrontEndDatasetItemLocator(notificationTemplateName)
+			.click();
 
-	await emailNotificationTemplatePage.freeMarkerEntity.click();
+		await emailNotificationTemplatePage.richTextSourceButton.click();
 
-	await page
-		.getByRole('option', {name: objectDefinition.label['en_US']})
-		.click();
+		await expect(page.getByText('<h1>Hello World</h1>')).toBeVisible();
+	});
 
-	const freeMarkerVariables = [
-		'Author',
-		'Create Date',
-		'Default',
-		'External Reference Code',
-		'ID',
-		'Locale',
-		'Modified Date',
-		'Portal URL',
-		'Publish Date',
-		'Status',
-		'User Profile Image',
-		objectFieldName,
-	];
+	test('can save recipients roles', async ({
+		emailNotificationTemplatePage,
+		notificationTemplatesPage,
+		page,
+	}) => {
+		const primaryRecipientsRoles = [
+			'Account Administrator',
+			'Account Member',
+			'Administrator',
+			'Analytics Administrator',
+			'Account Manager',
+			'Organization Administrator',
+		];
 
-	for (const freeMarkerVariable of freeMarkerVariables) {
+		const secondaryRecipientsRolesCC = [
+			'Account Supplier',
+			'Buyer',
+			'Owner',
+			'Portal Content Reviewer',
+			'Organization Content Reviewer',
+			'Organization Owner',
+		];
+
+		const secondaryRecipientsRolesBCC = [
+			'Order Manager',
+			'Power User',
+			'Publications User',
+			'Organization User',
+		];
+
+		await emailNotificationTemplatePage.goto();
+
+		const notificationTemplateName =
+			'Notification Template Name' + getRandomInt();
+
+		await emailNotificationTemplatePage.basicInfoName.fill(
+			notificationTemplateName
+		);
+
+		await emailNotificationTemplatePage.senderEmailAddress.fill(
+			'test@liferay.com'
+		);
+
+		await emailNotificationTemplatePage.senderName.fill('test user');
+
+		await emailNotificationTemplatePage.primaryRecipientType.click();
+
+		await page.getByRole('option', {name: 'Roles'}).click();
+
+		await emailNotificationTemplatePage.primaryRecipientRoles.click();
+
+		for (const role of primaryRecipientsRoles) {
+			await page
+				.getByLabel(role, {exact: true})
+				.locator('visible=true')
+				.check();
+		}
+
+		await emailNotificationTemplatePage.secondaryRecipientTypeCC.click();
+
+		await page.getByRole('option', {name: 'Roles'}).click();
+
+		await emailNotificationTemplatePage.secondaryRecipientRolesCC.click();
+
+		for (const role of secondaryRecipientsRolesCC) {
+			await page
+				.getByLabel(role, {exact: true})
+				.locator('visible=true')
+				.check();
+		}
+
+		await emailNotificationTemplatePage.secondaryRecipientTypeBCC.click();
+
+		await page.getByRole('option', {name: 'Roles'}).click();
+
+		await emailNotificationTemplatePage.secondaryRecipientRolesBCC.click();
+
+		for (const role of secondaryRecipientsRolesBCC) {
+			await page
+				.getByLabel(role, {exact: true})
+				.locator('visible=true')
+				.check();
+		}
+
+		await emailNotificationTemplatePage.contentSubject.fill(
+			'Content subject'
+		);
+
+		await emailNotificationTemplatePage.saveButton.click();
+
+		await notificationTemplatesPage
+			.getFrontEndDatasetItemLocator(notificationTemplateName)
+			.click();
+
+		await emailNotificationTemplatePage.primaryRecipientRoles.click();
+
+		for (const role of primaryRecipientsRoles) {
+			await expect(
+				page.getByLabel(role, {exact: true}).locator('visible=true')
+			).toBeChecked();
+		}
+
+		await emailNotificationTemplatePage.secondaryRecipientRolesCC.click();
+
+		for (const role of secondaryRecipientsRolesCC) {
+			await expect(
+				page.getByLabel(role, {exact: true}).locator('visible=true')
+			).toBeChecked();
+		}
+
+		await emailNotificationTemplatePage.secondaryRecipientRolesBCC.click();
+
+		for (const role of secondaryRecipientsRolesBCC) {
+			await expect(
+				page.getByLabel(role, {exact: true}).locator('visible=true')
+			).toBeChecked();
+		}
+	});
+
+	test('can have all roles groups in recipients', async ({
+		emailNotificationTemplatePage,
+		page,
+	}) => {
+		await emailNotificationTemplatePage.goto();
+
+		await emailNotificationTemplatePage.primaryRecipientType.click();
+
+		await page.getByRole('option', {name: 'Roles'}).click();
+
+		await emailNotificationTemplatePage.primaryRecipientRoles.click();
+
 		await expect(
-			page.getByRole('button', {exact: true, name: freeMarkerVariable})
+			emailNotificationTemplatePage.accountRolesGroupTitle
 		).toBeVisible();
-	}
 
-	await page.getByRole('button', {name: objectFieldName}).click();
+		await expect(
+			emailNotificationTemplatePage.regularRolesGroupTitle
+		).toBeVisible();
 
-	await emailNotificationTemplatePage.saveButton.click();
+		await expect(
+			emailNotificationTemplatePage.organizationRolesGroupTitle
+		).toBeVisible();
 
-	await notificationTemplatesPage
-		.getFrontEndDatasetItemLocator(notificationTemplateName)
-		.click();
+		await page.keyboard.press('Escape');
 
-	await expect(
-		page
-			.locator('.CodeMirror-lines')
-			.getByText(`{ObjectField_${objectFieldName}.getData()}`)
-	).toBeVisible();
+		await emailNotificationTemplatePage.secondaryRecipientTypeCC.click();
+
+		await page.getByRole('option', {name: 'Roles'}).click();
+
+		await emailNotificationTemplatePage.secondaryRecipientRolesCC.click();
+
+		await expect(
+			emailNotificationTemplatePage.accountRolesGroupTitle
+		).toBeVisible();
+
+		await expect(
+			emailNotificationTemplatePage.regularRolesGroupTitle
+		).toBeVisible();
+
+		await expect(
+			emailNotificationTemplatePage.organizationRolesGroupTitle
+		).toBeVisible();
+
+		await page.keyboard.press('Escape');
+
+		await emailNotificationTemplatePage.secondaryRecipientTypeBCC.click();
+
+		await page.getByRole('option', {name: 'Roles'}).click();
+
+		await emailNotificationTemplatePage.secondaryRecipientRolesBCC.click();
+
+		await expect(
+			emailNotificationTemplatePage.accountRolesGroupTitle
+		).toBeVisible();
+
+		await expect(
+			emailNotificationTemplatePage.regularRolesGroupTitle
+		).toBeVisible();
+
+		await expect(
+			emailNotificationTemplatePage.organizationRolesGroupTitle
+		).toBeVisible();
+	});
+
+	test('can see cc/bcc fields in UI when creating notification via API without passing them', async ({
+		apiHelpers,
+		notificationTemplatesPage,
+		page,
+	}) => {
+		const notificationTemplate =
+			await apiHelpers.notification.postNotificationTemplate({
+				editorType: 'richText',
+				name: 'Test Email',
+				recipientType: 'email',
+				recipients: [
+					{
+						from: 'test@liferay.com',
+						fromName: {
+							en_US: 'Test',
+						},
+						to: [
+							{
+								roleName: 'Account Administrator',
+							},
+						],
+						toType: 'role',
+					},
+				],
+				subject: {
+					en_US: 'Subject',
+				},
+				type: 'email',
+			});
+
+		await notificationTemplatesPage.goto();
+
+		await notificationTemplatesPage.openNotificationTemplate(
+			notificationTemplate.name
+		);
+
+		await expect(page.locator('#secondaryRecipientsCC')).toBeVisible();
+		await expect(page.locator('#secondaryRecipientsBCC')).toBeVisible();
+	});
+
+	test('can use notification terms and freeMarker variables', async ({
+		emailNotificationTemplatePage,
+		notificationTemplatesPage,
+		page,
+	}) => {
+		await emailNotificationTemplatePage.goto();
+
+		const notificationTemplateName =
+			'Notification Template Name' + getRandomInt();
+
+		await emailNotificationTemplatePage.basicInfoName.fill(
+			notificationTemplateName
+		);
+
+		await emailNotificationTemplatePage.senderEmailAddress.fill(
+			'test@liferay.com'
+		);
+
+		await emailNotificationTemplatePage.senderName.fill('test user');
+
+		await emailNotificationTemplatePage.primaryRecipientUserEmailAddress.fill(
+			'[%CURRENT_USER_EMAIL_ADDRESS%]'
+		);
+
+		await emailNotificationTemplatePage.contentSubject.fill(
+			'Content subject'
+		);
+
+		await emailNotificationTemplatePage.definitionOfTermsEntity.click();
+
+		await page
+			.getByRole('option', {name: objectDefinition.externalReferenceCode})
+			.click();
+
+		const objectDefinitionTerm =
+			objectDefinition.externalReferenceCode.toUpperCase();
+
+		const objectFieldName = objectDefinition.objectFields.find(
+			(objectField) => !objectField.system
+		).name;
+
+		const terms = [
+			'[%CURRENT_USER_FIRST_NAME%]',
+			'[%CURRENT_USER_PREFIX%]',
+			'[%CURRENT_DATE%]',
+			'[%CURRENT_USER_LAST_NAME%]',
+			'[%CURRENT_USER_MIDDLE_NAME%]',
+			'[%CURRENT_USER_EMAIL_ADDRESS%]',
+			'[%CURRENT_USER_ID%]',
+			'[%CURRENT_USER_SUFFIX%]',
+			`[%${objectDefinitionTerm}_CREATEDATE%]`,
+			`[%${objectDefinitionTerm}_AUTHOR_EMAIL_ADDRESS%]`,
+			`[%${objectDefinitionTerm}_AUTHOR_SUFFIX%]`,
+			`[%${objectDefinitionTerm}_AUTHOR_PREFIX%]`,
+			`[%${objectDefinitionTerm}_AUTHOR_FIRST_NAME%]`,
+			`[%${objectDefinitionTerm}_AUTHOR_LAST_NAME%]`,
+			`[%${objectDefinitionTerm}_AUTHOR_MIDDLE_NAME%]`,
+			`[%${objectDefinitionTerm}_AUTHOR_ID%]`,
+			`[%${objectDefinitionTerm}_EXTERNALREFERENCECODE%]`,
+			`[%${objectDefinitionTerm}_ID%]`,
+			`[%${objectDefinitionTerm}_MODIFIEDDATE%]`,
+			`[%${objectDefinitionTerm}_STATUS%]`,
+			`[%${objectDefinitionTerm}_${objectFieldName.toUpperCase()}%]`,
+		];
+
+		for (const term of terms) {
+			await expect(page.locator('.fds td').getByText(term)).toBeVisible();
+		}
+
+		const copyButtons = [
+			emailNotificationTemplatePage.copyButton.first(),
+			emailNotificationTemplatePage.copyButton.last(),
+		];
+
+		for (const copyButton of copyButtons) {
+			await copyButton.click();
+
+			await emailNotificationTemplatePage.richTextField.click();
+
+			await page.keyboard.press('PageDown');
+
+			await page.keyboard.press('Control+V');
+		}
+
+		await emailNotificationTemplatePage.saveButton.click();
+
+		await notificationTemplatesPage
+			.getFrontEndDatasetItemLocator(notificationTemplateName)
+			.click();
+
+		await expect(
+			emailNotificationTemplatePage.primaryRecipientUserEmailAddress
+		).toHaveValue('[%CURRENT_USER_EMAIL_ADDRESS%]');
+
+		await expect(
+			emailNotificationTemplatePage.richTextField.getByText(
+				'[%CURRENT_USER_FIRST_NAME%]' +
+					`[%${objectDefinitionTerm}_${objectFieldName.toUpperCase()}%]`
+			)
+		).toBeVisible();
+
+		await emailNotificationTemplatePage.editorType.click();
+
+		await page.getByRole('option', {name: 'FreeMarker Template'}).click();
+
+		await expect(page.getByText('Elements')).toBeVisible();
+
+		await emailNotificationTemplatePage.freeMarkerEntity.click();
+
+		await page
+			.getByRole('option', {name: objectDefinition.label['en_US']})
+			.click();
+
+		const freeMarkerVariables = [
+			'Author',
+			'Create Date',
+			'Default',
+			'External Reference Code',
+			'ID',
+			'Locale',
+			'Modified Date',
+			'Portal URL',
+			'Publish Date',
+			'Status',
+			'User Profile Image',
+			objectFieldName,
+		];
+
+		for (const freeMarkerVariable of freeMarkerVariables) {
+			await expect(
+				page.getByRole('button', {
+					exact: true,
+					name: freeMarkerVariable,
+				})
+			).toBeVisible();
+		}
+
+		await page.getByRole('button', {name: objectFieldName}).click();
+
+		await emailNotificationTemplatePage.saveButton.click();
+
+		await notificationTemplatesPage
+			.getFrontEndDatasetItemLocator(notificationTemplateName)
+			.click();
+
+		await expect(
+			page
+				.locator('.CodeMirror-lines')
+				.getByText(`{ObjectField_${objectFieldName}.getData()}`)
+		).toBeVisible();
+	});
 });

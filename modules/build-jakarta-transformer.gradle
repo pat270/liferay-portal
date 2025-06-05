@@ -34,32 +34,29 @@ buildscript {
 	}
 }
 
-task jarTransformed
-
 jar {
-	setActions([])
+	enabled = true
+	setActions([
+		new Action<Jar>() {
 
-	finalizedBy jarTransformed
-}
+			public void execute(Jar jar) {
+				JakartaTransformerCLI jakartaTransformerCLI = new JakartaTransformerCLI(System.out, System.out, new String[] {configurations.compileOnly.singleFile, jar.archivePath})
 
-jarTransformed {
-	doLast {
-		JakartaTransformerCLI jakartaTransformerCLI = new JakartaTransformerCLI(System.out, System.out, new String[] {configurations.compileOnly.singleFile, jar.archivePath})
+				Map<String, String> optionDefaults = jakartaTransformerCLI.getOptionDefaults()
 
-		Map<String, String> optionDefaults = jakartaTransformerCLI.getOptionDefaults()
+				File file = new File(rootDir, "liferay-jakarta-renames.properties")
 
-		File file = new File(rootDir, "liferay-jakarta-renames.properties")
+				optionDefaults.put("renames", String.valueOf(file.toURI()))
 
-		optionDefaults.put("renames", String.valueOf(file.toURI()))
+				file = new File(rootDir, "liferay-jakarta-versions.properties")
 
-		file = new File(rootDir, "liferay-jakarta-versions.properties")
+				optionDefaults.put("versions", String.valueOf(file.toURI()))
 
-		optionDefaults.put("versions", String.valueOf(file.toURI()))
+				JakartaTransformerCLI.runWith(jakartaTransformerCLI)
 
-		JakartaTransformerCLI.runWith(jakartaTransformerCLI)
+				JarTransformer.transform(jar.archivePath)
+			}
 
-		JarTransformer.transform(jar.archivePath)
-	}
-
-	mustRunAfter generatePomFileForMavenPublication
+		}
+	])
 }

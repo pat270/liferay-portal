@@ -29,6 +29,14 @@ import com.liferay.taglib.BaseValidatorTagSupport;
 import com.liferay.taglib.aui.AUIUtil;
 import com.liferay.taglib.util.TagResourceBundleUtil;
 
+import jakarta.portlet.PortletRequest;
+import jakarta.portlet.PortletResponse;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.jsp.JspException;
+
 import java.io.IOException;
 
 import java.lang.reflect.InvocationHandler;
@@ -37,14 +45,6 @@ import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.JspException;
 
 /**
  * @author Iván Zaera Avellón
@@ -150,6 +150,10 @@ public class EditorTag extends BaseValidatorTagSupport {
 		return _autoCreate;
 	}
 
+	public boolean isDisabled() {
+		return _disabled;
+	}
+
 	public boolean isInlineEdit() {
 		return _inlineEdit;
 	}
@@ -200,6 +204,10 @@ public class EditorTag extends BaseValidatorTagSupport {
 
 	public void setData(Map<String, Object> data) {
 		_data = data;
+	}
+
+	public void setDisabled(boolean disabled) {
+		_disabled = disabled;
 	}
 
 	public void setEditorName(String editorName) {
@@ -286,6 +294,7 @@ public class EditorTag extends BaseValidatorTagSupport {
 		_contentsLanguageId = null;
 		_cssClass = null;
 		_data = null;
+		_disabled = false;
 		_editorName = null;
 		_fileBrowserParams = null;
 		_height = null;
@@ -369,6 +378,8 @@ public class EditorTag extends BaseValidatorTagSupport {
 
 		setNamespacedAttribute(
 			httpServletRequest, "required", String.valueOf(_required));
+		setNamespacedAttribute(
+			httpServletRequest, "disabled", String.valueOf(_disabled));
 		setNamespacedAttribute(
 			httpServletRequest, "resizable", String.valueOf(_resizable));
 		setNamespacedAttribute(
@@ -550,6 +561,7 @@ public class EditorTag extends BaseValidatorTagSupport {
 	private String _contentsLanguageId;
 	private String _cssClass;
 	private Map<String, Object> _data;
+	private boolean _disabled;
 	private String _editorName;
 	private Map<String, String> _fileBrowserParams;
 	private String _height;

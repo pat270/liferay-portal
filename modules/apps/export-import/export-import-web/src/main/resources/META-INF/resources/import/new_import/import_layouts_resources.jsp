@@ -206,9 +206,9 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 						<aui:input name="<%= PortletDataHandlerKeys.PORTLET_DATA_CONTROL_DEFAULT %>" type="hidden" value="<%= true %>" />
 
 						<ul class="lfr-tree list-unstyled">
-							<li class="tree-item">
-								<ul class="select-options" id="<portlet:namespace />selectContents">
-									<li class="options">
+							<li class="p-0 tree-item">
+								<ul class="ml-0 p-0 select-options" id="<portlet:namespace />selectContents">
+									<li class="options p-0">
 										<ul class="portlet-list">
 
 											<%
@@ -431,6 +431,15 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 					</c:when>
 					<c:otherwise>
 						<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" cssClass="options-group" label="update-data">
+							<c:if test="<%= !stagingGroupHelper.isCompanyGroup(group) %>">
+								<clay:alert
+									cssClass="hide"
+									displayType="warning"
+									id='<%= liferayPortletResponse.getNamespace() + "updateDataAlert" %>'
+									message="objects-entries-are-always-mirrored-regardless-of-the-selection"
+									title="update-data"
+								/>
+							</c:if>
 
 							<%
 							String taglibMirrorLabel = LanguageUtil.get(request, "mirror") + ": <span style='font-weight: normal'>" + LanguageUtil.get(request, "import-data-strategy-mirror-help") + "</span>";
@@ -480,11 +489,43 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 
 		<aui:button href="<%= backURL %>" name="back" value="back" />
 
-		<aui:button type="submit" value="import" />
+		<c:choose>
+			<c:when test="<%= stagingGroupHelper.isCompanyGroup(group) %>">
+				<aui:button type="submit" value="import" />
+			</c:when>
+			<c:otherwise>
+				<div class="d-inline-block">
+					<react:component
+						module="{ImportButton} from exportimport-web"
+						props='<%=
+							HashMapBuilder.<String, Object>put(
+								"copyAsNewCheckboxId", liferayPortletResponse.getNamespace() + "copyAsNew"
+							).put(
+								"deletePortletDataBeforeImportingCheckboxId", liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETE_PORTLET_DATA
+							).put(
+								"handleSubmitFnName", liferayPortletResponse.getNamespace() + "publishPages"
+							).put(
+								"isAnyObjectEntrySelectedFnName", liferayPortletResponse.getNamespace() + "isAnyObjectEntrySelected"
+							).put(
+								"mirrorWithOverwritingCheckboxId", liferayPortletResponse.getNamespace() + "mirrorWithOverwriting"
+							).build()
+						%>'
+					/>
+				</div>
+			</c:otherwise>
+		</c:choose>
 	</aui:button-row>
 </aui:form>
 
 <aui:script>
+	function <portlet:namespace />isAnyObjectEntrySelected() {
+		return Array.from(
+			document.querySelectorAll(
+				'#<portlet:namespace />selectContents input[type="checkbox"][name*="object_definitions"]'
+			)
+		).some((checkbox) => checkbox.checked);
+	}
+
 	function <portlet:namespace />publishPages() {
 		var deletePortletDataBeforeImportingCheckbox = document.getElementById(
 			'<portlet:namespace /><%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>'
@@ -519,6 +560,57 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 		'<portlet:namespace />selectApplications',
 		''
 	);
+</aui:script>
+
+<aui:script sandbox="<%= true %>">
+	var showAlertsHandler = Liferay.Util.delegate(
+		document.querySelector('#<portlet:namespace />exportImportOptions'),
+		'change',
+		'input[type="checkbox"][name*="object_definitions"],' +
+			'#<portlet:namespace /><%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>,' +
+			'input[name=<portlet:namespace /><%= PortletDataHandlerKeys.DATA_STRATEGY %>]',
+		(event) => {
+			var deletePortletDataAlert = document.getElementById(
+				'<portlet:namespace />deletePortletDataAlert'
+			);
+			var updateDataAlert = document.getElementById(
+				'<portlet:namespace />updateDataAlert'
+			);
+			var deletePortletDataInput = document.getElementById(
+				'<portlet:namespace /><%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>'
+			);
+			var updateDataInput = document.querySelector(
+				'input[name=<portlet:namespace /><%= PortletDataHandlerKeys.DATA_STRATEGY %>]:checked'
+			);
+			var isAnyObjectEntrySelected =
+				<portlet:namespace />isAnyObjectEntrySelected();
+
+			if (deletePortletDataAlert && deletePortletDataInput) {
+				var showDeletePortletDataAlert =
+					isAnyObjectEntrySelected && deletePortletDataInput.checked;
+				deletePortletDataAlert.classList.toggle(
+					'hide',
+					!showDeletePortletDataAlert
+				);
+			}
+
+			if (updateDataAlert && updateDataInput) {
+				var showUpdateDataAlert =
+					isAnyObjectEntrySelected &&
+					(updateDataInput.value ===
+						'<%= PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE %>' ||
+						updateDataInput.value ===
+							'<%= PortletDataHandlerKeys.DATA_STRATEGY_COPY_AS_NEW %>');
+				updateDataAlert.classList.toggle('hide', !showUpdateDataAlert);
+			}
+		}
+	);
+
+	Liferay.on('destroyPortlet', function removeListener() {
+		showAlertsHandler.dispose();
+
+		Liferay.detach('destroyPortlet', removeListener);
+	});
 </aui:script>
 
 <aui:script use="liferay-export-import-export-import">

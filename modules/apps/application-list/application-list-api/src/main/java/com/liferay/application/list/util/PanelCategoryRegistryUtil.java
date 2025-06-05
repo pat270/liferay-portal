@@ -7,7 +7,7 @@ package com.liferay.application.list.util;
 
 import com.liferay.application.list.PanelCategory;
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
-import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceComparator;
+import com.liferay.application.list.util.comparator.PanelEntryServiceReferenceComparator;
 import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceMapper;
 import com.liferay.osgi.service.tracker.collections.map.ServiceReferenceMapperFactory;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
@@ -168,8 +168,8 @@ public class PanelCategoryRegistryUtil {
 				bundleContext, PanelCategory.class, null,
 				new PropertyServiceReferenceMapper<>("panel.category.key"),
 				Collections.reverseOrder(
-					new PropertyServiceReferenceComparator<>(
-						"panel.category.order")));
+					new PanelEntryServiceReferenceComparator<PanelCategory>(
+						bundleContext, _log, "panel.category.order")));
 
 		_panelCategoryServiceTrackerMap =
 			ServiceTrackerMapFactory.openSingleValueMap(

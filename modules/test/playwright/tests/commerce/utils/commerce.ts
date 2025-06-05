@@ -21,8 +21,8 @@ export async function classicCommerceSetUp(
 	return initializerSetUp(
 		apiHelpers,
 		'com.liferay.commerce.site.initializer',
-		'Commerce Classic',
-		'Liferay Commerce Channel',
+		siteName,
+		siteName,
 		siteName
 	);
 }
@@ -169,8 +169,6 @@ export async function completedVirtualOrderItemSetUp(
 		name: getRandomString(),
 		type: 'person',
 	});
-
-	apiHelpers.data.push({id: account.id, type: 'account'});
 
 	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
 		account.id,

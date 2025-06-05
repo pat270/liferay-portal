@@ -50,7 +50,7 @@ public class JenkinsClient extends BaseRestController {
 				() -> {
 					try {
 						String response = get(
-							_getAuthorization(), remoteJenkinsURL);
+							_getAuthorization(), createURI(remoteJenkinsURL));
 
 						if (response == null) {
 							throw new RuntimeException(
@@ -87,7 +87,7 @@ public class JenkinsClient extends BaseRestController {
 					try {
 						String response = patch(
 							_getAuthorization(), requestJSONObject.toString(),
-							remoteJenkinsURL);
+							createURI(remoteJenkinsURL));
 
 						if (response == null) {
 							throw new RuntimeException("No response");
@@ -127,7 +127,7 @@ public class JenkinsClient extends BaseRestController {
 					try {
 						String response = post(
 							_getAuthorization(), requestJSONObject.toString(),
-							remoteJenkinsURL);
+							createURI(remoteJenkinsURL));
 
 						if (response == null) {
 							throw new RuntimeException("No response");
@@ -163,7 +163,7 @@ public class JenkinsClient extends BaseRestController {
 					try {
 						String response = put(
 							_getAuthorization(), requestJSONObject.toString(),
-							remoteJenkinsURL);
+							createURI(remoteJenkinsURL));
 
 						if (response == null) {
 							throw new RuntimeException("No response");
@@ -179,11 +179,6 @@ public class JenkinsClient extends BaseRestController {
 				});
 
 		return unsafeSupplier.get();
-	}
-
-	@Override
-	protected String getWebClientBaseURL() {
-		return "";
 	}
 
 	private String _getAuthorization() throws IOException {

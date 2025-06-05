@@ -638,18 +638,63 @@ components:
                         A valid external identifier to reference this page template folder.
                     type: string
             type: object
+        DisplayPageTemplateOpenGraphSettings:
+            description:
+                Represents display page template settings related with Open Graph protocol.
+            properties:
+                descriptionTemplate:
+                    description:
+                        The Open Graph's description template.
+                    type: string
+                imageAltTemplate:
+                    description:
+                        The Open Graph's image alt template.
+                    type: string
+                imageTemplate:
+                    description:
+                        The Open Graph's image template.
+                    type: string
+                titleTemplate:
+                    description:
+                        The Open Graph's title template.
+                    type: string
+            type: object
+        DisplayPageTemplateSEOSettings:
+            description:
+                Settings related with SEO of a display page template.
+            properties:
+                descriptionTemplate:
+                    description:
+                        The description template of the display page template to be used as summary for search engines.
+                    type: string
+                htmlTitleTemplate:
+                    description:
+                        The main title template of the display page template to be used by search engines.
+                    type: string
+                robots_i18n:
+                    additionalProperties:
+                        type: string
+                    description:
+                        A localized tag telling search engines if and how they should crawl the display page template.
+                    type: object
+                sitemapSettings:
+                    $ref: "#/components/schemas/SitemapSettings"
+                    # @review
+                    description:
+                        Represents settings related with the site map.
+            type: object
         DisplayPageTemplateSettings:
             # @review
             description:
-                The settings of a Display Page Template.
+                The settings of a display page template.
             properties:
                 openGraphSettings:
-                    $ref: "#/components/schemas/OpenGraphSettings"
+                    $ref: "#/components/schemas/DisplayPageTemplateOpenGraphSettings"
                     # @review
                     description:
                         The display page template's Open Graph settings.
                 seoSettings:
-                    $ref: "#/components/schemas/SEOSettings"
+                    $ref: "#/components/schemas/DisplayPageTemplateSEOSettings"
                     # @review
                     description:
                         The display page template's SEO settings.
@@ -2499,40 +2544,11 @@ components:
                     description:
                         A list of localized target keywords of the page to be used by search engines.
                     type: object
-                siteMapSettings:
+                sitemapSettings:
+                    $ref: "#/components/schemas/SitemapSettings"
                     # @review
                     description:
                         Represents settings related with the site map.
-                    properties:
-                        changeFrequency:
-                            description:
-                                Indicates how often a page is updated.
-                            enum:
-                                -   Always
-                                -   Hourly
-                                -   Daily
-                                -   Weekly
-                                -   Monthly
-                                -   Yearly
-                                -   Never
-                            type: string
-                        include:
-                            description:
-                                Whether search engines should crawl and index the page.
-                            type: boolean
-                        includeChildSitePages:
-                            # @review
-                            description:
-                                Whether search engines should crawl and index the child pages.
-                            type: boolean
-                        pagePriority:
-                            description:
-                                How the page should be prioritized relative to other pages.
-                            format: double
-                            maximum: 1
-                            minimum: 0
-                            type: number
-                    type: object
             type: object
         Settings:
             # @review
@@ -2773,6 +2789,40 @@ components:
                     description:
                         The localized submission of page type.
             type: object
+        SitemapSettings:
+            # @review
+            description:
+                Represents settings related with the site map.
+            properties:
+                changeFrequency:
+                    description:
+                        Indicates how often a page is updated.
+                    enum:
+                        -   Always
+                        -   Hourly
+                        -   Daily
+                        -   Weekly
+                        -   Monthly
+                        -   Yearly
+                        -   Never
+                    type: string
+                include:
+                    description:
+                        Whether search engines should crawl and index the page.
+                    type: boolean
+                includeChildSitePages:
+                    # @review
+                    description:
+                        Whether search engines should crawl and index the child pages.
+                    type: boolean
+                pagePriority:
+                    description:
+                        How the page should be prioritized relative to other pages.
+                    format: double
+                    maximum: 1
+                    minimum: 0
+                    type: number
+            type: object
         URLActionExecutionResult:
             # @review
             description:
@@ -2889,7 +2939,7 @@ components:
         UtilityPageSEOSettings:
             # @review
             description:
-                Settings related with SEO of an utility page.
+                Settings related with SEO of a utility page.
             properties:
                 description_i18n:
                     additionalProperties:
@@ -2909,7 +2959,7 @@ components:
         UtilityPageSettings:
             # @review
             description:
-                The settings of an utility page.
+                The settings of a utility page.
             properties:
                 seoSettings:
                     $ref: "#/components/schemas/UtilityPageSEOSettings"
@@ -3477,7 +3527,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.admin.site.client', and version '1.0.9'."
+        'com.liferay.headless.admin.site.client', and version '1.0.10'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -3578,51 +3628,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/DisplayPageTemplateFolder"
             # @review
-            tags: ["DisplayPageTemplateFolder"]
-    "/sites/{siteExternalReferenceCode}/display-page-template-folders/permissions":
-        get:
-            operationId: getSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderPermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-                -   in: query
-                    name: fields
-                    schema:
-                        type: string
-                -   in: query
-                    name: restrictFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: roleNames
-                    schema:
-                        type: string
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["DisplayPageTemplateFolder"]
-        put:
-            operationId: putSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderPermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-            requestBody:
-                content:
-                    application/json: {}
-                    application/xml: {}
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
             tags: ["DisplayPageTemplateFolder"]
     "/sites/{siteExternalReferenceCode}/display-page-template-folders/{displayPageTemplateFolderExternalReferenceCode}":
         delete:
@@ -4019,51 +4024,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/DisplayPageTemplate"
             # @review
-            tags: ["DisplayPageTemplate"]
-    "/sites/{siteExternalReferenceCode}/display-page-templates/permissions":
-        get:
-            operationId: getSiteSiteByExternalReferenceCodeDisplayPageTemplatePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-                -   in: query
-                    name: fields
-                    schema:
-                        type: string
-                -   in: query
-                    name: restrictFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: roleNames
-                    schema:
-                        type: string
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["DisplayPageTemplate"]
-        put:
-            operationId: putSiteSiteByExternalReferenceCodeDisplayPageTemplatePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-            requestBody:
-                content:
-                    application/json: {}
-                    application/xml: {}
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
             tags: ["DisplayPageTemplate"]
     "/sites/{siteExternalReferenceCode}/display-page-templates/{displayPageTemplateExternalReferenceCode}":
         delete:
@@ -4749,51 +4709,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/MasterPage"
             # @review
-            tags: ["MasterPage"]
-    "/sites/{siteExternalReferenceCode}/master-pages/permissions":
-        get:
-            operationId: getSiteSiteByExternalReferenceCodeMasterPagePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-                -   in: query
-                    name: fields
-                    schema:
-                        type: string
-                -   in: query
-                    name: restrictFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: roleNames
-                    schema:
-                        type: string
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["MasterPage"]
-        put:
-            operationId: putSiteSiteByExternalReferenceCodeMasterPagePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-            requestBody:
-                content:
-                    application/json: {}
-                    application/xml: {}
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
             tags: ["MasterPage"]
     "/sites/{siteExternalReferenceCode}/master-pages/{masterPageExternalReferenceCode}":
         delete:
@@ -6874,51 +6789,6 @@ paths:
                                 $ref: "#/components/schemas/PageTemplateSet"
             # @review
             tags: ["PageTemplateSet"]
-    "/sites/{siteExternalReferenceCode}/page-template-sets/permissions":
-        get:
-            operationId: getSiteSiteByExternalReferenceCodePageTemplateSetPermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-                -   in: query
-                    name: fields
-                    schema:
-                        type: string
-                -   in: query
-                    name: restrictFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: roleNames
-                    schema:
-                        type: string
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["PageTemplateSet"]
-        put:
-            operationId: putSiteSiteByExternalReferenceCodePageTemplateSetPermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-            requestBody:
-                content:
-                    application/json: {}
-                    application/xml: {}
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["PageTemplateSet"]
     "/sites/{siteExternalReferenceCode}/page-template-sets/{pageTemplateSetExternalReferenceCode}":
         delete:
             # @review
@@ -7315,51 +7185,6 @@ paths:
                                 $ref: "#/components/schemas/PageTemplate"
             # @review
             tags: ["PageTemplate"]
-    "/sites/{siteExternalReferenceCode}/page-templates/permissions":
-        get:
-            operationId: getSiteSiteByExternalReferenceCodePageTemplatePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-                -   in: query
-                    name: fields
-                    schema:
-                        type: string
-                -   in: query
-                    name: restrictFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: roleNames
-                    schema:
-                        type: string
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["PageTemplate"]
-        put:
-            operationId: putSiteSiteByExternalReferenceCodePageTemplatePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-            requestBody:
-                content:
-                    application/json: {}
-                    application/xml: {}
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["PageTemplate"]
     "/sites/{siteExternalReferenceCode}/page-templates/{pageTemplateExternalReferenceCode}":
         delete:
             # @review
@@ -7749,51 +7574,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/SitePage"
             # @review
-            tags: ["SitePage"]
-    "/sites/{siteExternalReferenceCode}/site-pages/permissions":
-        get:
-            operationId: getSiteSiteByExternalReferenceCodeSitePagePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-                -   in: query
-                    name: fields
-                    schema:
-                        type: string
-                -   in: query
-                    name: restrictFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: roleNames
-                    schema:
-                        type: string
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["SitePage"]
-        put:
-            operationId: putSiteSiteByExternalReferenceCodeSitePagePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-            requestBody:
-                content:
-                    application/json: {}
-                    application/xml: {}
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
             tags: ["SitePage"]
     "/sites/{siteExternalReferenceCode}/site-pages/{sitePageExternalReferenceCode}":
         delete:
@@ -8485,51 +8265,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/UtilityPage"
             # @review
-            tags: ["UtilityPage"]
-    "/sites/{siteExternalReferenceCode}/utility-pages/permissions":
-        get:
-            operationId: getSiteSiteByExternalReferenceCodeUtilityPagePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-                -   in: query
-                    name: fields
-                    schema:
-                        type: string
-                -   in: query
-                    name: restrictFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: roleNames
-                    schema:
-                        type: string
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["UtilityPage"]
-        put:
-            operationId: putSiteSiteByExternalReferenceCodeUtilityPagePermissionsPage
-            parameters:
-                -   in: path
-                    name: siteExternalReferenceCode
-                    required: true
-                    schema:
-                        type: string
-            requestBody:
-                content:
-                    application/json: {}
-                    application/xml: {}
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
             tags: ["UtilityPage"]
     "/sites/{siteExternalReferenceCode}/utility-pages/{utilityPageExternalReferenceCode}":
         delete:

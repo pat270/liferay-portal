@@ -44,6 +44,10 @@ import org.osgi.util.tracker.ServiceTracker;
 @Component(service = UpgradeRecorder.class)
 public class UpgradeRecorder {
 
+	public Map<String, Map<String, Integer>> getDataCleanUpMessages() {
+		return _dataCleanUpMessages;
+	}
+
 	public Map<String, Map<String, Integer>> getErrorMessages() {
 		return _errorMessages;
 	}
@@ -122,6 +126,7 @@ public class UpgradeRecorder {
 	}
 
 	public void start() {
+		_dataCleanUpMessages.clear();
 		_errorMessages.clear();
 		_result = "running";
 		_schemaVersionsMap.clear();
@@ -257,6 +262,15 @@ public class UpgradeRecorder {
 	private Map<String, Map<String, Integer>> _filter(
 		Map<String, Map<String, Integer>> messages) {
 
+		for (String dataCleanUpClassName : _DATA_CLEAN_UP_CLASS_NAMES) {
+			if (messages.containsKey(dataCleanUpClassName)) {
+				_dataCleanUpMessages.putIfAbsent(
+					dataCleanUpClassName, messages.get(dataCleanUpClassName));
+
+				messages.remove(dataCleanUpClassName);
+			}
+		}
+
 		for (String filteredClassName : _FILTERED_CLASS_NAMES) {
 			messages.remove(filteredClassName);
 		}
@@ -305,6 +319,11 @@ public class UpgradeRecorder {
 		}
 	}
 
+	private static final String[] _DATA_CLEAN_UP_CLASS_NAMES = {
+		"com.liferay.portal.kernel.upgrade." +
+			"DeleteDuplicateUniqueFinderRowsUpgradeProcess"
+	};
+
 	private static final String[] _FILTERED_CLASS_NAMES = {
 		"com.liferay.portal.search.elasticsearch7.internal.sidecar." +
 			"SidecarManager"
@@ -313,6 +332,8 @@ public class UpgradeRecorder {
 	private static final Log _log = LogFactoryUtil.getLog(
 		UpgradeRecorder.class);
 
+	private static final Map<String, Map<String, Integer>>
+		_dataCleanUpMessages = new ConcurrentHashMap<>();
 	private static final Map<String, Map<String, Integer>> _errorMessages =
 		new ConcurrentHashMap<>();
 	private static String _result;

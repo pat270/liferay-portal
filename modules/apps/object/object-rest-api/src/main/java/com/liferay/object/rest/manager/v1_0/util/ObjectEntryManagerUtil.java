@@ -31,6 +31,15 @@ public class ObjectEntryManagerUtil {
 			existingObjectEntry.setDateModified(objectEntry::getDateModified);
 		}
 
+		if (objectEntry.getDisplayDate() != null) {
+			existingObjectEntry.setDisplayDate(objectEntry::getDisplayDate);
+		}
+
+		if (objectEntry.getExpirationDate() != null) {
+			existingObjectEntry.setExpirationDate(
+				objectEntry::getExpirationDate);
+		}
+
 		if (objectEntry.getExternalReferenceCode() != null) {
 			existingObjectEntry.setExternalReferenceCode(
 				objectEntry::getExternalReferenceCode);
@@ -69,18 +78,30 @@ public class ObjectEntryManagerUtil {
 							NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
 						objectField);
 
-				if (properties.containsKey(objectField.getName()) &&
+				String relationshipObjectFieldName = objectField.getName();
+
+				if (properties.containsKey(relationshipObjectFieldName) &&
 					!properties.containsKey(
 						objectRelationshipERCObjectFieldName)) {
 
 					existingProperties.remove(
 						objectRelationshipERCObjectFieldName);
 				}
+				else if (properties.containsKey(
+							objectRelationshipERCObjectFieldName) &&
+						 !properties.containsKey(relationshipObjectFieldName)) {
+
+					existingProperties.remove(relationshipObjectFieldName);
+				}
 			}
 
 			existingProperties.putAll(properties);
 
 			existingObjectEntry.setProperties(() -> existingProperties);
+		}
+
+		if (objectEntry.getReviewDate() != null) {
+			existingObjectEntry.setReviewDate(objectEntry::getReviewDate);
 		}
 
 		if (objectEntry.getStatus() != null) {

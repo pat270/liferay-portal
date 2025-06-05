@@ -35,6 +35,9 @@ public class AssetSubtypeIdentifierBuilderImpl
 		_className = assetSubtypeIdentifierParts[0];
 
 		if (assetSubtypeIdentifierParts.length != 3) {
+			_groupExternalReferenceCode = null;
+			_subtypeExternalReferenceCode = null;
+
 			return this;
 		}
 

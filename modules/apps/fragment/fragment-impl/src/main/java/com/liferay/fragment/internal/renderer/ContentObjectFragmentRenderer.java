@@ -43,13 +43,13 @@ import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.PrintWriter;
 
 import java.util.List;
 import java.util.Locale;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -234,8 +234,12 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 		}
 
 		long classPK = _getClassPK(infoItemReference, jsonObject);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPD-39437") ||
+		if (!FeatureFlagManagerUtil.isEnabled(
+				themeDisplay.getCompanyId(), "LPD-39437") ||
 			!fragmentRendererContext.isViewMode() || (classPK <= 0)) {
 
 			_render(
@@ -351,7 +355,8 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 			(InfoItemDetails)httpServletRequest.getAttribute(
 				InfoDisplayWebKeys.INFO_ITEM_DETAILS);
 
-		if ((classPK <= 0) && (infoItemReference != null) &&
+		if ((classPK <= 0) && (infoItemDetails != null) &&
+			(infoItemReference != null) &&
 			infoItemReference.equals(infoItemDetails.getInfoItemReference())) {
 
 			Object infoItem = httpServletRequest.getAttribute(
