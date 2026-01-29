@@ -53,7 +53,7 @@ $cadmin-label: map-deep-merge(
 		margin-right: $cadmin-label-spacer-x,
 		margin-top: $cadmin-label-spacer-y,
 		max-width: 100%,
-		outline: 0,
+		outline: 0px,
 		padding-bottom: $cadmin-label-padding-y,
 		padding-left: $cadmin-label-padding-x,
 		padding-right: $cadmin-label-padding-x,
@@ -156,7 +156,7 @@ $cadmin-label-item-spacer-x: 0.85714em !default;
 $cadmin-label-item-spacer-y: null !default;
 
 $cadmin-label-lexicon-icon-height: null !default;
-$cadmin-label-lexicon-icon-margin-top: 0 !default;
+$cadmin-label-lexicon-icon-margin-top: 0px !default;
 $cadmin-label-lexicon-icon-width: null !default;
 
 $cadmin-label-item: () !default;
@@ -168,7 +168,7 @@ $cadmin-label-item: map-deep-merge(
 		justify-content: center,
 		margin-bottom: $cadmin-label-item-spacer-y,
 		margin-top: $cadmin-label-item-spacer-y,
-		min-height: 0,
+		min-height: 0px,
 		position: relative,
 		link: (
 			display: inline-flex,

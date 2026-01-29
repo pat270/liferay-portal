@@ -93,7 +93,7 @@ $dropdown-menu: map-deep-merge(
 		display: none,
 		float: left,
 		font-size: $dropdown-font-size,
-		left: 0,
+		left: 0rem,
 		list-style: none,
 		margin: $dropdown-spacer 0 0,
 		max-height: $dropdown-max-height,
@@ -165,8 +165,8 @@ $dropdown-item-base: () !default;
 $dropdown-item-base: map-deep-merge(
 	(
 		background-color: transparent,
-		border-radius: 0,
-		border-width: 0,
+		border-radius: 0rem,
+		border-width: 0rem,
 		clear: both,
 		color: $dropdown-link-color,
 		cursor: $link-cursor,
@@ -205,7 +205,7 @@ $dropdown-item-base: map-deep-merge(
 			color: $dropdown-link-disabled-color,
 			cursor: $dropdown-item-disabled-cursor,
 			opacity: 1,
-			outline: 0,
+			outline: 0rem,
 			active: (
 				pointer-events: none,
 			),
@@ -239,11 +239,11 @@ $dropdown-item-base: map-deep-merge(
 			line-height: 1,
 			lexicon-icon: (
 				font-size: 1rem,
-				margin-top: 0,
+				margin-top: 0rem,
 			),
 		),
 		label: (
-			margin-bottom: 0,
+			margin-bottom: 0rem,
 			margin-top: 0.3125rem,
 		),
 	),
@@ -321,7 +321,7 @@ $dropdown-header: map-deep-merge(
 			font-size: $dropdown-header-font-size-mobile,
 		),
 		first-child: (
-			margin-top: 0,
+			margin-top: 0rem,
 		),
 	),
 	$dropdown-header
@@ -377,7 +377,7 @@ $dropdown-subheader: map-deep-merge(
 		white-space: normal,
 		word-wrap: break-word,
 		first-child: (
-			margin-top: 0,
+			margin-top: 0rem,
 		),
 	),
 	$dropdown-subheader
@@ -424,7 +424,7 @@ $dropdown-divider: () !default;
 $dropdown-divider: map-merge(
 	(
 		border-top: 1px solid $dropdown-divider-bg,
-		height: 0,
+		height: 0rem,
 		margin: $dropdown-divider-margin-y 0,
 		overflow: hidden,
 	),
@@ -438,7 +438,7 @@ $dropdown-divider: map-merge(
 $dropdown-section-custom-control: () !default;
 $dropdown-section-custom-control: map-deep-merge(
 	(
-		margin-bottom: 0,
+		margin-bottom: 0rem,
 	),
 	$dropdown-section-custom-control
 );
@@ -516,7 +516,7 @@ $dropdown-item-indicator-start: map-deep-merge(
 		width: $dropdown-item-indicator-size,
 		lexicon-icon: (
 			font-size: 1rem,
-			margin-top: 0,
+			margin-top: 0rem,
 		),
 	),
 	$dropdown-item-indicator-start
@@ -563,7 +563,7 @@ $dropdown-item-indicator-end: map-deep-merge(
 		width: $dropdown-item-indicator-size,
 		lexicon-icon: (
 			font-size: 16px,
-			margin-top: 0,
+			margin-top: 0rem,
 		),
 	),
 	$dropdown-item-indicator-end
@@ -596,8 +596,8 @@ $dropdown-menu-top: () !default;
 $dropdown-menu-top: map-deep-merge(
 	(
 		bottom: 100% !important,
-		left: 0 !important,
-		margin-top: 0,
+		left: 0rem !important,
+		margin-top: 0rem,
 		margin-bottom: $dropdown-spacer,
 		right: auto !important,
 		top: auto !important,
@@ -614,9 +614,9 @@ $dropdown-menu-top-right: map-deep-merge(
 	(
 		bottom: 100% !important,
 		left: auto !important,
-		margin-top: 0,
+		margin-top: 0rem,
 		margin-bottom: $dropdown-spacer,
-		right: 0 !important,
+		right: 0rem !important,
 		top: auto !important,
 		transform: none !important,
 		will-change: auto !important,
@@ -631,7 +631,7 @@ $dropdown-menu-top-center: map-deep-merge(
 	(
 		bottom: 100% !important,
 		left: 50% !important,
-		margin-top: 0,
+		margin-top: 0rem,
 		margin-bottom: $dropdown-spacer,
 		right: auto !important,
 		top: auto !important,
@@ -664,9 +664,9 @@ $dropdown-menu-left-side: map-deep-merge(
 		bottom: auto !important,
 		left: auto !important,
 		margin-right: $dropdown-spacer,
-		margin-top: 0,
+		margin-top: 0rem,
 		right: 100% !important,
-		top: 0 !important,
+		top: 0rem !important,
 		transform: none !important,
 		will-change: auto !important,
 	),
@@ -678,10 +678,10 @@ $dropdown-menu-left-side: map-deep-merge(
 $dropdown-menu-left-side-bottom: () !default;
 $dropdown-menu-left-side-bottom: map-deep-merge(
 	(
-		bottom: 0 !important,
+		bottom: 0rem !important,
 		left: auto !important,
 		margin-right: $dropdown-spacer,
-		margin-top: 0,
+		margin-top: 0rem,
 		right: 100% !important,
 		top: auto !important,
 		transform: none !important,
@@ -698,7 +698,7 @@ $dropdown-menu-left-side-middle: map-deep-merge(
 		bottom: auto !important,
 		left: auto !important,
 		margin-right: $dropdown-spacer,
-		margin-top: 0,
+		margin-top: 0rem,
 		right: 100% !important,
 		top: 50% !important,
 		transform: translate(0, -50%) !important,
@@ -715,9 +715,9 @@ $dropdown-menu-right-side: map-deep-merge(
 		bottom: auto !important,
 		left: 100% !important,
 		margin-left: $dropdown-spacer,
-		margin-top: 0,
+		margin-top: 0rem,
 		right: auto !important,
-		top: 0 !important,
+		top: 0rem !important,
 		transform: none !important,
 		will-change: auto !important,
 	),
@@ -729,10 +729,10 @@ $dropdown-menu-right-side: map-deep-merge(
 $dropdown-menu-right-side-bottom: () !default;
 $dropdown-menu-right-side-bottom: map-deep-merge(
 	(
-		bottom: 0 !important,
+		bottom: 0rem !important,
 		left: 100% !important,
 		margin-left: $dropdown-spacer,
-		margin-top: 0,
+		margin-top: 0rem,
 		right: auto !important,
 		top: auto !important,
 		transform: none !important,
@@ -749,7 +749,7 @@ $dropdown-menu-right-side-middle: map-deep-merge(
 		bottom: auto !important,
 		left: 100% !important,
 		margin-left: $dropdown-spacer,
-		margin-top: 0,
+		margin-top: 0rem,
 		right: auto !important,
 		top: 50% !important,
 		transform: translate(0, -50%) !important,
@@ -771,7 +771,7 @@ $dropdown-wide-width: 500px !default;
 $dropdown-menu-width-shrink: () !default;
 $dropdown-menu-width-shrink: map-deep-merge(
 	(
-		min-width: 0,
+		min-width: 0rem,
 	),
 	$dropdown-menu-width-shrink
 );
@@ -784,7 +784,7 @@ $dropdown-menu-width-full: map-merge(
 		left: 12px !important,
 		right: 12px !important,
 		max-width: none,
-		min-width: 0,
+		min-width: 0rem,
 		width: calc(100% - 24px),
 	),
 	$dropdown-menu-width-full
@@ -796,7 +796,7 @@ $dropdown-menu-width-sm: () !default;
 $dropdown-menu-width-sm: map-merge(
 	(
 		max-width: none,
-		min-width: 0,
+		min-width: 0rem,
 		width: 500px,
 	),
 	$dropdown-menu-width-sm
@@ -819,7 +819,7 @@ $dropdown-menu-height-auto: map-merge(
 	(
 		height: auto,
 		max-height: none,
-		min-height: 0,
+		min-height: 0rem,
 	),
 	$dropdown-menu-height-auto
 );
@@ -877,7 +877,7 @@ $dropdown-action: map-deep-merge(
 			height: $dropdown-action-toggle-size,
 			justify-content: center,
 			line-height: inherit,
-			padding: 0,
+			padding: 0rem,
 			text-transform: inherit,
 			vertical-align: baseline,
 			width: $dropdown-action-toggle-size,
@@ -886,11 +886,11 @@ $dropdown-action: map-deep-merge(
 				opacity: $dropdown-action-toggle-disabled-opacity,
 			),
 			lexicon-icon: (
-				margin-top: 0,
+				margin-top: 0rem,
 			),
 			inline-item: (
 				lexicon-icon: (
-					margin-top: 0,
+					margin-top: 0rem,
 				),
 			),
 		),
@@ -914,10 +914,10 @@ $dropdown-menu-alert: map-deep-merge(
 		margin: $dropdown-alert-margin,
 		padding: $dropdown-alert-padding-y $dropdown-alert-padding-x,
 		first-child: (
-			margin-top: 0,
+			margin-top: 0rem,
 		),
 		last-child: (
-			margin-bottom: 0,
+			margin-bottom: 0rem,
 		),
 	),
 	$dropdown-menu-alert
@@ -926,8 +926,8 @@ $dropdown-menu-alert: map-deep-merge(
 $dropdown-menu-alert-fluid: () !default;
 $dropdown-menu-alert-fluid: map-deep-merge(
 	(
-		margin-left: 0,
-		margin-right: 0,
+		margin-left: 0rem,
+		margin-right: 0rem,
 		first-child: (
 			margin-top: math-sign($dropdown-padding-y),
 		),
@@ -982,7 +982,7 @@ $dropdown-menu-palette: map-deep-merge(
 			dropdown-item-scroll: (
 				font-size: 1rem,
 				height: 2rem,
-				padding: 0,
+				padding: 0rem,
 				position: absolute,
 				text-align: center,
 				z-index: 1,

@@ -7,7 +7,7 @@ $table-font-size: 0.875rem !default;
 $table-disabled-color: $gray-500 !default;
 
 $table-head-bg: $white !default;
-$table-head-border-bottom-width: 0 !default;
+$table-head-border-bottom-width: 0rem !default;
 $table-head-color: $gray-600 !default;
 $table-head-font-weight: $font-weight-semi-bold !default;
 
@@ -22,7 +22,7 @@ $table-head-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$table-head-link
@@ -60,7 +60,7 @@ $table-title-link: map-deep-merge(
 		transition: box-shadow 0.15s ease-in-out,
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$table-title-link
@@ -91,7 +91,7 @@ $table-action-link: map-deep-merge(
 			background-color: rgba(0, 0, 0, 0.02),
 			color: $gray-900,
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 		active: (
 			background-color: rgba(0, 0, 0, 0.04),
@@ -115,7 +115,7 @@ $table-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$table-link
@@ -194,7 +194,7 @@ $table-list-title-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$table-list-title-link
@@ -215,7 +215,7 @@ $table-list-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$table-list-link
@@ -237,7 +237,7 @@ $table-list-action-link: map-deep-merge(
 			background-color: rgba(0, 0, 0, 0.02),
 			color: $gray-900,
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 		active: (
 			background-color: rgba(0, 0, 0, 0.04),

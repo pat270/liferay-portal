@@ -50,7 +50,7 @@ $toggle-switch-sizes: map-deep-merge(
 			toggle-switch-check: (
 				toggle-switch-bar: (
 					after: (
-						bottom: 0,
+						bottom: 0rem,
 						height: 12px,
 						left: 2px,
 						top: 2px,
@@ -58,7 +58,7 @@ $toggle-switch-sizes: map-deep-merge(
 					),
 					toggle-switch-icon: (
 						font-size: 0.5rem,
-						top: 0,
+						top: 0rem,
 					),
 					toggle-switch-icon-off: (
 						left: 13px,

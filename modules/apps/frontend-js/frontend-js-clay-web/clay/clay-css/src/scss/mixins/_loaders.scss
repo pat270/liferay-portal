@@ -42,7 +42,7 @@
 		$after: setter(map-get($map, after), ());
 		$after-color: setter(map-get($map, color), map-get($after, color));
 
-		$ball-0-scale: setter(map-get($map, ball-0-scale), 0);
+		$ball-0-scale: setter(map-get($map, ball-0-scale), 0em);
 		$ball-1-scale: setter(map-get($map, ball-1-scale), -0.1em);
 		$ball-2-scale: setter(map-get($map, ball-2-scale), -0.15em);
 		$ball-3-scale: setter(map-get($map, ball-3-scale), -0.2em);

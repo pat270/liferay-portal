@@ -10,7 +10,7 @@ $dropdown-border-color: $gray-300 !default;
 
 // @deprecated as of v3.x use map $dropdown-menu instead
 
-$dropdown-border-width: 0 !default;
+$dropdown-border-width: 0rem !default;
 
 // @deprecated as of v3.x use map $dropdown-menu instead
 
@@ -97,7 +97,7 @@ $dropdown-item-base: map-deep-merge(
 		font-size: inherit,
 		focus: (
 			box-shadow: $component-focus-inset-box-shadow,
-			outline: 0,
+			outline: 0rem,
 			text-decoration: none,
 		),
 		active-class: (

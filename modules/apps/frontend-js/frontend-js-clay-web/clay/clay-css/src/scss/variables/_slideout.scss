@@ -63,7 +63,7 @@ $c-slideout-push-start: map-deep-merge(
 		padding-left: $c-slideout-sidebar-width,
 		media-breakpoint-down: (
 			md: (
-				padding-left: 0,
+				padding-left: 0rem,
 			),
 		),
 	),
@@ -76,7 +76,7 @@ $c-slideout-push-end: map-deep-merge(
 		padding-right: $c-slideout-sidebar-width,
 		media-breakpoint-down: (
 			md: (
-				padding-right: 0,
+				padding-right: 0rem,
 			),
 		),
 	),
@@ -187,10 +187,10 @@ $c-slideout-fluid: map-deep-merge(
 			),
 			sm: (
 				'&.c-slideout-push-start': (
-					padding-left: 0,
+					padding-left: 0rem,
 				),
 				'&.c-slideout-push-end': (
-					padding-right: 0,
+					padding-right: 0rem,
 				),
 				sidebar: (
 					max-width: none,
@@ -225,9 +225,9 @@ $c-slideout-start-sm-down: map-deep-merge(
 $c-slideout-start: () !default;
 $c-slideout-start: map-deep-merge(
 	(
-		bottom: 0,
-		left: 0,
-		top: 0,
+		bottom: 0rem,
+		left: 0rem,
+		top: 0rem,
 		c-slideout-tbar-shown-sidebar: (
 			left: math-sign($c-slideout-sidebar-width),
 		),
@@ -237,13 +237,13 @@ $c-slideout-start: map-deep-merge(
 			width: $c-slideout-sidebar-width,
 		),
 		sidebar-c-slideout-show: (
-			left: 0,
+			left: 0rem,
 		),
 		tbar-stacked: (
 			left: math-sign($c-slideout-tbar-stacked-min-width),
 		),
 		tbar-stacked-c-slideout-show: (
-			left: 0,
+			left: 0rem,
 		),
 		media-breakpoint-down: (
 			sm: $c-slideout-start-sm-down,
@@ -274,9 +274,9 @@ $c-slideout-end-sm-down: map-deep-merge(
 $c-slideout-end: () !default;
 $c-slideout-end: map-deep-merge(
 	(
-		bottom: 0,
-		right: 0,
-		top: 0,
+		bottom: 0rem,
+		right: 0rem,
+		top: 0rem,
 		c-slideout-tbar-shown-sidebar: (
 			right: math-sign($c-slideout-sidebar-width),
 		),
@@ -285,16 +285,16 @@ $c-slideout-end: map-deep-merge(
 				math-sign($c-slideout-tbar-stacked-min-width)},
 		),
 		sidebar-c-slideout-show: (
-			right: 0,
+			right: 0rem,
 		),
 		tbar-stacked: (
 			right: math-sign($c-slideout-tbar-stacked-min-width),
 		),
 		tbar-stacked-c-slideout-show: (
-			right: 0,
+			right: 0rem,
 		),
 		c-horizontal-resizer: (
-			left: 0,
+			left: 0rem,
 			right: auto,
 		),
 		media-breakpoint-down: (

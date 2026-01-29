@@ -12,7 +12,7 @@ $application-bar-base: map-deep-merge(
 		navbar-nav: (
 			nav-link: (
 				border-radius: $border-radius,
-				outline: 0,
+				outline: 0rem,
 				transition: box-shadow 0.15s ease-in-out,
 				focus: (
 					box-shadow: $component-focus-box-shadow,

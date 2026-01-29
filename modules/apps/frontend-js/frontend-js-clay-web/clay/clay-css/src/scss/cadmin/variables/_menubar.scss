@@ -5,7 +5,7 @@ $cadmin-menubar-primary: map-deep-merge(
 			position: relative,
 		),
 		nav-link: (
-			border-radius: 0,
+			border-radius: 0px,
 			color: $cadmin-gray-900,
 			line-height: 24px,
 			transition: #{color 0.15s ease-in-out,
@@ -13,18 +13,18 @@ $cadmin-menubar-primary: map-deep-merge(
 			border-color 0.15s ease-in-out,
 			box-shadow 0.15s ease-in-out},
 			before: (
-				bottom: 0,
+				bottom: 0px,
 				content: '',
 				display: block,
-				left: 0,
+				left: 0px,
 				position: absolute,
-				top: 0,
+				top: 0px,
 				transition: $cadmin-transition-base,
 			),
 			hover: (
 				background-color: $cadmin-primary-l3,
 				color: $cadmin-gray-900,
-				letter-spacing: 0,
+				letter-spacing: 0px,
 				before: (
 					background: $cadmin-secondary-l0,
 					width: 2px,
@@ -34,17 +34,17 @@ $cadmin-menubar-primary: map-deep-merge(
 				background-color: c-unset,
 				box-shadow: none,
 				color: $cadmin-gray-900,
-				outline: 0,
+				outline: 0px,
 				after: (
-					bottom: 0,
+					bottom: 0px,
 					box-shadow: $cadmin-component-focus-inset-box-shadow,
 					content: '',
 					display: block,
-					left: 0,
+					left: 0px,
 					pointer-events: none,
 					position: absolute,
-					right: 0,
-					top: 0,
+					right: 0px,
+					top: 0px,
 				),
 			),
 			active-class: (
@@ -78,7 +78,7 @@ $cadmin-menubar-primary: map-deep-merge(
 				color: $cadmin-gray-900,
 				before: (
 					background-color: transparent,
-					width: 0,
+					width: 0px,
 				),
 				hover: (
 					before: (
@@ -154,7 +154,7 @@ $cadmin-menubar-vertical-expand-md: map-deep-merge(
 					margin-top: 8px,
 				),
 				nav-nested-margins-item: (
-					margin-left: 0,
+					margin-left: 0px,
 				),
 				menubar-toggler: (
 					align-items: center,
@@ -171,7 +171,7 @@ $cadmin-menubar-vertical-expand-md: map-deep-merge(
 						max-width: none,
 					),
 					lexicon-icon: (
-						margin-top: 0,
+						margin-top: 0px,
 					),
 				),
 			),
@@ -195,18 +195,18 @@ $cadmin-menubar-vertical-transparent-md: map-deep-merge(
 			box-shadow 0.15s ease-in-out},
 			before: (
 				border-radius: $cadmin-border-radius 0 0 $cadmin-border-radius,
-				bottom: 0,
+				bottom: 0px,
 				content: '',
 				display: block,
-				left: 0,
+				left: 0px,
 				position: absolute,
-				top: 0,
+				top: 0px,
 			),
 			hover: (
 				background-color: rgba($cadmin-gray-900, 0.04),
 				color: $cadmin-gray-900,
 				font-weight: $cadmin-font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0px,
 				before: (
 					background: $cadmin-secondary-l0,
 					width: 3px,
@@ -215,25 +215,25 @@ $cadmin-menubar-vertical-transparent-md: map-deep-merge(
 			focus: (
 				background-color: c-unset,
 				color: $cadmin-gray-900,
-				outline: 0,
+				outline: 0px,
 				after: (
 					border-radius: $cadmin-border-radius,
-					bottom: 0,
+					bottom: 0px,
 					box-shadow: $cadmin-component-focus-box-shadow,
 					content: '',
 					display: block,
-					left: 0,
+					left: 0px,
 					pointer-events: none,
 					position: absolute,
-					right: 0,
-					top: 0,
+					right: 0px,
+					top: 0px,
 				),
 			),
 			active-class: (
 				background-color: rgba($cadmin-primary, 0.06),
 				color: $cadmin-gray-900,
 				font-weight: $cadmin-font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0px,
 				before: (
 					background-color: $cadmin-primary-l0,
 					width: 4px,
@@ -272,7 +272,7 @@ $cadmin-menubar-vertical-transparent-md: map-deep-merge(
 				nav-link: (
 					border-radius: clay-enable-rounded(0),
 					color: $cadmin-gray-900,
-					margin-bottom: 0,
+					margin-bottom: 0px,
 					before: (
 						content: none,
 					),
@@ -321,7 +321,7 @@ $cadmin-menubar-vertical-transparent-md: map-deep-merge(
 							clay-enable-shadows(
 								$cadmin-component-focus-box-shadow
 							),
-						outline: 0,
+						outline: 0px,
 					),
 					disabled: (
 						box-shadow: clay-enable-shadows(none),
@@ -367,7 +367,7 @@ $cadmin-menubar-vertical-decorated-md-nav-link-after-active: () !default;
 $cadmin-menubar-vertical-decorated-md-nav-link-after-active: map-deep-merge(
 	(
 		background-color: $cadmin-primary-l2,
-		bottom: 0,
+		bottom: 0px,
 		content: '',
 		display: block,
 		left:
@@ -378,7 +378,7 @@ $cadmin-menubar-vertical-decorated-md-nav-link-after-active: map-deep-merge(
 				border-left-width
 			),
 		position: absolute,
-		top: 0,
+		top: 0px,
 		width:
 			map-get(
 				$cadmin-menubar-vertical-decorated-md-nav,
@@ -420,7 +420,7 @@ $cadmin-menubar-vertical-expand-lg: map-deep-merge(
 					margin-top: 8px,
 				),
 				nav-nested-margins-item: (
-					margin-left: 0,
+					margin-left: 0px,
 				),
 				menubar-toggler: (
 					align-items: center,
@@ -437,7 +437,7 @@ $cadmin-menubar-vertical-expand-lg: map-deep-merge(
 						max-width: none,
 					),
 					lexicon-icon: (
-						margin-top: 0,
+						margin-top: 0px,
 					),
 				),
 			),
@@ -460,18 +460,18 @@ $cadmin-menubar-vertical-transparent-lg: map-deep-merge(
 			box-shadow 0.15s ease-in-out},
 			before: (
 				border-radius: $cadmin-border-radius 0 0 $cadmin-border-radius,
-				bottom: 0,
+				bottom: 0px,
 				content: '',
 				display: block,
-				left: 0,
+				left: 0px,
 				position: absolute,
-				top: 0,
+				top: 0px,
 			),
 			hover: (
 				background-color: rgba($cadmin-gray-900, 0.04),
 				color: $cadmin-gray-900,
 				font-weight: $cadmin-font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0px,
 				before: (
 					background: $cadmin-secondary-l0,
 					width: 3px,
@@ -479,24 +479,24 @@ $cadmin-menubar-vertical-transparent-lg: map-deep-merge(
 			),
 			focus: (
 				color: $cadmin-gray-900,
-				outline: 0,
+				outline: 0px,
 				after: (
 					border-radius: $cadmin-border-radius,
-					bottom: 0,
+					bottom: 0px,
 					box-shadow: $cadmin-component-focus-box-shadow,
 					content: '',
 					display: block,
-					left: 0,
+					left: 0px,
 					position: absolute,
-					right: 0,
-					top: 0,
+					right: 0px,
+					top: 0px,
 				),
 			),
 			active-class: (
 				background-color: rgba($cadmin-primary, 0.06),
 				color: $cadmin-gray-900,
 				font-weight: $cadmin-font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0px,
 				before: (
 					background-color: $cadmin-primary-l0,
 					width: 4px,
@@ -535,7 +535,7 @@ $cadmin-menubar-vertical-transparent-lg: map-deep-merge(
 				nav-link: (
 					border-radius: clay-enable-rounded(0),
 					color: $cadmin-gray-900,
-					margin-bottom: 0,
+					margin-bottom: 0px,
 					before: (
 						content: none,
 					),
@@ -583,7 +583,7 @@ $cadmin-menubar-vertical-transparent-lg: map-deep-merge(
 							clay-enable-shadows(
 								$cadmin-component-focus-box-shadow
 							),
-						outline: 0,
+						outline: 0px,
 					),
 					disabled: (
 						box-shadow: clay-enable-shadows(none),

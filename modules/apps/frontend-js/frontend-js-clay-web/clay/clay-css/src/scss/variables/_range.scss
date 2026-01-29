@@ -21,15 +21,15 @@ $clay-range-input-group-text: map-merge(
 	(
 		background-color:
 			setter(map-get($clay-range-input-group-text, bg), transparent),
-		border-width: 0,
+		border-width: 0rem,
 		color: $body-color,
 		font-size: 0.875rem,
 		font-weight: $font-weight-semi-bold,
 		min-width: 1.5rem,
-		padding-bottom: 0,
-		padding-left: 0,
-		padding-right: 0,
-		padding-top: 0,
+		padding-bottom: 0rem,
+		padding-left: 0rem,
+		padding-right: 0rem,
+		padding-top: 0rem,
 	),
 	$clay-range-input-group-text
 );
@@ -59,7 +59,7 @@ $clay-range-input: map-deep-merge(
 		clay-range-thumb: (
 			background-color: $white,
 			border-radius: 100px,
-			border-width: 0,
+			border-width: 0rem,
 			box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.3),
 			height: 1.5rem,
 			margin-top: -0.75rem,
@@ -129,15 +129,15 @@ $clay-range-input: map-deep-merge(
 			appearance: none,
 			background-color: transparent,
 			height: if(variable-exists(input-height), $input-height, 2.375rem),
-			margin: 0,
-			padding: 0,
+			margin: 0rem,
+			padding: 0rem,
 			position: relative,
 			z-index: $zindex-clay-range-input-form-control,
 			hover: (
 				cursor: $link-cursor,
 			),
 			focus: (
-				outline: 0,
+				outline: 0rem,
 				clay-range-thumb: (
 					box-shadow: $component-focus-box-shadow,
 				),
@@ -163,7 +163,7 @@ $clay-range-input: map-deep-merge(
 			margin-top: 2.5rem,
 			position: absolute,
 			text-align: center,
-			top: 0,
+			top: 0rem,
 			width: 1.5rem,
 		),
 		data-label-min: (
@@ -174,7 +174,7 @@ $clay-range-input: map-deep-merge(
 		data-label-max: (
 			after: (
 				content: unquote("'\\FEFF' attr(data-label-max)"),
-				right: 0,
+				right: 0rem,
 			),
 		),
 	),

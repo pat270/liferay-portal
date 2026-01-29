@@ -5,7 +5,7 @@ $menubar-primary: map-deep-merge(
 			position: relative,
 		),
 		nav-link: (
-			border-radius: 0,
+			border-radius: 0rem,
 			color: $gray-900,
 			line-height: 24px,
 			transition: #{color 0.15s ease-in-out,
@@ -13,18 +13,18 @@ $menubar-primary: map-deep-merge(
 			border-color 0.15s ease-in-out,
 			box-shadow 0.15s ease-in-out},
 			before: (
-				bottom: 0,
+				bottom: 0rem,
 				content: '',
 				display: block,
-				left: 0,
+				left: 0rem,
 				position: absolute,
-				top: 0,
+				top: 0rem,
 				transition: $transition-base,
 			),
 			hover: (
 				background-color: $primary-l3,
 				color: $gray-900,
-				letter-spacing: 0,
+				letter-spacing: 0rem,
 				before: (
 					background: $secondary-l0,
 					width: 0.125rem,
@@ -34,17 +34,17 @@ $menubar-primary: map-deep-merge(
 				background-color: c-unset,
 				box-shadow: none,
 				color: $gray-900,
-				outline: 0,
+				outline: 0rem,
 				after: (
-					bottom: 0,
+					bottom: 0rem,
 					box-shadow: $component-focus-inset-box-shadow,
 					content: '',
 					display: block,
-					left: 0,
+					left: 0rem,
 					pointer-events: none,
 					position: absolute,
-					right: 0,
-					top: 0,
+					right: 0rem,
+					top: 0rem,
 				),
 			),
 			active-class: (
@@ -78,7 +78,7 @@ $menubar-primary: map-deep-merge(
 				color: $gray-900,
 				before: (
 					background-color: transparent,
-					width: 0,
+					width: 0rem,
 				),
 				hover: (
 					before: (
@@ -153,7 +153,7 @@ $menubar-vertical-expand-md: map-deep-merge(
 					margin-top: 0.5rem,
 				),
 				nav-nested-margins-item: (
-					margin-left: 0,
+					margin-left: 0rem,
 				),
 				menubar-toggler: (
 					align-items: center,
@@ -170,7 +170,7 @@ $menubar-vertical-expand-md: map-deep-merge(
 						max-width: none,
 					),
 					lexicon-icon: (
-						margin-top: 0,
+						margin-top: 0rem,
 					),
 				),
 			),
@@ -273,7 +273,7 @@ $menubar-vertical-decorated-md-nav-link-after-active: () !default;
 $menubar-vertical-decorated-md-nav-link-after-active: map-deep-merge(
 	(
 		background-color: $primary-l2,
-		bottom: 0,
+		bottom: 0rem,
 		content: '',
 		display: block,
 		left:
@@ -282,7 +282,7 @@ $menubar-vertical-decorated-md-nav-link-after-active: map-deep-merge(
 				border-left-width
 			),
 		position: absolute,
-		top: 0,
+		top: 0rem,
 		width: map-get($menubar-vertical-decorated-md-nav, border-left-width),
 	),
 	$menubar-vertical-decorated-md-nav-link-after-active
@@ -319,7 +319,7 @@ $menubar-vertical-expand-lg: map-deep-merge(
 					margin-top: 0.5rem,
 				),
 				nav-nested-margins-item: (
-					margin-left: 0,
+					margin-left: 0rem,
 				),
 				menubar-toggler: (
 					align-items: center,
@@ -336,7 +336,7 @@ $menubar-vertical-expand-lg: map-deep-merge(
 						max-width: none,
 					),
 					lexicon-icon: (
-						margin-top: 0,
+						margin-top: 0rem,
 					),
 				),
 			),

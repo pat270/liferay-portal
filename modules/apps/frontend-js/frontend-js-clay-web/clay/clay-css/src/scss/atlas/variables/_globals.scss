@@ -362,7 +362,7 @@ $border-radius-sm: 0.1875rem !default; // 3px
 
 $rounded-border-radius: $border-radius !default;
 $rounded-circle-border-radius: 5000px !default;
-$rounded-0-border-radius: 0 !default;
+$rounded-0-border-radius: 0rem !default;
 $rounded-pill: 50rem !default;
 
 $box-shadow-sm: 0 0.125rem 0.25rem rgba($black, 0.075) !default;
@@ -409,7 +409,7 @@ $disabled-cursor: not-allowed !default;
 // Grid
 
 $grid-breakpoints: (
-	xs: 0,
+	xs: 0px,
 	sm: 576px,
 	md: 768px,
 	lg: 992px,
@@ -575,7 +575,7 @@ $c-body: map-merge(
 		-webkit-font-smoothing: $body-webkit-font-smoothing,
 		font-weight: $font-weight-base,
 		line-height: $line-height-base,
-		margin: 0,
+		margin: 0rem,
 		-ms-overflow-style: scrollbar,
 		text-align: $body-text-align,
 	),

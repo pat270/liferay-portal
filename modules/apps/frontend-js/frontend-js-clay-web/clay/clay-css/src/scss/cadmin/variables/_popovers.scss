@@ -19,8 +19,8 @@ $cadmin-popover-header-color: $cadmin-gray-900 !default;
 $cadmin-popover-header-font-size: 14px !default; // 14px
 $cadmin-popover-header-font-weight: $cadmin-font-weight-semi-bold !default;
 $cadmin-popover-header-margin-x: 16px !default; // 16px
-$cadmin-popover-header-margin-y: 0 !default;
-$cadmin-popover-header-padding-x: 0 !default;
+$cadmin-popover-header-margin-y: 0px !default;
+$cadmin-popover-header-padding-x: 0px !default;
 $cadmin-popover-header-padding-y: 12px !default; // 12px
 
 $cadmin-popover-body-color: $cadmin-gray-600 !default;
@@ -64,7 +64,7 @@ $cadmin-popover: map-deep-merge(
 		font-size: $cadmin-popover-font-size,
 		font-style: normal,
 		font-weight: $cadmin-font-weight-normal,
-		left: 0,
+		left: 0px,
 		letter-spacing: normal,
 		line-break: auto,
 		line-height: $cadmin-line-height-base,
@@ -74,7 +74,7 @@ $cadmin-popover: map-deep-merge(
 		text-decoration: none,
 		text-shadow: none,
 		text-transform: none,
-		top: 0,
+		top: 0px,
 		white-space: normal,
 		word-break: normal,
 		word-spacing: normal,
@@ -82,7 +82,7 @@ $cadmin-popover: map-deep-merge(
 		z-index: $cadmin-zindex-popover,
 		focus: (
 			box-shadow: $cadmin-component-focus-box-shadow,
-			outline: 0,
+			outline: 0px,
 		),
 		arrow: (
 			display: block,
@@ -213,7 +213,7 @@ $cadmin-clay-popover-top: map-deep-merge(
 							#{$cadmin-popover-arrow-height} + #{$cadmin-popover-border-width}
 						) * -1
 				),
-			margin: 0,
+			margin: 0px,
 			before: (
 				border-top-color: $cadmin-popover-arrow-outer-color,
 				border-width: $cadmin-popover-arrow-height
@@ -221,7 +221,7 @@ $cadmin-clay-popover-top: map-deep-merge(
 						$cadmin-popover-arrow-width * 0.5,
 					)
 					0,
-				bottom: 0,
+				bottom: 0px,
 			),
 			after: (
 				border-top-color: $cadmin-popover-top-arrow-color,
@@ -244,7 +244,7 @@ $cadmin-clay-popover-top-left: map-deep-merge(
 	(
 		arrow: (
 			left: $cadmin-popover-arrow-offset,
-			margin: 0,
+			margin: 0px,
 			after: (
 				border-top-color: $cadmin-popover-top-left-arrow-color,
 			),
@@ -260,7 +260,7 @@ $cadmin-clay-popover-top-right: map-deep-merge(
 	(
 		arrow: (
 			left: auto,
-			margin: 0,
+			margin: 0px,
 			right: $cadmin-popover-arrow-offset,
 			after: (
 				border-top-color: $cadmin-popover-top-right-arrow-color,
@@ -297,7 +297,7 @@ $cadmin-clay-popover-right: map-deep-merge(
 					$cadmin-popover-arrow-width * 0.5,
 				)
 				0,
-				left: 0,
+				left: 0px,
 			),
 			after: (
 				border-right-color: $cadmin-popover-right-arrow-color,
@@ -323,7 +323,7 @@ $cadmin-clay-popover-right-bottom: map-deep-merge(
 	(
 		arrow: (
 			bottom: $cadmin-popover-arrow-offset,
-			margin: 0,
+			margin: 0px,
 			top: auto,
 			after: (
 				border-right-color: $cadmin-popover-right-bottom-arrow-color,
@@ -339,7 +339,7 @@ $cadmin-clay-popover-right-top: () !default;
 $cadmin-clay-popover-right-top: map-deep-merge(
 	(
 		arrow: (
-			margin: 0,
+			margin: 0px,
 			top: $cadmin-popover-arrow-offset,
 			after: (
 				border-right-color: $cadmin-popover-right-top-arrow-color,
@@ -374,7 +374,7 @@ $cadmin-clay-popover-bottom: map-deep-merge(
 					(
 						$cadmin-popover-arrow-width * 0.5,
 					),
-				top: 0,
+				top: 0px,
 			),
 			after: (
 				border-bottom-color: $cadmin-popover-bottom-arrow-color,
@@ -400,7 +400,7 @@ $cadmin-clay-popover-bottom-left: map-deep-merge(
 	(
 		arrow: (
 			left: $cadmin-popover-arrow-offset,
-			margin: 0,
+			margin: 0px,
 			after: (
 				border-bottom-color: $cadmin-popover-bottom-left-arrow-color,
 			),
@@ -416,7 +416,7 @@ $cadmin-clay-popover-bottom-right: map-deep-merge(
 	(
 		arrow: (
 			left: auto,
-			margin: 0,
+			margin: 0px,
 			right: $cadmin-popover-arrow-offset,
 			after: (
 				border-bottom-color: $cadmin-popover-bottom-right-arrow-color,
@@ -453,7 +453,7 @@ $cadmin-clay-popover-left: map-deep-merge(
 					$cadmin-popover-arrow-width * 0.5,
 				)
 				$cadmin-popover-arrow-height,
-				right: 0,
+				right: 0px,
 			),
 			after: (
 				border-left-color: $cadmin-popover-left-arrow-color,
@@ -479,7 +479,7 @@ $cadmin-clay-popover-left-bottom: map-deep-merge(
 	(
 		arrow: (
 			bottom: $cadmin-popover-arrow-offset,
-			margin: 0,
+			margin: 0px,
 			top: auto,
 			after: (
 				border-left-color: $cadmin-popover-left-bottom-arrow-color,
@@ -495,7 +495,7 @@ $cadmin-clay-popover-left-top: () !default;
 $cadmin-clay-popover-left-top: map-deep-merge(
 	(
 		arrow: (
-			margin: 0,
+			margin: 0px,
 			top: $cadmin-popover-arrow-offset,
 			after: (
 				border-left-color: $cadmin-popover-left-top-arrow-color,

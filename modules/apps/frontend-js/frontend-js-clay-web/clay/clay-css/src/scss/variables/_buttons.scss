@@ -71,7 +71,7 @@ $btn: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $btn-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 		active: (
 			box-shadow: clay-enable-shadows($btn-active-box-shadow),
@@ -97,7 +97,7 @@ $btn: map-deep-merge(
 			line-height: 1,
 			margin-top: -3px,
 			lexicon-icon: (
-				margin-top: 0,
+				margin-top: 0rem,
 			),
 		),
 		btn-section: (
@@ -229,8 +229,8 @@ $btn-sizes: map-deep-merge(
 
 // .btn-monospaced
 
-$btn-monospaced-padding-x: 0 !default;
-$btn-monospaced-padding-y: 0 !default;
+$btn-monospaced-padding-x: 0rem !default;
+$btn-monospaced-padding-y: 0rem !default;
 $btn-monospaced-size: 2.375rem !default; // 38px
 
 $btn-monospaced-size-mobile: null !default;
@@ -258,10 +258,10 @@ $btn-monospaced: map-deep-merge(
 			width: $btn-monospaced-size-mobile,
 		),
 		inline-item: (
-			margin-top: 0,
+			margin-top: 0rem,
 		),
 		lexicon-icon: (
-			margin-top: 0,
+			margin-top: 0rem,
 		),
 		c-inner: (
 			align-items: center,
@@ -269,7 +269,7 @@ $btn-monospaced: map-deep-merge(
 			flex-direction: column,
 			height: 100%,
 			justify-content: center,
-			padding: 0,
+			padding: 0rem,
 			width: 100%,
 		),
 	),
@@ -352,19 +352,19 @@ $btn-unstyled: () !default;
 $btn-unstyled: map-deep-merge(
 	(
 		background-color: rgba(0, 0, 0, 0.001),
-		border-width: 0,
+		border-width: 0rem,
 		cursor: $btn-cursor,
 		font-size: inherit,
 		font-weight: inherit,
 		letter-spacing: inherit,
 		line-height: inherit,
 		max-width: 100%,
-		padding: 0,
+		padding: 0rem,
 		text-align: left,
 		text-transform: inherit,
 		vertical-align: baseline,
 		c-inner: (
-			margin: 0,
+			margin: 0rem,
 			max-width: none,
 		),
 	),

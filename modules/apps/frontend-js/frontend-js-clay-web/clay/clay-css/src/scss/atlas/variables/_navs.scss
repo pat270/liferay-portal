@@ -60,7 +60,7 @@ $nav-tabs-link: map-deep-merge(
 		transition: box-shadow 0.15s ease-in-out,
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 		disabled: (
 			box-shadow: none,

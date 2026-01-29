@@ -99,7 +99,7 @@ $multi-step-item-fixed-width: 150px !default;
 $multi-step-nav-center: () !default;
 $multi-step-nav-center: map-deep-merge(
 	(
-		padding: 0,
+		padding: 0rem,
 		text-align: center,
 		multi-step-item: (
 			flex-grow: 1,

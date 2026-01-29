@@ -70,7 +70,7 @@ $cadmin-btn: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $cadmin-btn-focus-box-shadow,
-			outline: 0,
+			outline: 0px,
 		),
 		active: (
 			box-shadow: clay-enable-shadows([$cadmin-btn-active-box-shadow]),
@@ -96,7 +96,7 @@ $cadmin-btn: map-deep-merge(
 			line-height: 1,
 			margin-top: -3px,
 			lexicon-icon: (
-				margin-top: 0,
+				margin-top: 0px,
 			),
 		),
 		btn-section: (
@@ -231,8 +231,8 @@ $cadmin-btn-sizes: map-deep-merge(
 
 // Button Monospaced
 
-$cadmin-btn-monospaced-padding-x: 0 !default;
-$cadmin-btn-monospaced-padding-y: 0 !default;
+$cadmin-btn-monospaced-padding-x: 0px !default;
+$cadmin-btn-monospaced-padding-y: 0px !default;
 $cadmin-btn-monospaced-size: 40px !default; // 40px
 
 $cadmin-btn-monospaced-size-mobile: null !default;
@@ -260,10 +260,10 @@ $cadmin-btn-monospaced: map-deep-merge(
 			width: $cadmin-btn-monospaced-size-mobile,
 		),
 		inline-item: (
-			margin-top: 0,
+			margin-top: 0px,
 		),
 		lexicon-icon: (
-			margin-top: 0,
+			margin-top: 0px,
 		),
 		c-inner: (
 			align-items: center,
@@ -271,7 +271,7 @@ $cadmin-btn-monospaced: map-deep-merge(
 			flex-direction: column,
 			height: 100%,
 			justify-content: center,
-			padding: 0,
+			padding: 0px,
 			width: 100%,
 		),
 	),
@@ -360,18 +360,18 @@ $cadmin-btn-unstyled: () !default;
 $cadmin-btn-unstyled: map-deep-merge(
 	(
 		background-color: rgba(0, 0, 0, 0.001),
-		border-width: 0,
+		border-width: 0px,
 		cursor: $cadmin-btn-cursor,
 		font-size: inherit,
 		font-weight: inherit,
 		line-height: inherit,
 		max-width: 100%,
-		padding: 0,
+		padding: 0px,
 		text-align: left,
 		text-transform: inherit,
 		vertical-align: baseline,
 		c-inner: (
-			margin: 0,
+			margin: 0px,
 			max-width: none,
 		),
 	),

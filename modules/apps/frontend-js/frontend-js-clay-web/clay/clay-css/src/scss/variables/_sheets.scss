@@ -85,7 +85,7 @@ $sheet-footer-btn-block-sm-down: map-deep-merge(
 			),
 			btn-group-item: (
 				display: block,
-				margin-right: 0,
+				margin-right: 0rem,
 			),
 		),
 	),
@@ -217,7 +217,7 @@ $sheet-multiple-form-sheet-header-mobile: map-merge(
 $sheet-multiple-form-sheet-title: () !default;
 $sheet-multiple-form-sheet-title: map-merge(
 	(
-		margin-bottom: 0,
+		margin-bottom: 0rem,
 	),
 	$sheet-multiple-form-sheet-title
 );
@@ -229,7 +229,7 @@ $sheet-dataset-content: () !default;
 $sheet-dataset-content-sheet-header: () !default;
 $sheet-dataset-content-sheet-header: map-merge(
 	(
-		border-width: 0,
+		border-width: 0rem,
 		margin: -1.5rem -1.5rem 1.5rem,
 		padding: 1rem 1.5rem,
 	),
@@ -248,7 +248,7 @@ $sheet-dataset-content-sheet-header-mobile: map-merge(
 $sheet-dataset-content-sheet-title: () !default;
 $sheet-dataset-content-sheet-title: map-merge(
 	(
-		margin-bottom: 0,
+		margin-bottom: 0rem,
 	),
 	$sheet-dataset-content-sheet-title
 );

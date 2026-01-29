@@ -23,7 +23,7 @@ $cadmin-sidebar-header-component-subtitle: map-deep-merge(
 	(
 		font-size: 14px,
 		font-weight: $cadmin-font-weight-normal,
-		margin-bottom: 0,
+		margin-bottom: 0px,
 	),
 	$cadmin-sidebar-header-component-subtitle
 );
@@ -63,7 +63,7 @@ $cadmin-sidebar-list-group-border-color: $cadmin-gray-300 !default;
 $cadmin-sidebar-list-group-font-size: 14px !default; // 14px
 $cadmin-sidebar-list-group-type: list-group-flush !default;
 
-$cadmin-sidebar-list-group-item-padding: 0 !default;
+$cadmin-sidebar-list-group-item-padding: 0px !default;
 
 $cadmin-sidebar-list-group-autofit-col-padding-x: 8px !default; // 8px
 $cadmin-sidebar-list-group-autofit-col-padding-y: 16px !default; // 16px
@@ -143,8 +143,8 @@ $cadmin-sidebar: map-deep-merge(
 			display: flex,
 			flex-direction: column,
 			font-size: $cadmin-sidebar-list-group-font-size,
-			margin-bottom: 0,
-			padding-left: 0,
+			margin-bottom: 0px,
+			padding-left: 0px,
 			list-group-item: (
 				background-color: $cadmin-sidebar-list-group-bg,
 				border-color: $cadmin-sidebar-list-group-border-color,
@@ -231,7 +231,7 @@ $cadmin-sidebar-light: map-deep-merge(
 	(
 		background-color: $cadmin-white,
 		border-color: $cadmin-gray-300,
-		border-left-width: 0,
+		border-left-width: 0px,
 		box-shadow: -4px 0 8px -4px rgba(0, 0, 0, 0.1),
 		color: $cadmin-gray-900,
 		sidebar-header: (
@@ -316,7 +316,7 @@ $cadmin-sidebar-dark: map-deep-merge(
 				),
 				focus: (
 					box-shadow: $cadmin-component-focus-box-shadow,
-					outline: 0,
+					outline: 0px,
 				),
 				active: (
 					color: $cadmin-white,
@@ -386,7 +386,7 @@ $cadmin-sidebar-palette: map-deep-merge(
 					),
 					focus: (
 						box-shadow: $cadmin-component-focus-box-shadow,
-						outline: 0,
+						outline: 0px,
 					),
 					active: (
 						color: $cadmin-white,

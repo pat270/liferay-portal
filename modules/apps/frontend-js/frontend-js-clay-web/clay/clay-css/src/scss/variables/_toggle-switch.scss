@@ -154,7 +154,7 @@ $toggle-switch-check: () !default;
 $toggle-switch-check: map-deep-merge(
 	(
 		breakpoint-down: sm,
-		bottom: 0,
+		bottom: 0rem,
 		font-size: 62.5%,
 		height: $toggle-switch-bar-height,
 		opacity: 0,
@@ -167,7 +167,7 @@ $toggle-switch-check: map-deep-merge(
 			height: $toggle-switch-bar-height,
 			line-height: $toggle-switch-bar-height,
 			position: relative,
-			text-indent: 0,
+			text-indent: 0rem,
 			user-select: none,
 			before: (
 				background-color: $toggle-switch-bar-bg,
@@ -176,12 +176,12 @@ $toggle-switch-check: map-deep-merge(
 					clay-enable-rounded($toggle-switch-bar-border-radius),
 				border-style: solid,
 				border-width: $toggle-switch-bar-border-width,
-				bottom: 0,
+				bottom: 0rem,
 				content: ' ',
 				display: block,
-				left: 0,
+				left: 0rem,
 				position: absolute,
-				top: 0,
+				top: 0rem,
 				transition: $toggle-switch-transition,
 				width: $toggle-switch-bar-width,
 			),
@@ -224,7 +224,7 @@ $toggle-switch-check: map-deep-merge(
 				line-height: $toggle-switch-button-width,
 				position: absolute,
 				text-align: center,
-				text-indent: 0,
+				text-indent: 0rem,
 				top: $toggle-switch-bar-padding,
 				transition: $toggle-switch-transition,
 				width: $toggle-switch-button-width,
@@ -313,7 +313,7 @@ $toggle-switch-check: map-deep-merge(
 			toggle-switch-bar: (
 				height: $toggle-switch-bar-height-mobile,
 				line-height: $toggle-switch-bar-height-mobile,
-				text-indent: 0,
+				text-indent: 0rem,
 				before: (
 					width: $toggle-switch-bar-width-mobile,
 				),
@@ -448,7 +448,7 @@ $simple-toggle-switch: map-deep-merge(
 		display: inline-flex,
 		toggle-switch-label: (
 			line-height: $simple-toggle-switch-label-line-height,
-			margin-bottom: 0,
+			margin-bottom: 0rem,
 			max-width:
 				calc(
 					100% - #{clay-data-label-text-position(
@@ -526,7 +526,7 @@ $toggle-switch-sizes: map-deep-merge(
 					toggle-switch-icon: (
 						font-size: 0.6875rem,
 						height: 16px,
-						left: 0,
+						left: 0rem,
 						line-height: 16px,
 						width: 16px,
 					),

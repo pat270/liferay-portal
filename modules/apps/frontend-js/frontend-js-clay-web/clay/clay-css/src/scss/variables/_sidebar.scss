@@ -24,7 +24,7 @@ $sidebar-header-component-subtitle: map-deep-merge(
 	(
 		font-size: 1.125rem,
 		font-weight: $font-weight-semi-bold,
-		margin-bottom: 0,
+		margin-bottom: 0rem,
 		overflow-wrap: break-word,
 	),
 	$sidebar-header-component-subtitle
@@ -117,8 +117,8 @@ $sidebar: map-deep-merge(
 			display: flex,
 			flex-direction: column,
 			font-size: $sidebar-list-group-font-size,
-			margin-bottom: 0,
-			padding-left: 0,
+			margin-bottom: 0rem,
+			padding-left: 0rem,
 			list-group-item: (
 				background-color: $sidebar-list-group-bg,
 				border-color: $sidebar-list-group-border-color,
@@ -311,7 +311,7 @@ $sidebar-dark: map-deep-merge(
 				),
 				focus: (
 					box-shadow: $component-focus-box-shadow,
-					outline: 0,
+					outline: 0rem,
 				),
 				active: (
 					color: $white,
@@ -373,7 +373,7 @@ $sidebar-palette: map-deep-merge(
 					),
 					focus: (
 						box-shadow: $component-focus-box-shadow,
-						outline: 0,
+						outline: 0rem,
 					),
 					active: (
 						color: $white,

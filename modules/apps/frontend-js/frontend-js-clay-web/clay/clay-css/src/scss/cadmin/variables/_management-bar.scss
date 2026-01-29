@@ -6,7 +6,7 @@ $cadmin-management-bar-base: map-deep-merge(
 		navbar-nav: (
 			nav-link: (
 				border-radius: $cadmin-border-radius,
-				outline: 0,
+				outline: 0px,
 				transition: box-shadow 0.15s ease-in-out,
 				focus: (
 					box-shadow: $cadmin-component-focus-box-shadow,
@@ -30,8 +30,8 @@ $cadmin-management-bar-size: map-deep-merge(
 		font-size: $cadmin-navbar-font-size,
 		height: 64px,
 		min-height: 64px,
-		padding-x: 0,
-		padding-y: 0,
+		padding-x: 0px,
+		padding-y: 0px,
 		font-size-mobile: $cadmin-navbar-font-size,
 		height-mobile: 48px,
 		min-height-mobile: 48px,
@@ -44,7 +44,7 @@ $cadmin-management-bar-size: map-deep-merge(
 		form-control-height-mobile: 32px,
 		toggler-margin-x: 14px,
 		active-border-bottom-width: 4px,
-		nav-item-dropdown-margin-top: 0,
+		nav-item-dropdown-margin-top: 0px,
 		media-breakpoint-down: (),
 		media-breakpoint-up: (),
 	),
@@ -59,7 +59,7 @@ $cadmin-management-bar-base: map-deep-merge(
 		navbar-nav: (
 			nav-link: (
 				border-radius: $cadmin-border-radius,
-				outline: 0,
+				outline: 0px,
 				transition: box-shadow 0.15s ease-in-out,
 				focus: (
 					box-shadow: $cadmin-btn-focus-box-shadow,
@@ -70,7 +70,7 @@ $cadmin-management-bar-base: map-deep-merge(
 			),
 		),
 		navbar-overlay: (
-			padding: 0,
+			padding: 0px,
 		),
 		media-breakpoint-down: (
 			sm: (
@@ -193,8 +193,8 @@ $cadmin-management-bar-base: map-deep-merge(
 									$cadmin-management-bar-size,
 									form-control-height-mobile
 								),
-							padding-bottom: 0,
-							padding-top: 0,
+							padding-bottom: 0px,
+							padding-top: 0px,
 						),
 					),
 				),
@@ -217,12 +217,12 @@ $cadmin-management-bar-base: map-deep-merge(
 						padding-right:
 							map-get($cadmin-management-bar-size, link-padding-x),
 						container: (
-							padding-left: 0,
-							padding-right: 0,
+							padding-left: 0px,
+							padding-right: 0px,
 						),
 						container-fluid: (
-							padding-left: 0,
-							padding-right: 0,
+							padding-left: 0px,
+							padding-right: 0px,
 						),
 						form-control: (
 							height:
@@ -433,7 +433,7 @@ $cadmin-management-bar-base: map-deep-merge(
 											) * 0.5
 									)
 								),
-							padding: 0,
+							padding: 0px,
 						),
 						nav-btn: (
 							font-size: inherit,
@@ -564,10 +564,10 @@ $cadmin-management-bar-base: map-deep-merge(
 									$cadmin-management-bar-size,
 									btn-monospaced-font-size
 								),
-							padding-bottom: 0,
-							padding-left: 0,
-							padding-right: 0,
-							padding-top: 0,
+							padding-bottom: 0px,
+							padding-left: 0px,
+							padding-right: 0px,
+							padding-top: 0px,
 						),
 					),
 				),

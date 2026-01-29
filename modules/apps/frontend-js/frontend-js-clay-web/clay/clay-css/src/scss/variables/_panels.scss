@@ -216,7 +216,7 @@ $panel-group-flush-panel-unstyled: map-deep-merge(
 	(
 		margin-bottom: 1.5rem,
 		panel-body: (
-			margin-bottom: 0,
+			margin-bottom: 0rem,
 		),
 	),
 	$panel-group-flush-panel-unstyled
@@ -251,22 +251,22 @@ $panel-unstyled: () !default;
 $panel-unstyled: map-deep-merge(
 	(
 		background-color: transparent,
-		border-radius: 0,
-		border-width: 0,
+		border-radius: 0rem,
+		border-width: 0rem,
 		margin-bottom: 1.5rem,
 		panel-header: (
 			border-color: $gray-500,
-			border-radius: 0,
+			border-radius: 0rem,
 			border-style: solid,
-			border-width: 0 0 1px 0,
-			padding-left: 0,
+			border-width: 0px 0px 1px 0px,
+			padding-left: 0rem,
 			collapsed: (
 				border-color: $gray-500,
 			),
 			link: $panel-unstyled-header-link,
 		),
 		collapse-icon: (
-			right: 0,
+			right: 0rem,
 		),
 		panel-body: (
 			padding: 1rem 0 0.1px 0,
@@ -307,15 +307,15 @@ $panel-palette: map-deep-merge(
 			),
 		),
 		panel-default: (
-			border-width: 0,
+			border-width: 0rem,
 			panel-header: (
-				border-radius: clay-enable-rounded(0),
+				border-radius: clay-enable-rounded(0rem),
 				color: $gray-600,
 				font-size: 0.875rem,
 				line-height: 1.125rem,
 				padding-bottom: 0.40625rem,
-				padding-left: 0,
-				padding-right: 0,
+				padding-left: 0rem,
+				padding-right: 0rem,
 				padding-top: 0.40625rem,
 				text-transform: uppercase,
 				'&.collapse-icon': (
@@ -327,12 +327,12 @@ $panel-palette: map-deep-merge(
 			),
 			collapse-icon: (
 				font-size: inherit,
-				right: 0,
+				right: 0rem,
 				top: 0.5rem,
 			),
 			collapse-icon-middle: (
 				collapse-icon: (
-					right: 0,
+					right: 0rem,
 				),
 			),
 			panel-body: (

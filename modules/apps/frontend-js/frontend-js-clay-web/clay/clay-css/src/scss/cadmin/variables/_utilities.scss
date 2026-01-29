@@ -19,13 +19,13 @@ $cadmin-inline-scroller: () !default;
 $cadmin-inline-scroller: map-deep-merge(
 	(
 		list-style: none,
-		margin: 0,
+		margin: 0px,
 		max-height: $cadmin-inline-scroller-max-height,
 		overflow: auto,
 		-webkit-overflow-scrolling: touch,
-		padding: 0,
+		padding: 0px,
 		focus: (
-			outline: 0,
+			outline: 0px,
 		),
 		focus-visible: (
 			box-shadow: $cadmin-component-focus-box-shadow,
@@ -67,7 +67,7 @@ $cadmin-close: map-deep-merge(
 		appearance: none,
 		background-color: transparent,
 		border-radius: $cadmin-btn-border-radius-sm,
-		border-width: 0,
+		border-width: 0px,
 		color: $cadmin-close-color,
 		cursor: $cadmin-link-cursor,
 		display: inline-flex,
@@ -76,7 +76,7 @@ $cadmin-close: map-deep-merge(
 		height: 32px,
 		justify-content: center,
 		line-height: 1,
-		padding: 0,
+		padding: 0px,
 		text-align: center,
 		text-shadow: $cadmin-close-text-shadow,
 		transition: $cadmin-component-transition,
@@ -87,20 +87,20 @@ $cadmin-close: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $cadmin-component-focus-box-shadow,
-			outline: 0,
+			outline: 0px,
 		),
 		disabled: (
 			box-shadow: none,
 			color: $cadmin-gray-600,
 			cursor: $cadmin-disabled-cursor,
 			opacity: $cadmin-component-disabled-opacity,
-			outline: 0,
+			outline: 0px,
 			active: (
 				pointer-events: none,
 			),
 		),
 		lexicon-icon: (
-			margin-top: 0,
+			margin-top: 0px,
 		),
 	),
 	$cadmin-close
@@ -113,7 +113,7 @@ $cadmin-c-focus-inset-focus: map-deep-merge(
 	(
 		box-shadow: $cadmin-component-focus-inset-box-shadow,
 		border-color: $cadmin-primary-l0,
-		outline: 0,
+		outline: 0px,
 	),
 	$cadmin-c-focus-inset-focus
 );
@@ -131,7 +131,7 @@ $cadmin-c-inner: map-deep-merge(
 		line-height: inherit,
 		max-width: inherit,
 		min-width: inherit,
-		outline: 0,
+		outline: 0px,
 		overflow: inherit,
 		padding-bottom: inherit,
 		padding-left: inherit,

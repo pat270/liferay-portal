@@ -70,7 +70,7 @@ $cadmin-nav-btn-padding-x: $cadmin-btn-padding-x-sm !default;
 
 // @deprecated after v3.4.0 use the Sass map `$cadmin-nav-btn` instead
 
-$cadmin-nav-btn-padding-y: 0 !default;
+$cadmin-nav-btn-padding-y: 0px !default;
 
 $cadmin-nav-btn: () !default;
 $cadmin-nav-btn: map-deep-merge(
@@ -93,17 +93,17 @@ $cadmin-nav-btn: map-deep-merge(
 			opacity: 1,
 		),
 		c-inner: (
-			margin-bottom: 0,
+			margin-bottom: 0px,
 			margin-left: math-sign($cadmin-nav-btn-padding-x),
 			margin-right: math-sign($cadmin-nav-btn-padding-x),
 			margin-top: math-sign($cadmin-btn-border-width),
 		),
 		btn-link: (
-			margin-left: 0,
-			margin-right: 0,
+			margin-left: 0px,
+			margin-right: 0px,
 		),
 		lexicon-icon: (
-			margin-top: 0,
+			margin-top: 0px,
 		),
 	),
 	$cadmin-nav-btn
@@ -112,7 +112,7 @@ $cadmin-nav-btn: map-deep-merge(
 $cadmin-nav-btn-monospaced: () !default;
 $cadmin-nav-btn-monospaced: map-deep-merge(
 	(
-		padding: 0,
+		padding: 0px,
 		c-inner: (
 			margin-left: math-sign($cadmin-btn-border-width),
 			margin-right: math-sign($cadmin-btn-border-width),
@@ -130,9 +130,9 @@ $cadmin-nav-link-monospaced: map-deep-merge(
 		justify-content: center,
 		margin: $cadmin-nav-btn-margin-y $cadmin-nav-btn-margin-x,
 		min-width: $cadmin-nav-item-monospaced-size,
-		padding: 0,
+		padding: 0px,
 		lexicon-icon: (
-			margin-top: 0,
+			margin-top: 0px,
 		),
 	),
 	$cadmin-nav-link-monospaced
@@ -164,7 +164,7 @@ $cadmin-nav-divider: map-deep-merge(
 			content: '',
 			display: block,
 			height: 16px,
-			left: 0,
+			left: 0px,
 			margin-top: -8px,
 			position: absolute,
 			top: 50%,
@@ -188,7 +188,7 @@ $cadmin-nav-divider-end: map-deep-merge(
 			height: 16px,
 			margin-top: -8px,
 			position: absolute,
-			right: 0,
+			right: 0px,
 			top: 50%,
 			width: 1px,
 			z-index: 2,
@@ -214,10 +214,10 @@ $cadmin-nav-text-truncate: map-deep-merge(
 
 // .nav .nav-form
 
-$cadmin-nav-form-padding-bottom: 0 !default;
+$cadmin-nav-form-padding-bottom: 0px !default;
 $cadmin-nav-form-padding-left: $cadmin-nav-link-padding-x !default;
 $cadmin-nav-form-padding-right: $cadmin-nav-link-padding-x !default;
-$cadmin-nav-form-padding-top: 0 !default;
+$cadmin-nav-form-padding-top: 0px !default;
 
 $cadmin-nav-form: () !default;
 $cadmin-nav-form: map-merge(
@@ -239,8 +239,8 @@ $cadmin-nav: map-deep-merge(
 		flex-wrap: wrap,
 		font-size: $cadmin-nav-font-size,
 		list-style: none,
-		margin-bottom: 0,
-		padding-left: 0,
+		margin-bottom: 0px,
+		padding-left: 0px,
 	),
 	$cadmin-nav
 );
@@ -274,20 +274,20 @@ $cadmin-nav-unstyled: map-deep-merge(
 		flex-wrap: nowrap,
 		nav-link: (
 			line-height: $cadmin-nav-item-monospaced-size,
-			padding-bottom: 0,
+			padding-bottom: 0px,
 			padding-left: 4px,
 			padding-right: 4px,
-			padding-top: 0,
+			padding-top: 0px,
 		),
 		nav-link-monospaced: (
 			margin: 0 4px,
 		),
 		nav-btn: (
 			margin: 0 4px,
-			padding-bottom: 0,
+			padding-bottom: 0px,
 			padding-left: 4px,
 			padding-right: 4px,
-			padding-top: 0,
+			padding-top: 0px,
 		),
 	),
 	$cadmin-nav-unstyled
@@ -356,7 +356,7 @@ $cadmin-nav-tabs-link: map-deep-merge(
 		focus: (
 			border-color: $cadmin-nav-tabs-link-hover-border-color,
 			box-shadow: $cadmin-component-focus-box-shadow,
-			outline: 0,
+			outline: 0px,
 		),
 		active: (
 			background-color: $cadmin-nav-tabs-link-active-bg,

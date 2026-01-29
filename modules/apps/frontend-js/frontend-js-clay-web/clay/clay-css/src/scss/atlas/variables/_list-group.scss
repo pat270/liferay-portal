@@ -38,7 +38,7 @@ $list-group-title-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$list-group-title-link
@@ -68,7 +68,7 @@ $list-group-subtitle-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$list-group-subtitle-link
@@ -88,7 +88,7 @@ $list-group-text-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$list-group-text-link
@@ -116,7 +116,7 @@ $list-group-subtext-link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$list-group-subtext-link

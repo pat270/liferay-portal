@@ -345,7 +345,7 @@ $border-radius-sm: 0.2rem !default;
 
 $rounded-border-radius: $border-radius !default;
 $rounded-circle-border-radius: 5000px !default;
-$rounded-0-border-radius: 0 !default;
+$rounded-0-border-radius: 0rem !default;
 $rounded-pill: 50rem !default;
 
 $box-shadow-sm: 0 0.125rem 0.25rem rgba($black, 0.075) !default;
@@ -396,7 +396,7 @@ $disabled-cursor: not-allowed !default;
 // Grid
 
 $grid-breakpoints: (
-	xs: 0,
+	xs: 0px,
 	sm: 576px,
 	md: 768px,
 	lg: 992px,
@@ -669,7 +669,7 @@ $c-body: map-merge(
 		-webkit-font-smoothing: $body-webkit-font-smoothing,
 		font-weight: $font-weight-base,
 		line-height: $line-height-base,
-		margin: 0,
+		margin: 0rem,
 		-ms-overflow-style: scrollbar,
 		text-align: $body-text-align,
 	),
@@ -708,7 +708,7 @@ $link: map-deep-merge(
 		),
 		focus: (
 			box-shadow: $component-focus-box-shadow,
-			outline: 0,
+			outline: 0rem,
 		),
 	),
 	$link
@@ -857,10 +857,10 @@ $list-inline-padding: 0.5rem !default;
 $fieldset: () !default;
 $fieldset: map-merge(
 	(
-		border: 0,
-		margin: 0,
-		min-width: 0,
-		padding: 0,
+		border: 0rem,
+		margin: 0rem,
+		min-width: 0rem,
+		padding: 0rem,
 	),
 	$fieldset
 );
@@ -881,7 +881,7 @@ $legend: map-merge(
 		line-height: inherit,
 		margin-bottom: 0.5rem,
 		max-width: 100%,
-		padding: 0,
+		padding: 0rem,
 		white-space: normal,
 		width: 100%,
 	),

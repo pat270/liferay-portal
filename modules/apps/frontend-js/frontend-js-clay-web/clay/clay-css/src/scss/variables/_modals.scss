@@ -6,9 +6,9 @@ $modal-backdrop: map-deep-merge(
 	(
 		background-color: $modal-backdrop-bg,
 		height: 100vh,
-		left: 0,
+		left: 0rem,
 		position: fixed,
-		top: 0,
+		top: 0rem,
 		width: 100vw,
 		z-index: $zindex-modal-backdrop,
 		'&.fade': (
@@ -58,7 +58,7 @@ $modal-content: map-deep-merge(
 		display: flex,
 		flex-direction: column,
 		max-height: calc(100vh - #{$modal-dialog-margin} * 2),
-		outline: 0,
+		outline: 0rem,
 		overflow: hidden,
 		pointer-events: auto,
 		position: relative,
@@ -98,12 +98,12 @@ $modal-header: map-deep-merge(
 		height: $modal-header-height,
 		justify-content: space-between,
 		padding: $modal-header-padding,
-		padding-bottom: 0,
-		padding-top: 0,
+		padding-bottom: 0rem,
+		padding-top: 0rem,
 		z-index: 1,
 		'.modal-title': (
-			margin-bottom: 0,
-			margin-top: 0,
+			margin-bottom: 0rem,
+			margin-top: 0rem,
 		),
 		mobile: (
 			height: $modal-header-height-mobile,
@@ -189,7 +189,7 @@ $modal-item-group: map-deep-merge(
 $modal-item-group-first-child: () !default;
 $modal-item-group-first-child: map-deep-merge(
 	(
-		padding-left: 0,
+		padding-left: 0rem,
 	),
 	$modal-item-group-first-child
 );
@@ -197,7 +197,7 @@ $modal-item-group-first-child: map-deep-merge(
 $modal-item-group-last-child: () !default;
 $modal-item-group-last-child: map-deep-merge(
 	(
-		padding-right: 0,
+		padding-right: 0rem,
 	),
 	$modal-item-group-last-child
 );
@@ -205,8 +205,8 @@ $modal-item-group-last-child: map-deep-merge(
 $modal-item-group-only-child: () !default;
 $modal-item-group-only-child: map-deep-merge(
 	(
-		padding-left: 0,
-		padding-right: 0,
+		padding-left: 0rem,
+		padding-right: 0rem,
 	),
 	$modal-item-group-only-child
 );
@@ -219,9 +219,9 @@ $modal-item: map-deep-merge(
 		flex-grow: 1,
 		flex-shrink: 1,
 		max-width: 100%,
-		min-height: 0,
+		min-height: 0rem,
 		min-width: 3.125rem,
-		padding: 0,
+		padding: 0rem,
 		position: relative,
 		word-wrap: break-word,
 	),
@@ -322,11 +322,11 @@ $modal: map-deep-merge(
 	(
 		display: none,
 		height: 100%,
-		left: 0,
-		outline: 0,
+		left: 0rem,
+		outline: 0rem,
 		overflow: hidden,
 		position: fixed,
-		top: 0,
+		top: 0rem,
 		width: 100%,
 		z-index: $zindex-modal,
 		close: (
@@ -375,7 +375,7 @@ $modal: map-deep-merge(
 			text-overflow: ellipsis,
 			white-space: nowrap,
 			'[tabindex="-1"]': (
-				outline: 0,
+				outline: 0rem,
 			),
 		),
 		modal-title-indicator: (
@@ -401,7 +401,7 @@ $modal: map-deep-merge(
 					padding: 0.5rem 1rem,
 				),
 				modal-body-iframe: (
-					padding: 0,
+					padding: 0rem,
 				),
 				modal-footer: (
 					padding: 0.5rem,

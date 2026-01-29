@@ -14,18 +14,18 @@ $menubar-vertical-transparent-md: map-deep-merge(
 			box-shadow 0.15s ease-in-out},
 			before: (
 				border-radius: $border-radius 0 0 $border-radius,
-				bottom: 0,
+				bottom: 0rem,
 				content: '',
 				display: block,
-				left: 0,
+				left: 0rem,
 				position: absolute,
-				top: 0,
+				top: 0rem,
 			),
 			hover: (
 				background-color: rgba($gray-900, 0.04),
 				color: $gray-900,
 				font-weight: $font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0rem,
 				before: (
 					background: $secondary-l0,
 					width: 0.1875rem,
@@ -34,25 +34,25 @@ $menubar-vertical-transparent-md: map-deep-merge(
 			focus: (
 				background-color: c-unset,
 				color: $gray-900,
-				outline: 0,
+				outline: 0rem,
 				after: (
 					border-radius: $border-radius,
-					bottom: 0,
+					bottom: 0rem,
 					box-shadow: $component-focus-box-shadow,
 					content: '',
 					display: block,
-					left: 0,
+					left: 0rem,
 					pointer-events: none,
 					position: absolute,
-					right: 0,
-					top: 0,
+					right: 0rem,
+					top: 0rem,
 				),
 			),
 			active-class: (
 				background-color: rgba($primary, 0.06),
 				color: $gray-900,
 				font-weight: $font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0rem,
 				before: (
 					background-color: $primary-l0,
 					width: 0.25rem,
@@ -90,7 +90,7 @@ $menubar-vertical-transparent-md: map-deep-merge(
 			sm: (
 				background-color: $white,
 				nav-link: (
-					margin-bottom: 0,
+					margin-bottom: 0rem,
 					before: (
 						content: none,
 					),
@@ -121,7 +121,7 @@ $menubar-vertical-transparent-md: map-deep-merge(
 					transition: box-shadow 0.15s ease-in-out,
 					focus: (
 						box-shadow: $component-focus-box-shadow,
-						outline: 0,
+						outline: 0rem,
 					),
 					disabled: (
 						box-shadow: clay-enable-shadows(none),
@@ -148,18 +148,18 @@ $menubar-vertical-transparent-lg: map-deep-merge(
 			box-shadow 0.15s ease-in-out},
 			before: (
 				border-radius: $border-radius 0 0 $border-radius,
-				bottom: 0,
+				bottom: 0rem,
 				content: '',
 				display: block,
-				left: 0,
+				left: 0rem,
 				position: absolute,
-				top: 0,
+				top: 0rem,
 			),
 			hover: (
 				background-color: rgba($gray-900, 0.04),
 				color: $gray-900,
 				font-weight: $font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0rem,
 				before: (
 					background: $secondary-l0,
 					width: 0.1875rem,
@@ -168,24 +168,24 @@ $menubar-vertical-transparent-lg: map-deep-merge(
 			focus: (
 				background-color: c-unset,
 				color: $gray-900,
-				outline: 0,
+				outline: 0rem,
 				after: (
 					border-radius: $border-radius,
-					bottom: 0,
+					bottom: 0rem,
 					box-shadow: $component-focus-box-shadow,
 					content: '',
 					display: block,
-					left: 0,
+					left: 0rem,
 					position: absolute,
-					right: 0,
-					top: 0,
+					right: 0rem,
+					top: 0rem,
 				),
 			),
 			active-class: (
 				background-color: rgba($primary, 0.06),
 				color: $gray-900,
 				font-weight: $font-weight-semi-bold,
-				letter-spacing: 0,
+				letter-spacing: 0rem,
 				before: (
 					background-color: $primary-l0,
 					width: 0.25rem,
@@ -223,7 +223,7 @@ $menubar-vertical-transparent-lg: map-deep-merge(
 			md: (
 				background-color: $white,
 				nav-link: (
-					margin-bottom: 0,
+					margin-bottom: 0rem,
 					before: (
 						content: none,
 					),
@@ -255,7 +255,7 @@ $menubar-vertical-transparent-lg: map-deep-merge(
 					focus: (
 						box-shadow:
 							clay-enable-shadows($component-focus-box-shadow),
-						outline: 0,
+						outline: 0rem,
 					),
 					disabled: (
 						box-shadow: clay-enable-shadows(none),

@@ -396,7 +396,7 @@ $cadmin-border-radius-sm: 3px !default; // 3px
 
 $cadmin-rounded-border-radius: $cadmin-border-radius !default;
 $cadmin-rounded-circle-border-radius: 5000px !default;
-$cadmin-rounded-0-border-radius: 0 !default;
+$cadmin-rounded-0-border-radius: 0px !default;
 $cadmin-rounded-pill: 800px !default;
 
 $cadmin-box-shadow-sm: 0 2px 4px rgba($cadmin-black, 0.075) !default;
@@ -443,7 +443,7 @@ $cadmin-disabled-cursor: not-allowed !default;
 // Grid
 
 $cadmin-grid-breakpoints: (
-	xs: 0,
+	xs: 0px,
 	sm: 576px,
 	md: 768px,
 	lg: 992px,
@@ -695,7 +695,7 @@ $cadmin-headings: map-deep-merge(
 		font-weight: $cadmin-headings-font-weight,
 		line-height: $cadmin-headings-line-height,
 		margin-bottom: $cadmin-headings-margin-bottom,
-		margin-top: 0,
+		margin-top: 0px,
 	),
 	$cadmin-headings
 );
@@ -710,7 +710,7 @@ $cadmin: map-merge(
 		animation: none,
 		background-color: transparent,
 		background-image: none,
-		border-width: 0,
+		border-width: 0px,
 		box-shadow: none,
 		box-sizing: border-box,
 		color: $cadmin-gray-900,
@@ -722,16 +722,16 @@ $cadmin: map-merge(
 		height: auto,
 		letter-spacing: normal,
 		line-height: $cadmin-line-height-base,
-		margin: 0,
+		margin: 0px,
 		max-height: none,
 		max-width: none,
-		min-height: 0,
-		min-width: 0,
-		padding: 0,
+		min-height: 0px,
+		min-width: 0px,
+		padding: 0px,
 		text-align: left,
 		text-decoration: none,
 		text-decoration-color: currentColor,
-		text-indent: 0,
+		text-indent: 0px,
 		text-shadow: none,
 		text-transform: none,
 		transform: none,
@@ -754,7 +754,7 @@ $cadmin-reset: map-merge(
 		animation: none,
 		background-color: transparent,
 		background-image: none,
-		border-width: 0,
+		border-width: 0px,
 		box-shadow: none,
 		box-sizing: border-box,
 		color: inherit,
@@ -766,13 +766,13 @@ $cadmin-reset: map-merge(
 		height: auto,
 		letter-spacing: inherit,
 		line-height: inherit,
-		margin: 0,
+		margin: 0px,
 		max-height: none,
 		max-width: none,
-		min-height: 0,
-		min-width: 0,
+		min-height: 0px,
+		min-width: 0px,
 		overflow-wrap: inherit,
-		padding: 0,
+		padding: 0px,
 		text-align: inherit,
 		text-decoration: inherit,
 		text-decoration-color: inherit,
