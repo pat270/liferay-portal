@@ -8,7 +8,7 @@ $portlet-decorate-padding: 1.5rem;
 
 $portlet-header-margin-bottom: var(
 	--portlet-header-margin-bottom,
-	calc(var(--spacer) * #{map-get($spacers, 5)})
+	map-get($spacers, 5)
 );
 
 $portlet-topper-bg: var(--portlet-topper-bg, var(--primary, $primary));

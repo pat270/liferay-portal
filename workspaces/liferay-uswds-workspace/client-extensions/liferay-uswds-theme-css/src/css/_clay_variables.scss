@@ -116,54 +116,6 @@ $btn-palette: map-deep-merge(
 		warning: $btn-warning,
 
 		danger: $btn-danger,
-
-		light: 'c-unset',
-
-		dark: 'c-unset',
-
-		'.btn-translucent': 'c-unset',
-
-		'.btn-translucent.btn-primary': 'c-unset',
-
-		'.btn-translucent.btn-secondary': 'c-unset',
-
-		'.btn-translucent.btn-info, .btn-beta': 'c-unset',
-
-		'.btn-translucent.btn-success': 'c-unset',
-
-		'.btn-translucent.btn-warning': 'c-unset',
-
-		'.btn-translucent.btn-danger': 'c-unset',
-
-		'%clay-dark-btn-translucent-primary': 'c-unset',
-
-		'.clay-dark .btn-translucent.btn-primary': 'c-unset',
-
-		'.clay-dark.btn-translucent.btn-primary': 'c-unset',
-
-		'%clay-dark-btn-translucent-info': 'c-unset',
-
-		'.clay-dark .btn-translucent.btn-info, .btn-beta-dark': 'c-unset',
-
-		'.clay-dark.btn-translucent.btn-info': 'c-unset',
-
-		'%clay-dark-btn-translucent-success': 'c-unset',
-
-		'.clay-dark .btn-translucent.btn-success': 'c-unset',
-
-		'.clay-dark.btn-translucent.btn-success': 'c-unset',
-
-		'%clay-dark-btn-translucent-warning': 'c-unset',
-
-		'.clay-dark .btn-translucent.btn-warning': 'c-unset',
-
-		'.clay-dark.btn-translucent.btn-warning': 'c-unset',
-
-		'%clay-dark-btn-translucent-danger': 'c-unset',
-
-		'.clay-dark .btn-translucent.btn-danger': 'c-unset',
-
-		'.clay-dark.btn-translucent.btn-danger': 'c-unset',
 	),
 	$btn-palette
 );
@@ -194,28 +146,6 @@ $btn-outline-palette: map-deep-merge(
 		primary: $btn-outline-primary,
 
 		secondary: $btn-outline-secondary,
-
-		success: 'c-unset',
-
-		info: 'c-unset',
-
-		warning: 'c-unset',
-
-		danger: 'c-unset',
-
-		light: 'c-unset',
-
-		dark: 'c-unset',
-
-		'%clay-dark-btn-outline-primary': 'c-unset',
-
-		'.clay-dark .btn-outline-primary, .clay-dark.btn-outline-primary':
-			'c-unset',
-
-		'%clay-dark-btn-outline-secondary': 'c-unset',
-
-		'.clay-dark .btn-outline-secondary, .clay-dark.btn-outline-secondary':
-			'c-unset',
 	),
 	$btn-outline-palette
 );
@@ -460,3 +390,5 @@ $sticker-xxl: map-deep-merge(
 	),
 	$sticker-xxl
 );
+
+@import 'clay/atlas-custom-properties/_variables';
