@@ -6634,51 +6634,6 @@
 				{
 					"frontendTokens": [
 						{
-							"defaultValue": "var(--yellow-5)",
-							"editorType": "ColorPicker",
-							"label": "alert-warning-background-color",
-							"mappings": [
-								{
-									"type": "cssVariable",
-									"value": "alert-warning-background-color"
-								}
-							],
-							"name": "alertWarningBackgroundColor",
-							"type": "String"
-						},
-						{
-							"defaultValue": "var(--warning)",
-							"editorType": "ColorPicker",
-							"label": "alert-warning-border-color",
-							"mappings": [
-								{
-									"type": "cssVariable",
-									"value": "alert-warning-border-color"
-								}
-							],
-							"name": "alertWarningBorderColor",
-							"type": "String"
-						},
-						{
-							"defaultValue": "var(--body-color)",
-							"editorType": "ColorPicker",
-							"label": "alert-warning-color",
-							"mappings": [
-								{
-									"type": "cssVariable",
-									"value": "alert-warning-color"
-								}
-							],
-							"name": "alertWarningColor",
-							"type": "String"
-						}
-					],
-					"label": "alert-warning",
-					"name": "alertWarning"
-				},
-				{
-					"frontendTokens": [
-						{
 							"defaultValue": "var(--green-5)",
 							"editorType": "ColorPicker",
 							"label": "alert-success-background-color",
