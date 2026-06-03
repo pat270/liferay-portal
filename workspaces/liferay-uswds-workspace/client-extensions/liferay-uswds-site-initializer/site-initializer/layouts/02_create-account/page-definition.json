@@ -11,6 +11,14 @@
 					{
 						"definition": {
 							"fragment": {
+								"key": "uswds-alert"
+							}
+						},
+						"type": "Fragment"
+					},
+					{
+						"definition": {
+							"fragment": {
 								"key": "uswds-header"
 							}
 						},

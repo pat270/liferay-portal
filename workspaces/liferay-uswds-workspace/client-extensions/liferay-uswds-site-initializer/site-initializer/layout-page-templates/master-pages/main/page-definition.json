@@ -10,22 +10,67 @@
 				"pageElements": [
 					{
 						"definition": {
-							"fragment": {
-								"key": "uswds-header"
+							"layout": {
+								"widthType": "Fluid"
 							}
 						},
-						"type": "Fragment"
-					},
-					{
-						"type": "DropZone"
-					},
+						"pageElements": [
+							{
+								"definition": {
+									"fragment": {
+										"key": "uswds-header"
+									}
+								},
+								"type": "Fragment"
+							}
+						],
+						"type": "Section"
+					}
+				],
+				"type": "Section"
+			},
+			{
+				"definition": {
+					"fragmentSettings": {
+						"unallowedFragments": [
+							{
+								"key": "DIALECT-dialect-button"
+							},
+							{
+								"key": "DIALECT-dialect-nav"
+							},
+							{
+								"key": "FEATURED_CONTENT-banner-slider"
+							}
+						]
+					}
+				},
+				"type": "DropZone"
+			},
+			{
+				"definition": {
+					"layout": {
+						"widthType": "Fluid"
+					}
+				},
+				"pageElements": [
 					{
 						"definition": {
-							"fragment": {
-								"key": "uswds-footer-medium"
+							"layout": {
+								"widthType": "Fluid"
 							}
 						},
-						"type": "Fragment"
+						"pageElements": [
+							{
+								"definition": {
+									"fragment": {
+										"key": "uswds-footer-medium"
+									}
+								},
+								"type": "Fragment"
+							}
+						],
+						"type": "Section"
 					}
 				],
 				"type": "Section"

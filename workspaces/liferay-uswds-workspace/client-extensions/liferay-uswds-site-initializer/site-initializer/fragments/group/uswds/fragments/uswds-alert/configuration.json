@@ -1,0 +1,15 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "en-us",
+					"label": "Icon Symbol",
+					"name": "iconSymbol",
+					"type": "text"
+				}
+			]
+		}
+	]
+}
