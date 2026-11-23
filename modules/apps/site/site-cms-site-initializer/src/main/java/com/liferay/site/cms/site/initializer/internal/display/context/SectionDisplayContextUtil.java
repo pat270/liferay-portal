@@ -56,6 +56,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -587,7 +588,7 @@ public class SectionDisplayContextUtil {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		return ListUtil.fromArray(
+		List<FDSActionDropdownItem> fdsActionDropdownItems = ListUtil.fromArray(
 			FDSActionDropdownItemBuilder.setHref(
 				ActionUtil.getBaseViewFolderURL(themeDisplay) + "{embedded.id}"
 			).setIcon(
@@ -793,9 +794,15 @@ public class SectionDisplayContextUtil {
 				"update"
 			).build(
 				"import-translation"
-			),
+			));
+
+		_addEditPermissionsAction(
+			fdsActionDropdownItems, httpServletRequest, themeDisplay);
+
+		fdsActionDropdownItems.add(
 			_getPermissionsFDSActionDropdownItem(
-				httpServletRequest, themeDisplay),
+				httpServletRequest, themeDisplay));
+		fdsActionDropdownItems.add(
 			FDSActionDropdownItemBuilder.setIcon(
 				"trash"
 			).setLabel(
@@ -805,6 +812,8 @@ public class SectionDisplayContextUtil {
 			).build(
 				"delete"
 			));
+
+		return fdsActionDropdownItems;
 	}
 
 	public static Map<String, String> getFileMimeTypeCssClasses(
@@ -1155,6 +1164,39 @@ public class SectionDisplayContextUtil {
 				"update"
 			).build(
 				"edit-tags"
+			));
+	}
+
+	private static void _addEditPermissionsAction(
+		List<FDSActionDropdownItem> fdsActionDropdownItems,
+		HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay) {
+
+		if (!FeatureFlagManagerUtil.isEnabled(
+				themeDisplay.getCompanyId(), "LPD-114063")) {
+
+			return;
+		}
+
+		fdsActionDropdownItems.add(
+			FDSActionDropdownItemBuilder.setHref(
+				StringBundler.concat(
+					themeDisplay.getPathFriendlyURLPublic(),
+					GroupConstants.CMS_FRIENDLY_URL,
+					"/permissions?className={entryClassName}&classPK=",
+					"{embedded.id}&backURL=",
+					URLCodec.encodeURL(themeDisplay.getURLCurrent()))
+			).setIcon(
+				"password-policies"
+			).setLabel(
+				LanguageUtil.get(httpServletRequest, "permissions")
+			).setMethod(
+				"get"
+			).setPermissionKey(
+				"permissions"
+			).setTarget(
+				"link"
+			).build(
+				"edit-permissions"
 			));
 	}
 

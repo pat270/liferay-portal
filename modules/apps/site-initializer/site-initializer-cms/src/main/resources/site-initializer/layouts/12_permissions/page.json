@@ -1,0 +1,68 @@
+{
+	"friendlyURL": "/permissions",
+	"hidden": true,
+	"name": "Permissions",
+	"name_i18n": {
+		"ar_SA": "الرخص",
+		"ca_AD": "Permisos",
+		"ca_ES": "Permisos",
+		"ca_ES_VALENCIA": "Permisos",
+		"cs_CZ": "Oprávnění",
+		"de_AT": "Berechtigungen",
+		"de_CH": "Berechtigungen",
+		"de_DE": "Berechtigungen",
+		"en_AU": "Permissions",
+		"en_CA": "Permissions",
+		"en_GB": "Permissions",
+		"en_IE": "Permissions",
+		"en_US": "Permissions",
+		"es_AR": "Permisos",
+		"es_CO": "Permisos",
+		"es_ES": "Permisos",
+		"es_MX": "Permisos",
+		"fi_FI": "Oikeudet",
+		"fr_BE": "Droits d'accès",
+		"fr_CA": "Droits d'accès",
+		"fr_CH": "Droits d'accès",
+		"fr_FR": "Droits d'accès",
+		"gl_ES": "Permisos",
+		"hu_HU": "Jogosultságok",
+		"it_CH": "Permessi",
+		"it_IT": "Permessi",
+		"ja_JP": "権限の設定",
+		"ko_KR": "허가",
+		"nl_BE": "Rechten",
+		"nl_NL": "Rechten",
+		"pt_BR": "Permissões",
+		"pt_PT": "Permissões",
+		"ru_RU": "Права доступа",
+		"sv_SE": "Rättigheter",
+		"zh_CN": "权限",
+		"zh_TW": "權限"
+	},
+	"permissions": [
+		{
+			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "CMS Administrator",
+			"scope": 4
+		},
+		{
+			"actionIds": [
+			],
+			"roleName": "Guest",
+			"scope": 4
+		},
+		{
+			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "Site Member",
+			"scope": 4
+		}
+	],
+	"private": false,
+	"system": false,
+	"type": "Content"
+}

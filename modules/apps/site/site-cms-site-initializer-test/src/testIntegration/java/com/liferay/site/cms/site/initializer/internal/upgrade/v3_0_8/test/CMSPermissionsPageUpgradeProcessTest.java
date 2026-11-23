@@ -1,0 +1,262 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.site.cms.site.initializer.internal.upgrade.v3_0_8.test;
+
+import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.fragment.constants.FragmentConstants;
+import com.liferay.fragment.model.FragmentEntryLink;
+import com.liferay.fragment.service.FragmentEntryLinkLocalService;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
+import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.TestInfo;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.CompanyTestUtil;
+import com.liferay.portal.kernel.upgrade.UpgradeProcess;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
+import com.liferay.portal.upgrade.test.util.UpgradeTestUtil;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
+
+import java.util.List;
+
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+/**
+ * @author Patrick Yeo
+ */
+@RunWith(Arquillian.class)
+public class CMSPermissionsPageUpgradeProcessTest {
+
+	@ClassRule
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_company = CompanyTestUtil.addCompany();
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		_companyLocalService.deleteCompany(_company);
+	}
+
+	@Test
+	@TestInfo("LPD-116791")
+	public void testUpgrade() throws Exception {
+
+		// Upgrading adds the permissions page
+
+		Group group = _groupLocalService.getGroup(
+			_company.getCompanyId(), GroupConstants.CMS);
+
+		Layout layout = _layoutLocalService.fetchLayoutByFriendlyURL(
+			group.getGroupId(), false, "/permissions");
+
+		if (layout != null) {
+			_layoutLocalService.deleteLayout(layout);
+		}
+
+		UpgradeProcess upgradeProcess = UpgradeTestUtil.getUpgradeStep(
+			_upgradeStepRegistrator, _CLASS_NAME);
+
+		upgradeProcess.upgrade();
+
+		layout = _layoutLocalService.fetchLayoutByFriendlyURL(
+			group.getGroupId(), false, "/permissions");
+
+		Assert.assertNotNull(layout);
+		Assert.assertTrue(layout.isHidden());
+		Assert.assertEquals(LayoutConstants.TYPE_CONTENT, layout.getType());
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_APPROVED, layout.getStatus());
+
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.fetchLayoutPageTemplateEntry(
+				group.getGroupId(), "cms-basic-master");
+
+		Assert.assertEquals(
+			masterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			layout.getMasterLayoutPageTemplateEntryERC());
+
+		_assertFragmentEntryLink(layout);
+		_assertResourcePermissions(layout);
+
+		// Upgrading a second time does not create a duplicate layout
+
+		upgradeProcess.upgrade();
+
+		Layout upgradedLayout = _layoutLocalService.fetchLayoutByFriendlyURL(
+			group.getGroupId(), false, "/permissions");
+
+		Assert.assertEquals(layout.getPlid(), upgradedLayout.getPlid());
+	}
+
+	@Test
+	@TestInfo("LPD-116791")
+	public void testUpgradeWithoutCMSPages() throws Exception {
+		Company company = CompanyTestUtil.addCompany();
+
+		Group group = _groupLocalService.getGroup(
+			company.getCompanyId(), GroupConstants.CMS);
+
+		_layoutLocalService.deleteLayouts(
+			group.getGroupId(), false, new ServiceContext());
+
+		UpgradeProcess upgradeProcess = UpgradeTestUtil.getUpgradeStep(
+			_upgradeStepRegistrator, _CLASS_NAME);
+
+		upgradeProcess.upgrade();
+
+		Assert.assertNull(
+			_layoutLocalService.fetchLayoutByFriendlyURL(
+				group.getGroupId(), false, "/permissions"));
+
+		_companyLocalService.deleteCompany(company);
+	}
+
+	private void _assertFragmentEntryLink(Layout layout) throws Exception {
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			_layoutPageTemplateStructureLocalService.
+				fetchLayoutPageTemplateStructure(
+					layout.getGroupId(), layout.getPlid());
+
+		long segmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				layout.getPlid());
+
+		LayoutStructure layoutStructure = LayoutStructure.of(
+			layoutPageTemplateStructure.getData(segmentsExperienceId));
+
+		LayoutStructureItem mainLayoutStructureItem =
+			layoutStructure.getMainLayoutStructureItem();
+
+		List<String> childrenItemIds =
+			mainLayoutStructureItem.getChildrenItemIds();
+
+		Assert.assertEquals(
+			childrenItemIds.toString(), 1, childrenItemIds.size());
+
+		FragmentStyledLayoutStructureItem fragmentStyledLayoutStructureItem =
+			(FragmentStyledLayoutStructureItem)
+				layoutStructure.getLayoutStructureItem(childrenItemIds.get(0));
+
+		FragmentEntryLink fragmentEntryLink =
+			_fragmentEntryLinkLocalService.getFragmentEntryLink(
+				fragmentStyledLayoutStructureItem.getFragmentEntryLinkId());
+
+		Assert.assertEquals(
+			"com.liferay.site.cms.site.initializer.internal.fragment." +
+				"renderer.PermissionsComponentSectionFragmentRenderer",
+			fragmentEntryLink.getRendererKey());
+		Assert.assertEquals(
+			FragmentConstants.TYPE_COMPONENT, fragmentEntryLink.getType());
+	}
+
+	private void _assertResourcePermissions(Layout layout) throws Exception {
+		long companyId = layout.getCompanyId();
+		String primKey = String.valueOf(layout.getPlid());
+
+		Role cmsAdministratorRole = _roleLocalService.getRole(
+			companyId, RoleConstants.CMS_ADMINISTRATOR);
+
+		Assert.assertTrue(
+			_resourcePermissionLocalService.hasResourcePermission(
+				companyId, Layout.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL, primKey,
+				cmsAdministratorRole.getRoleId(), "VIEW"));
+
+		Role siteMemberRole = _roleLocalService.getRole(
+			companyId, RoleConstants.SITE_MEMBER);
+
+		Assert.assertTrue(
+			_resourcePermissionLocalService.hasResourcePermission(
+				companyId, Layout.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL, primKey,
+				siteMemberRole.getRoleId(), "VIEW"));
+
+		Role guestRole = _roleLocalService.getRole(
+			companyId, RoleConstants.GUEST);
+
+		Assert.assertFalse(
+			_resourcePermissionLocalService.hasResourcePermission(
+				companyId, Layout.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL, primKey,
+				guestRole.getRoleId(), "VIEW"));
+	}
+
+	private static final String _CLASS_NAME =
+		"com.liferay.site.cms.site.initializer.internal.upgrade.v3_0_8." +
+			"CMSPermissionsPageUpgradeProcess";
+
+	private static Company _company;
+
+	@Inject
+	private static CompanyLocalService _companyLocalService;
+
+	@Inject
+	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
+
+	@Inject
+	private GroupLocalService _groupLocalService;
+
+	@Inject
+	private LayoutLocalService _layoutLocalService;
+
+	@Inject
+	private LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
+
+	@Inject
+	private LayoutPageTemplateStructureLocalService
+		_layoutPageTemplateStructureLocalService;
+
+	@Inject
+	private ResourcePermissionLocalService _resourcePermissionLocalService;
+
+	@Inject
+	private RoleLocalService _roleLocalService;
+
+	@Inject
+	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+
+	@Inject(
+		filter = "component.name=com.liferay.site.cms.site.initializer.internal.upgrade.registry.SiteCMSSiteInitializerUpgradeStepRegistrator"
+	)
+	private UpgradeStepRegistrator _upgradeStepRegistrator;
+
+}
