@@ -5,6 +5,11 @@
 
 import ApiHelper from './ApiHelper';
 
+export type TFolderPermission = {
+	actionIds: string[];
+	roleName: string;
+};
+
 export type TFolder = {
 	description: string;
 	externalReferenceCode?: string;
@@ -63,6 +68,12 @@ async function getFolder(folderId: string): Promise<TFolder> {
 	throw new Error(error);
 }
 
+async function getFolderPermissions(objectEntryFolderId: number) {
+	return await ApiHelper.get<{items: TFolderPermission[]}>(
+		`${OBJECT_ENTRY_FOLDER_URL}/${objectEntryFolderId}/permissions`
+	);
+}
+
 async function moveFolder<DataType = unknown>(
 	objectEntryFolderId: number,
 	parentObjectEntryFolderId: number
@@ -103,6 +114,7 @@ export default {
 	copyReplaceFolder,
 	createFolder,
 	getFolder,
+	getFolderPermissions,
 	moveFolder,
 	moveReplaceFolder,
 	searchFolder,

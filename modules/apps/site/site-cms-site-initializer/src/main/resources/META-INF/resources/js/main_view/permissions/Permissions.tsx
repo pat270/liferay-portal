@@ -10,15 +10,36 @@ import {navigate} from 'frontend-js-web';
 import React, {useState} from 'react';
 
 import Toolbar from '../../common/components/Toolbar';
+import {
+	Action,
+	ActionsMap,
+	AssetRoleSelectedActions,
+	DefaultAssetTypes,
+	Role,
+	RoleSelectedActions,
+} from '../default_permission/DefaultPermissionTypes';
+import FolderDefaultsPermissions from './FolderDefaultsPermissions';
+import ThisFolderPermissions from './ThisFolderPermissions';
 
 type DefaultsSection = 'contents' | 'files' | 'subfolders';
 
 interface PermissionsProps {
+	actions: Action[];
 	backURL: string;
+	classExternalReferenceCode: string | null;
 	className: string;
 	classPK: number;
+	defaultsActions: ActionsMap;
 	defaultsSections: DefaultsSection[];
+	roles: Role[];
 }
+
+const DEFAULTS_SECTION_ASSET_TYPES: Record<DefaultsSection, DefaultAssetTypes> =
+	{
+		contents: DefaultAssetTypes.L_CONTENTS,
+		files: DefaultAssetTypes.L_FILES,
+		subfolders: DefaultAssetTypes.OBJECT_ENTRY_FOLDERS,
+	};
 
 const DEFAULTS_SECTION_LABELS: Record<DefaultsSection, string> = {
 	contents: Liferay.Language.get('contents'),
@@ -37,10 +58,23 @@ function _getSectionLabel(section: string) {
 }
 
 export default function Permissions({
+	actions,
 	backURL,
+	classExternalReferenceCode,
+	className,
+	classPK,
+	defaultsActions,
 	defaultsSections,
+	roles,
 }: PermissionsProps) {
 	const [activeSection, setActiveSection] = useState<string>(THIS_FOLDER);
+	const [defaultsValues, setDefaultsValues] =
+		useState<AssetRoleSelectedActions | null>(null);
+
+	const assetType =
+		DEFAULTS_SECTION_ASSET_TYPES[activeSection as DefaultsSection];
+	const [thisFolderValues, setThisFolderValues] =
+		useState<RoleSelectedActions | null>(null);
 
 	return (
 		<>
@@ -62,11 +96,9 @@ export default function Permissions({
 
 			<ClayLayout.ContainerFluid size={false}>
 				{defaultsSections.length ? (
-					<ClayLayout.Row className="min-vh-100">
-						<ClayLayout.Col
+					<ClayLayout.ContentRow className="min-vh-100">
+						<ClayLayout.ContentCol
 							className="cms-sidebar-nav sidebar-layout"
-							md="auto"
-							sm={12}
 						>
 							<div className="px-md-2 py-3 py-md-4">
 								<ClayVerticalNav
@@ -81,14 +113,36 @@ export default function Permissions({
 									}))}
 								/>
 							</div>
-						</ClayLayout.Col>
+						</ClayLayout.ContentCol>
 
-						<ClayLayout.Col className="col-md py-4" sm={12}>
+						<ClayLayout.ContentCol expand>
 							<h2 className="text-5">
 								{_getSectionLabel(activeSection)}
 							</h2>
-						</ClayLayout.Col>
-					</ClayLayout.Row>
+
+							{activeSection === THIS_FOLDER ? (
+								<ThisFolderPermissions
+									actions={actions}
+									classPK={classPK}
+									onChange={setThisFolderValues}
+									roles={roles}
+									values={thisFolderValues}
+								/>
+							) : (
+								<FolderDefaultsPermissions
+									actions={defaultsActions[assetType]}
+									assetType={assetType}
+									classExternalReferenceCode={
+										classExternalReferenceCode as string
+									}
+									className={className}
+									onChange={setDefaultsValues}
+									roles={roles}
+									values={defaultsValues}
+								/>
+							)}
+						</ClayLayout.ContentCol>
+					</ClayLayout.ContentRow>
 				) : (
 					<div className="min-vh-100 py-4" />
 				)}
