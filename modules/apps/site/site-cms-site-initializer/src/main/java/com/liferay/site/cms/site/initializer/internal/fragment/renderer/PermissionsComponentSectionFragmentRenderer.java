@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.site.cms.site.initializer.internal.util.PermissionUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -124,9 +125,15 @@ public class PermissionsComponentSectionFragmentRenderer
 		).put(
 			"backURL", _getBackURL(httpServletRequest, themeDisplay)
 		).put(
+			"classExternalReferenceCode",
+			_getClassExternalReferenceCode(className, classPK)
+		).put(
 			"className", className
 		).put(
 			"classPK", classPK
+		).put(
+			"defaultsActions",
+			_getDefaultsActions(className, httpServletRequest, themeDisplay)
 		).put(
 			"defaultsSections", _getDefaultsSections(className, classPK)
 		).put(
@@ -171,6 +178,32 @@ public class PermissionsComponentSectionFragmentRenderer
 
 		return themeDisplay.getPathFriendlyURLPublic() +
 			GroupConstants.CMS_FRIENDLY_URL;
+	}
+
+	private String _getClassExternalReferenceCode(
+			String className, long classPK)
+		throws Exception {
+
+		if (!Objects.equals(className, ObjectEntryFolder.class.getName())) {
+			return null;
+		}
+
+		ObjectEntryFolder objectEntryFolder =
+			_objectEntryFolderLocalService.getObjectEntryFolder(classPK);
+
+		return objectEntryFolder.getExternalReferenceCode();
+	}
+
+	private Map<String, Object> _getDefaultsActions(
+		String className, HttpServletRequest httpServletRequest,
+		ThemeDisplay themeDisplay) {
+
+		if (!Objects.equals(className, ObjectEntryFolder.class.getName())) {
+			return Collections.emptyMap();
+		}
+
+		return PermissionUtil.getDefaultPermissionActions(
+			httpServletRequest, themeDisplay);
 	}
 
 	private List<String> _getDefaultsSections(String className, long classPK) {

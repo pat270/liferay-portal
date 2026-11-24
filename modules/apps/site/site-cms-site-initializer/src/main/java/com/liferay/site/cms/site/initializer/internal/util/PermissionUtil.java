@@ -29,91 +29,97 @@ import java.util.Map;
  */
 public class PermissionUtil {
 
+	public static Map<String, Object> getDefaultPermissionActions(
+		HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay) {
+
+		return HashMapBuilder.<String, Object>put(
+			ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS,
+			() -> {
+				ObjectDefinition objectDefinition =
+					ObjectDefinitionLocalServiceUtil.
+						getObjectDefinitionByExternalReferenceCode(
+							"L_CMS_BASIC_WEB_CONTENT",
+							themeDisplay.getCompanyId());
+
+				List<String> guestUnsupportedActions =
+					ResourceActionsUtil.getResourceGuestUnsupportedActions(
+						null, objectDefinition.getClassName());
+
+				return TransformUtil.transformToArray(
+					ResourceActionsUtil.getResourceActions(
+						objectDefinition.getClassName()),
+					resourceAction -> HashMapBuilder.<String, Object>put(
+						"guestUnsupported",
+						guestUnsupportedActions.contains(resourceAction)
+					).put(
+						"key", resourceAction
+					).put(
+						"label",
+						ResourceActionsUtil.getAction(
+							httpServletRequest, resourceAction)
+					).build(),
+					Map.class);
+			}
+		).put(
+			ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_FILES,
+			() -> {
+				ObjectDefinition objectDefinition =
+					ObjectDefinitionLocalServiceUtil.
+						getObjectDefinitionByExternalReferenceCode(
+							"L_CMS_BASIC_DOCUMENT",
+							themeDisplay.getCompanyId());
+
+				List<String> guestUnsupportedActions =
+					ResourceActionsUtil.getResourceGuestUnsupportedActions(
+						null, objectDefinition.getClassName());
+
+				return TransformUtil.transformToArray(
+					ResourceActionsUtil.getResourceActions(
+						objectDefinition.getClassName()),
+					resourceAction -> HashMapBuilder.<String, Object>put(
+						"guestUnsupported",
+						guestUnsupportedActions.contains(resourceAction)
+					).put(
+						"key", resourceAction
+					).put(
+						"label",
+						ResourceActionsUtil.getAction(
+							httpServletRequest, resourceAction)
+					).build(),
+					Map.class);
+			}
+		).put(
+			"OBJECT_ENTRY_FOLDERS",
+			() -> {
+				List<String> guestUnsupportedActions =
+					ResourceActionsUtil.getResourceGuestUnsupportedActions(
+						null, ObjectEntryFolder.class.getName());
+
+				return TransformUtil.transformToArray(
+					ResourceActionsUtil.getResourceActions(
+						ObjectEntryFolder.class.getName()),
+					resourceAction -> HashMapBuilder.<String, Object>put(
+						"guestUnsupported",
+						guestUnsupportedActions.contains(resourceAction)
+					).put(
+						"key", resourceAction
+					).put(
+						"label",
+						ResourceActionsUtil.getAction(
+							httpServletRequest, resourceAction)
+					).build(),
+					Map.class);
+			}
+		).build();
+	}
+
 	public static Map<String, Object> getDefaultPermissionAdditionalProps(
 		boolean allowPropagate, HttpServletRequest httpServletRequest,
 		ThemeDisplay themeDisplay) {
 
 		return HashMapBuilder.<String, Object>put(
 			"actions",
-			() -> HashMapBuilder.put(
-				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS,
-				() -> {
-					ObjectDefinition objectDefinition =
-						ObjectDefinitionLocalServiceUtil.
-							getObjectDefinitionByExternalReferenceCode(
-								"L_CMS_BASIC_WEB_CONTENT",
-								themeDisplay.getCompanyId());
-
-					List<String> guestUnsupportedActions =
-						ResourceActionsUtil.getResourceGuestUnsupportedActions(
-							null, objectDefinition.getClassName());
-
-					return TransformUtil.transformToArray(
-						ResourceActionsUtil.getResourceActions(
-							objectDefinition.getClassName()),
-						resourceAction -> HashMapBuilder.<String, Object>put(
-							"guestUnsupported",
-							guestUnsupportedActions.contains(resourceAction)
-						).put(
-							"key", resourceAction
-						).put(
-							"label",
-							ResourceActionsUtil.getAction(
-								httpServletRequest, resourceAction)
-						).build(),
-						Map.class);
-				}
-			).put(
-				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_FILES,
-				() -> {
-					ObjectDefinition objectDefinition =
-						ObjectDefinitionLocalServiceUtil.
-							getObjectDefinitionByExternalReferenceCode(
-								"L_CMS_BASIC_DOCUMENT",
-								themeDisplay.getCompanyId());
-
-					List<String> guestUnsupportedActions =
-						ResourceActionsUtil.getResourceGuestUnsupportedActions(
-							null, objectDefinition.getClassName());
-
-					return TransformUtil.transformToArray(
-						ResourceActionsUtil.getResourceActions(
-							objectDefinition.getClassName()),
-						resourceAction -> HashMapBuilder.<String, Object>put(
-							"guestUnsupported",
-							guestUnsupportedActions.contains(resourceAction)
-						).put(
-							"key", resourceAction
-						).put(
-							"label",
-							ResourceActionsUtil.getAction(
-								httpServletRequest, resourceAction)
-						).build(),
-						Map.class);
-				}
-			).put(
-				"OBJECT_ENTRY_FOLDERS",
-				() -> {
-					List<String> guestUnsupportedActions =
-						ResourceActionsUtil.getResourceGuestUnsupportedActions(
-							null, ObjectEntryFolder.class.getName());
-
-					return TransformUtil.transformToArray(
-						ResourceActionsUtil.getResourceActions(
-							ObjectEntryFolder.class.getName()),
-						resourceAction -> HashMapBuilder.<String, Object>put(
-							"guestUnsupported",
-							guestUnsupportedActions.contains(resourceAction)
-						).put(
-							"key", resourceAction
-						).put(
-							"label",
-							ResourceActionsUtil.getAction(
-								httpServletRequest, resourceAction)
-						).build(),
-						Map.class);
-				}
-			).build()
+			() -> getDefaultPermissionActions(httpServletRequest, themeDisplay)
 		).put(
 			"allowPropagate", allowPropagate
 		).put(
